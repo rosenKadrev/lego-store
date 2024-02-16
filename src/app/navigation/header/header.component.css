@@ -1,0 +1,43 @@
+.customize-toolbar {
+    background-color: gold;
+    height: 4rem;
+}
+
+.example-spacer {
+    flex: 1 1 auto;
+}
+
+a {
+    text-decoration: none;
+    color: #000000;
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+}
+
+a:hover {
+    cursor: pointer;
+}
+
+a:hover,
+a:active {
+    color: #FFFFFF;
+}
+
+.navigation-items {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.logo-icon {
+    cursor: pointer;
+    width: 3rem;
+    height: 3rem;
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+}
+
+.active {
+    color: #FFFFFF;
+}

@@ -1,0 +1,33 @@
+<mat-toolbar class="customize-toolbar">
+    <button mat-icon-button
+            (click)="onToggleSidenav()">
+        <mat-icon>menu</mat-icon>
+    </button>
+    <div mat-icon-button
+         class="d-flex"
+         (click)="onNavigateToWelcome()">
+        <mat-icon class="logo-icon"
+                  svgIcon="lego-logo">
+        </mat-icon>
+    </div>
+    <div>
+        <ul class="navigation-items">
+            <li><a routerLinkActive="active"
+                   routerLink="/sets">Sets</a></li>
+            <li><a routerLinkActive="active"
+                   routerLink="/my-sets">My sets</a></li>
+            <li><a routerLinkActive="active"
+                   routerLink="/shop">Shop</a></li>
+        </ul>
+    </div>
+    <div class="example-spacer"></div>
+    <div>
+        <ul class="navigation-items">
+            <li><a routerLinkActive="active"
+                   routerLink="/signup">Signup</a></li>
+            <li><a routerLinkActive="active"
+                   routerLink="/login">Login</a></li>
+            <li><a (click)="onLogout()">Logout</a></li>
+        </ul>
+    </div>
+</mat-toolbar>
