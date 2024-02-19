@@ -50,7 +50,7 @@ export class SignupComponent {
             validators: [Validators.required]
         }),
         passwordGroup: new FormGroup({
-            password: new FormControl('', { validators: [Validators.required] }),
+            password: new FormControl('', { validators: [Validators.required, Validators.minLength(6)] }),
             confirmPassword: new FormControl('', { validators: [Validators.required] })
         }, passwordMatchValidator),
         confirmTermsAndConditions: new FormControl(false, { validators: [Validators.required, termsAndConditionsValidator] })
