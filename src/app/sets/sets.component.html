@@ -1,1 +1,5 @@
 <h1 style="color: aqua; text-align: center;">SETS COMPONENT</h1>
+
+<div *ngFor="let kur of kurs;">
+    <div style="font-size: 18px; text-align: center; text-transform: uppercase;" (click)="onKur(kur.id)">{{kur.name}}</div>
+</div>

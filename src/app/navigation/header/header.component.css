@@ -18,8 +18,7 @@ a:hover {
     cursor: pointer;
 }
 
-a:hover,
-a:active {
+a:hover {
     color: #FFFFFF;
 }
 
