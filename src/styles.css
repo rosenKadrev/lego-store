@@ -8,10 +8,38 @@ body {
     font-family: Roboto, "Helvetica Neue", sans-serif;
 }
 
+.w-100 {
+    width: 100%;
+}
+
+.h-100 {
+    height: 100%;
+}
+
 .d-flex {
     display: flex;
 }
 
 .a-items-center {
     align-items: center;
+}
+
+.j-content-center {
+    justify-content: center;
+}
+
+.fs-18 {
+    font-size: 1.125rem;
+}
+
+.fs-14 {
+    font-size: 0.875rem;
+}
+
+.fw-5 {
+    font-weight: 500;
+}
+
+.pl-10 {
+    padding-left: 0.625rem;
 }

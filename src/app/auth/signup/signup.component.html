@@ -1,1 +1,94 @@
-<h1 style="color: red; text-align: center;">SIGNUP COMPONENT</h1>
+<section class="d-flex j-content-center section-padding">
+    <form [formGroup]="signupForm"
+          (ngSubmit)="onSubmit()"
+          class="signup-form">
+        <mat-form-field class="padding-y-6">
+            <mat-label>First name:</mat-label>
+            <input type="text"
+                   matInput
+                   placeholder="Your first name"
+                   formControlName="firstName">
+            <mat-hint>Please enter first name.</mat-hint>
+            <mat-error>Missing first name.</mat-error>
+        </mat-form-field>
+        <mat-form-field class="padding-y-6">
+            <mat-label>Last name:</mat-label>
+            <input type="text"
+                   matInput
+                   placeholder="Your last name"
+                   formControlName="lastName">
+            <mat-hint>Please enter last name.</mat-hint>
+            <mat-error>Missing last name.</mat-error>
+        </mat-form-field>
+        <mat-form-field class="padding-y-6">
+            <mat-label>Email:</mat-label>
+            <input type="email"
+                   matInput
+                   placeholder="Your email"
+                   formControlName="email">
+            <mat-hint>Please enter a valid email.</mat-hint>
+            <mat-error>Invalid or missing email.</mat-error>
+        </mat-form-field>
+        <mat-form-field class="padding-y-6">
+            <mat-label>Gender:</mat-label>
+            <mat-select formControlName="gender">
+                <mat-option value="male">Male</mat-option>
+                <mat-option value="female">Female</mat-option>
+            </mat-select>
+            <mat-hint>Please select gender.</mat-hint>
+            <mat-error>Missing gender.</mat-error>
+        </mat-form-field>
+        <mat-form-field class="padding-y-6">
+            <mat-label>Birthdate:</mat-label>
+            <input matInput
+                   [matDatepicker]="picker"
+                   [max]="maxDate"
+                   placeholder="Your birthdate"
+                   formControlName="birthDate">
+            <mat-datepicker-toggle matSuffix
+                                   [for]="picker"></mat-datepicker-toggle>
+            <mat-datepicker #picker></mat-datepicker>
+            <mat-hint>MM/DD/YYYY</mat-hint>
+            <mat-error>Please select your Birthdate.</mat-error>
+        </mat-form-field>
+        <div formGroupName="passwordGroup">
+            <mat-form-field class="padding-y-6">
+                <mat-label>Password:</mat-label>
+                <input type="password"
+                       matInput
+                       placeholder="Your password"
+                       formControlName="password">
+                <mat-hint>Please enter your password.</mat-hint>
+                <mat-error>Missing password.</mat-error>
+            </mat-form-field>
+            <mat-form-field class="padding-y-6">
+                <mat-label>Confirm password:</mat-label>
+                <input type="password"
+                       matInput
+                       placeholder="Confirm your password"
+                       formControlName="confirmPassword">
+                <mat-hint>Please confirm your password.</mat-hint>
+                <mat-error *ngIf="signupForm.get('passwordGroup')?.hasError('passwordMismatch')">Password does not
+                    match.</mat-error>
+            </mat-form-field>
+        </div>
+        <div class="d-flex j-content-center">
+            <mat-checkbox color="primary"
+                          class="padding-y-6"
+                          formControlName="confirmTermsAndConditions"
+                          name="agree">Agree to Terms and Conditions.
+            </mat-checkbox>
+        </div>
+        <button type="submit"
+                mat-raised-button
+                color="primary"
+                class="w-100 padding-y-6 button-style"
+                [disabled]="!signupForm.valid">Register
+        </button>
+        <div class="d-flex j-content-center a-items-center">
+            <p class="info-text fs-14">or you have an account?</p>
+            <a class="info-text fs-18 fw-5 pl-10"
+               routerLink="/login">Login!</a>
+        </div>
+    </form>
+</section>
