@@ -7,3 +7,7 @@ a:hover,
 a:active {
     color: gold;
 } */
+
+.padding-left-8 {
+    padding-left: 0.5rem;
+}

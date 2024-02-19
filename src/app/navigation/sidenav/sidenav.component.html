@@ -1,32 +1,50 @@
 <mat-nav-list>
     <a mat-list-item
+       routerLink="/sets"
+       (click)="onClose()">
+        <div class="d-flex a-items-center">
+            <mat-icon>category</mat-icon>
+            <span class="padding-left-8">Sets</span>
+        </div>
+    </a>
+    <a mat-list-item
+       routerLink="/my-sets"
+       (click)="onClose()">
+        <div class="d-flex a-items-center">
+            <mat-icon>list_alt</mat-icon>
+            <span class="padding-left-8">My sets</span>
+        </div>
+    </a>
+    <a mat-list-item
+       routerLink="/shop"
+       (click)="onClose()">
+        <div class="d-flex a-items-center">
+            <mat-icon>store</mat-icon>
+            <span class="padding-left-8">Shop</span>
+        </div>
+    </a>
+    <a mat-list-item
        routerLink="/signup"
        (click)="onClose()">
-        <div>
+        <div class="d-flex a-items-center">
             <mat-icon>face</mat-icon>
-            <span>Signup</span>
+            <span class="padding-left-8">Signup</span>
         </div>
     </a>
     <a mat-list-item
        routerLink="/login"
        (click)="onClose()">
-        <div>
+        <div class="d-flex a-items-center">
             <mat-icon>login</mat-icon>
-            <span>Login</span>
-        </div>
-    </a>
-    <a mat-list-item
-       routerLink="/sets"
-       (click)="onClose()">
-        <div>
-            <mat-icon>handyman</mat-icon>
-            <span>Sets</span>
+            <span class="padding-left-8">Login</span>
         </div>
     </a>
     <mat-list-item>
-        <div mat-icon-button (click)="onLogout()">
+        <div mat-icon-button
+             class="d-flex a-items-center"
+             (click)="onLogout()">
             <mat-icon>logout</mat-icon>
-            <span>Logout</span>
+            <span class="padding-left-8">Logout</span>
         </div>
     </mat-list-item>
 </mat-nav-list>

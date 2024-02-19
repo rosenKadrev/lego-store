@@ -1,5 +1,6 @@
 <mat-toolbar class="customize-toolbar">
     <button mat-icon-button
+            class="under-sm"
             (click)="onToggleSidenav()">
         <mat-icon>menu</mat-icon>
     </button>
@@ -10,7 +11,7 @@
                   svgIcon="lego-logo">
         </mat-icon>
     </div>
-    <div>
+    <div class="over-sm">
         <ul class="navigation-items">
             <li><a routerLinkActive="active"
                    routerLink="/sets">Sets</a></li>
@@ -20,8 +21,8 @@
                    routerLink="/shop">Shop</a></li>
         </ul>
     </div>
-    <div class="example-spacer"></div>
-    <div>
+    <div class="example-spacer over-sm"></div>
+    <div class="over-sm">
         <ul class="navigation-items">
             <li><a routerLinkActive="active"
                    routerLink="/signup">Signup</a></li>

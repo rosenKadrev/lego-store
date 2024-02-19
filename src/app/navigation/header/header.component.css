@@ -40,3 +40,15 @@ a:hover {
 .active {
     color: #FFFFFF;
 }
+
+@media (min-width: 576px) {
+    .under-sm {
+        display: none;
+    }
+}
+
+@media (max-width: 576px) {
+    .over-sm {
+        display: none;
+    }
+}
