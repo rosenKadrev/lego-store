@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -9,6 +9,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
+import { Router } from '@angular/router';
 
 import { passwordMatchValidator, termsAndConditionsValidator } from '../../common/validators';
 
@@ -31,6 +32,7 @@ import { passwordMatchValidator, termsAndConditionsValidator } from '../../commo
     styleUrls: ['./signup.component.css']
 })
 export class SignupComponent {
+    private router = inject(Router);
     public maxDate: Date = new Date();
 
     public signupForm = new FormGroup({
@@ -62,5 +64,6 @@ export class SignupComponent {
 
     public onSubmit() {
         console.log(this.signupForm);
+        this.router.navigate(['/']);
     }
 }

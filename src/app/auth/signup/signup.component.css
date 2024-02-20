@@ -13,10 +13,13 @@ mat-form-field {
     width: 100%;
 }
 
+mat-error {
+    line-height: normal;
+}
+
 .button-style {
     height: 3rem;
     font-size: 1.1rem;
-    color: gold;
 }
 
 .padding-y-6 {
