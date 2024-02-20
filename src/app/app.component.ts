@@ -10,7 +10,7 @@ import { HeaderComponent } from './navigation/header/header.component';
   standalone: true,
   imports: [RouterOutlet, SidenavComponent, HeaderComponent, MatSidenavModule, RouterModule],
   templateUrl: './app.component.html',
-  styleUrl: './app.component.css'
+  styleUrl: './app.component.scss'
 })
 export class AppComponent {
 

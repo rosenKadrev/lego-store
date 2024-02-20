@@ -10,7 +10,7 @@ import { RouterModule } from '@angular/router';
     imports: [MatSidenavModule, MatIconModule, MatListModule, RouterModule],
     selector: 'app-sidenav',
     templateUrl: './sidenav.component.html',
-    styleUrls: ['./sidenav.component.css']
+    styleUrls: ['./sidenav.component.scss']
 })
 export class SidenavComponent {
     @Output() closeSidenav = new EventEmitter<void>();

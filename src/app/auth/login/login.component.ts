@@ -4,7 +4,7 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Router } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 @Component({
     standalone: true,
@@ -13,11 +13,12 @@ import { Router } from '@angular/router';
         MatInputModule,
         MatButtonModule,
         ReactiveFormsModule,
-        CommonModule
+        CommonModule,
+        RouterModule
     ],
     selector: 'app-login',
     templateUrl: './login.component.html',
-    styleUrls: ['./login.component.css']
+    styleUrls: ['./login.component.scss']
 })
 export class LoginComponent {
     private router = inject(Router);

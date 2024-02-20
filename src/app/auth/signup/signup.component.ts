@@ -8,10 +8,10 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { Router } from '@angular/router';
 
 import { passwordMatchValidator, termsAndConditionsValidator } from '../../common/validators';
+import { SignupData } from '../../models/signup-data.model';
+import { AuthService } from '../auth.service';
 
 @Component({
     standalone: true,
@@ -24,38 +24,29 @@ import { passwordMatchValidator, termsAndConditionsValidator } from '../../commo
         MatNativeDateModule,
         MatCheckboxModule,
         ReactiveFormsModule,
-        CommonModule,
-        RouterModule
+        CommonModule
     ],
     selector: 'app-signup',
     templateUrl: './signup.component.html',
-    styleUrls: ['./signup.component.css']
+    styleUrls: ['./signup.component.scss']
 })
 export class SignupComponent {
-    private router = inject(Router);
+    private authService = inject(AuthService);
     public maxDate: Date = new Date();
 
     public signupForm = new FormGroup({
-        firstName: new FormControl('', {
-            validators: [Validators.required]
-        }),
-        lastName: new FormControl('', {
-            validators: [Validators.required]
-        }),
-        email: new FormControl('', {
-            validators: [Validators.required, Validators.email]
-        }),
-        gender: new FormControl('', {
-            validators: [Validators.required]
-        }),
-        birthDate: new FormControl('', {
-            validators: [Validators.required]
-        }),
+        firstName: new FormControl('', { validators: Validators.required }),
+        lastName: new FormControl('', { validators: Validators.required }),
+        email: new FormControl('', { validators: [Validators.required, Validators.email] }),
+        phone: new FormControl('', { validators: Validators.required }),
+        gender: new FormControl('', { validators: Validators.required }),
+        birthDate: new FormControl('', { validators: Validators.required }),
         passwordGroup: new FormGroup({
             password: new FormControl('', { validators: [Validators.required, Validators.minLength(6)] }),
-            confirmPassword: new FormControl('', { validators: [Validators.required] })
+            confirmPassword: new FormControl('', { validators: [Validators.required, Validators.minLength(6)] })
         }, passwordMatchValidator),
-        confirmTermsAndConditions: new FormControl(false, { validators: [Validators.required, termsAndConditionsValidator] })
+        confirmTermsAndConditions: new FormControl(false, { validators: [Validators.required, termsAndConditionsValidator] }),
+        role: new FormControl('member', { validators: Validators.required })
     });
 
     ngOnInit() {
@@ -63,7 +54,17 @@ export class SignupComponent {
     }
 
     public onSubmit() {
-        console.log(this.signupForm);
-        this.router.navigate(['/']);
+        console.log(this.signupForm.value);
+        // if (this.signupForm.value.firstName && this.signupForm.value.lastName && this.signupForm.value.email && this.signupForm.value.gender && this.signupForm.value.birthDate && this.signupForm.value.passwordGroup?.password) {
+        // const signupData: SignupData = {
+        //     firstName: this.signupForm.value.firstName,
+        //     lastName: this.signupForm.value.lastName,
+        //     email: this.signupForm.value.email,
+        //     gender: this.signupForm.value.gender,
+        //     birthDate: this.signupForm.value.birthDate,
+        //     password: this.signupForm.value.passwordGroup.password
+        // };
+        // this.authService.createUser(signupData);
+        // }
     }
 }

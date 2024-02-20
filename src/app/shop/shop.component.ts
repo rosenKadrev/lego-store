@@ -4,6 +4,6 @@ import { Component } from '@angular/core';
     standalone: true,
     selector: 'app-shop',
     templateUrl: './shop.component.html',
-    styleUrls: ['./shop.component.css']
+    styleUrls: ['./shop.component.scss']
 })
 export class ShopComponent { }

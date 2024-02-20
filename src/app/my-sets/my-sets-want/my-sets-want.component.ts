@@ -4,6 +4,6 @@ import { Component } from '@angular/core';
     standalone: true,
     selector: 'app-my-sets-want',
     templateUrl: './my-sets-want.component.html',
-    styleUrls: ['./my-sets-want.component.css']
+    styleUrls: ['./my-sets-want.component.scss']
 })
 export class MySetsWantComponent { }

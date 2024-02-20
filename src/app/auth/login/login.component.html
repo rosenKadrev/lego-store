@@ -2,7 +2,7 @@
     <form [formGroup]="loginForm"
           (ngSubmit)="onSubmit()"
           class="login-form">
-        <mat-form-field class="padding-y-6">
+        <mat-form-field class="padding-y-5">
             <mat-label>Email:</mat-label>
             <input type="email"
                    matInput
@@ -11,7 +11,7 @@
             <mat-hint>Please enter a valid email.</mat-hint>
             <mat-error>Invalid or missing email.</mat-error>
         </mat-form-field>
-        <mat-form-field class="padding-y-6">
+        <mat-form-field class="padding-y-5">
             <mat-label>Password:</mat-label>
             <input type="password"
                    matInput
@@ -26,5 +26,10 @@
                 class="w-100 button-style"
                 [disabled]="!loginForm.valid">Login
         </button>
+        <div class="d-flex j-content-center a-items-center">
+            <p class="fs-14">or you don't have an account?</p>
+            <a class="fs-18 fw-5 pl-10"
+               routerLink="/signup">Signup!</a>
+        </div>
     </form>
 </section>

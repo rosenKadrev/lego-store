@@ -9,6 +9,6 @@ import { MySetsWantComponent } from './my-sets-want/my-sets-want.component';
     imports: [MatTabsModule, MySetsOwnComponent, MySetsWantComponent],
     selector: 'app-my-sets',
     templateUrl: './my-sets.component.html',
-    styleUrls: ['./my-sets.component.css']
+    styleUrls: ['./my-sets.component.scss']
 })
 export class MySetsComponent { }

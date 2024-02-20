@@ -10,7 +10,7 @@ import { Router, RouterModule, RouterOutlet } from '@angular/router';
     imports: [MatToolbarModule, MatIconModule, MatButtonModule, RouterOutlet, RouterModule],
     selector: 'app-header',
     templateUrl: './header.component.html',
-    styleUrls: ['./header.component.css']
+    styleUrls: ['./header.component.scss']
 })
 export class HeaderComponent {
     @Output() sidenavToggle = new EventEmitter<void>();
