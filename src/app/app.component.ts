@@ -5,11 +5,12 @@ import { MatSidenavModule } from '@angular/material/sidenav';
 import { SidenavComponent } from './navigation/sidenav/sidenav.component';
 import { HeaderComponent } from './navigation/header/header.component';
 import { AuthService } from './auth/auth.service';
+import { FooterComponent } from './navigation/footer/footer.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, SidenavComponent, HeaderComponent, MatSidenavModule, RouterModule],
+  imports: [RouterOutlet, SidenavComponent, FooterComponent, HeaderComponent, MatSidenavModule, RouterModule],
   templateUrl: './app.component.html',
   styleUrl: './app.component.scss'
 })
