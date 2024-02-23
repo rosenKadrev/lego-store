@@ -1,9 +1,15 @@
-mat-sidenav-container,
-mat-sidenav-content,
 mat-sidenav {
     height: 100%;
+    width: 240px;
 }
 
-mat-sidenav {
-    width: 240px;
+mat-sidenav-content {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+app-footer {
+    margin-top: auto;
+    height: 4rem;
 }
