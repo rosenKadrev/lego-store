@@ -9,7 +9,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
 
-import { passwordMatchValidator, termsAndConditionsValidator } from '../../common/validators';
+import { passwordMatchValidator, phoneValidator, termsAndConditionsValidator } from '../../common/validators';
 import { SignupData } from '../../models/signup-data.model';
 import { AuthService } from '../auth.service';
 
@@ -38,7 +38,7 @@ export class SignupComponent {
         firstName: new FormControl('', { validators: Validators.required }),
         lastName: new FormControl('', { validators: Validators.required }),
         email: new FormControl('', { validators: [Validators.required, Validators.email] }),
-        phone: new FormControl('', { validators: Validators.required }),
+        phone: new FormControl('+359', { validators: [Validators.required, phoneValidator()] }),
         gender: new FormControl('', { validators: Validators.required }),
         birthDate: new FormControl('', { validators: Validators.required }),
         passwordGroup: new FormGroup({
@@ -54,17 +54,29 @@ export class SignupComponent {
     }
 
     public onSubmit() {
-        console.log(this.signupForm.value);
-        // if (this.signupForm.value.firstName && this.signupForm.value.lastName && this.signupForm.value.email && this.signupForm.value.gender && this.signupForm.value.birthDate && this.signupForm.value.passwordGroup?.password) {
-        // const signupData: SignupData = {
-        //     firstName: this.signupForm.value.firstName,
-        //     lastName: this.signupForm.value.lastName,
-        //     email: this.signupForm.value.email,
-        //     gender: this.signupForm.value.gender,
-        //     birthDate: this.signupForm.value.birthDate,
-        //     password: this.signupForm.value.passwordGroup.password
-        // };
-        // this.authService.createUser(signupData);
-        // }
+        if (this.signupForm.value.firstName &&
+            this.signupForm.value.lastName &&
+            this.signupForm.value.email &&
+            this.signupForm.value.gender &&
+            this.signupForm.value.birthDate &&
+            this.signupForm.value.passwordGroup?.password &&
+            this.signupForm.value.phone &&
+            this.signupForm.value.role) {
+
+            const newDate = new Date(this.signupForm.value.birthDate);
+            const utcDate = new Date(Date.UTC(newDate.getFullYear(), newDate.getMonth(), newDate.getDate(), 0, 0, 0));
+            const stringDate = utcDate.toISOString();
+            const signupData: SignupData = {
+                firstName: this.signupForm.value.firstName,
+                lastName: this.signupForm.value.lastName,
+                email: this.signupForm.value.email,
+                phone: this.signupForm.value.phone,
+                gender: this.signupForm.value.gender,
+                birthDate: stringDate,
+                password: this.signupForm.value.passwordGroup.password,
+                role: this.signupForm.value.role
+            };
+            this.authService.createUser(signupData);
+        }
     }
 }

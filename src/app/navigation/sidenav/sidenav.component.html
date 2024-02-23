@@ -7,7 +7,8 @@
             <span class="padding-left-8">Sets</span>
         </div>
     </a>
-    <a mat-list-item
+    <a *ngIf="userIsAuth"
+       mat-list-item
        routerLink="/my-sets"
        (click)="onClose()">
         <div class="d-flex a-items-center">
@@ -15,7 +16,8 @@
             <span class="padding-left-8">My sets</span>
         </div>
     </a>
-    <a mat-list-item
+    <a *ngIf="userIsAuth"
+       mat-list-item
        routerLink="/shop"
        (click)="onClose()">
         <div class="d-flex a-items-center">
@@ -23,15 +25,8 @@
             <span class="padding-left-8">Shop</span>
         </div>
     </a>
-    <a mat-list-item
-       routerLink="/signup"
-       (click)="onClose()">
-        <div class="d-flex a-items-center">
-            <mat-icon>face</mat-icon>
-            <span class="padding-left-8">Signup</span>
-        </div>
-    </a>
-    <a mat-list-item
+    <a *ngIf="!userIsAuth"
+       mat-list-item
        routerLink="/login"
        (click)="onClose()">
         <div class="d-flex a-items-center">
@@ -39,12 +34,4 @@
             <span class="padding-left-8">Login</span>
         </div>
     </a>
-    <mat-list-item>
-        <div mat-icon-button
-             class="d-flex a-items-center"
-             (click)="onLogout()">
-            <mat-icon>logout</mat-icon>
-            <span class="padding-left-8">Logout</span>
-        </div>
-    </mat-list-item>
 </mat-nav-list>

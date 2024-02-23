@@ -35,8 +35,8 @@
                    matInput
                    placeholder="Your phone"
                    formControlName="phone">
-            <mat-hint>Please enter a valid phone.</mat-hint>
-            <mat-error>Missing phone.</mat-error>
+            <mat-hint>Please enter phone starts with '+359'.</mat-hint>
+            <mat-error>Please enter a valid phone.</mat-error>
         </mat-form-field>
         <mat-form-field class="padding-y-5">
             <mat-label>Gender:</mat-label>
@@ -89,7 +89,7 @@
         </div>
         <button type="submit"
                 mat-raised-button
-                color="primary"
+                color="warn"
                 class="w-100 button-style"
                 [disabled]="!signupForm.valid">Register
         </button>

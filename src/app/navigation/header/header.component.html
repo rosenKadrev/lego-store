@@ -15,20 +15,41 @@
         <ul class="navigation-items">
             <li><a routerLinkActive="active"
                    routerLink="/sets">Sets</a></li>
-            <li><a routerLinkActive="active"
+            <li *ngIf="userIsAuth"><a routerLinkActive="active"
                    routerLink="/my-sets">My sets</a></li>
-            <li><a routerLinkActive="active"
+            <li *ngIf="userIsAuth"><a routerLinkActive="active"
                    routerLink="/shop">Shop</a></li>
         </ul>
     </div>
-    <div class="example-spacer over-sm"></div>
-    <div class="over-sm">
-        <ul class="navigation-items">
-            <li><a routerLinkActive="active"
-                   routerLink="/signup">Signup</a></li>
-            <li><a routerLinkActive="active"
-                   routerLink="/login">Login</a></li>
-            <li><a (click)="onLogout()">Logout</a></li>
-        </ul>
-    </div>
+    <div class="example-spacer"></div>
+    <ul class="navigation-items d-flex a-items-center">
+        <li *ngIf="!userIsAuth" class="over-sm"><a routerLinkActive="active"
+               routerLink="/login">Login</a></li>
+        <div *ngIf="userIsAuth"
+             class="fs-16 over-sm">Hi, {{firstName}}
+        </div>
+        <button *ngIf="userIsAuth"
+                mat-icon-button
+                [matMenuTriggerFor]="menu"
+                aria-label="Example icon-button with a menu">
+            <mat-icon>person</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu">
+            <button mat-menu-item
+                    disabled>
+                <mat-icon>settings</mat-icon>
+                <span>Settings</span>
+            </button>
+            <button mat-menu-item
+                    (click)="onLogout()">
+                <mat-icon>logout</mat-icon>
+                <span>Logout</span>
+            </button>
+        </mat-menu>
+        <button *ngIf="userIsAuth"
+                mat-icon-button
+                (click)="onNavigateToShoppingCart()">
+            <mat-icon>shopping_cart</mat-icon>
+        </button>
+    </ul>
 </mat-toolbar>
