@@ -2,7 +2,7 @@ import { Injectable, inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 
 import { environment } from "../../environments/environment";
-import { WelcomeArticle } from "../models/welcome-article.model";
+import { WelcomeArticle } from "./welcome-models/welcome-article.model";
 
 const userServiceUrl: string = environment.apiUrl;
 

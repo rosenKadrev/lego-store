@@ -4,10 +4,10 @@ import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 
-import { LoginData } from '../../models/login-data.model';
 import { AuthService } from '../auth.service';
+import { LoginData } from '../auth-models/login-data.model';
 
 @Component({
     standalone: true,
@@ -31,10 +31,10 @@ export class LoginComponent {
     });
 
     public onSubmit() {
-        if (this.loginForm.value.email && this.loginForm.value.password) {
+        if (this.loginForm.valid) {
             const loginData: LoginData = {
-                email: this.loginForm.value.email,
-                password: this.loginForm.value.password,
+                email: this.loginForm.value.email as string,
+                password: this.loginForm.value.password as string,
             };
             this.authService.login(loginData);
         }

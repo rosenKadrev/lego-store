@@ -1,14 +1,18 @@
 import { Injectable, inject } from "@angular/core";
 import { Router } from '@angular/router';
 import { HttpClient } from "@angular/common/http";
-
-import { SignupData } from "../models/signup-data.model";
-import { environment } from "../../environments/environment";
 import { Subject } from "rxjs";
-import { LoginData } from "../models/login-data.model";
-import { LoginRes } from "../models/login-res.model";
+
+import { environment } from "../../environments/environment";
+import { SignupData } from "./auth-models/signup-data.model";
+import { LoginData } from "./auth-models/login-data.model";
+import { LoginRes } from "./auth-models/login-res.model";
 
 const userServiceUrl: string = environment.apiUrl;
+const TOKEN_KEY = 'token';
+const EXPIRATION = 'expiration';
+const USER_ID = 'userId';
+const FIRST_NAME = 'firstName';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -104,24 +108,24 @@ export class AuthService {
     }
 
     private saveAuthData(token: string, expirationDate: Date, userId: string, firstName: string) {
-        localStorage.setItem('token', token);
-        localStorage.setItem('expiration', expirationDate.toISOString());
-        localStorage.setItem('userId', userId);
-        localStorage.setItem('firstName', firstName);
+        localStorage.setItem(TOKEN_KEY, token);
+        localStorage.setItem(EXPIRATION, expirationDate.toISOString());
+        localStorage.setItem(USER_ID, userId);
+        localStorage.setItem(FIRST_NAME, firstName);
     }
 
     private clearAuthData() {
-        localStorage.removeItem('token');
-        localStorage.removeItem('expiration');
-        localStorage.removeItem('userId');
-        localStorage.removeItem('firstName');
+        localStorage.removeItem(TOKEN_KEY);
+        localStorage.removeItem(EXPIRATION);
+        localStorage.removeItem(USER_ID);
+        localStorage.removeItem(FIRST_NAME);
     }
 
     private getAuthDAta() {
-        const token = localStorage.getItem('token');
-        const expirationDate = localStorage.getItem('expiration');
-        const userId = localStorage.getItem('userId');
-        const firstName = localStorage.getItem('firstName');
+        const token = localStorage.getItem(TOKEN_KEY);
+        const expirationDate = localStorage.getItem(EXPIRATION);
+        const userId = localStorage.getItem(USER_ID);
+        const firstName = localStorage.getItem(FIRST_NAME);
         if (!token || !expirationDate) {
             return;
         }

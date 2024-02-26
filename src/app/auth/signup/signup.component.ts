@@ -10,8 +10,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { CommonModule } from '@angular/common';
 
 import { passwordMatchValidator, phoneValidator, termsAndConditionsValidator } from '../../common/validators';
-import { SignupData } from '../../models/signup-data.model';
 import { AuthService } from '../auth.service';
+import { SignupData } from '../auth-models/signup-data.model';
 
 @Component({
     standalone: true,
