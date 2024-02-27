@@ -7,7 +7,7 @@
             <span class="padding-left-8">Sets</span>
         </div>
     </a>
-    <a *ngIf="userIsAuth"
+    <a *ngIf="userIsAuth$ | async"
        mat-list-item
        routerLink="/my-sets"
        (click)="onClose()">
@@ -16,7 +16,7 @@
             <span class="padding-left-8">My sets</span>
         </div>
     </a>
-    <a *ngIf="userIsAuth"
+    <a *ngIf="userIsAuth$ | async"
        mat-list-item
        routerLink="/shop"
        (click)="onClose()">
@@ -25,7 +25,7 @@
             <span class="padding-left-8">Shop</span>
         </div>
     </a>
-    <a *ngIf="!userIsAuth"
+    <a *ngIf="!(userIsAuth$ | async)"
        mat-list-item
        routerLink="/login"
        (click)="onClose()">

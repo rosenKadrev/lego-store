@@ -1,13 +1,14 @@
 import { Injectable, inject } from "@angular/core";
 import { Router } from '@angular/router';
-import { HttpClient } from "@angular/common/http";
-import { Subject } from "rxjs";
+import { HttpClient, HttpContext, HttpContextToken } from "@angular/common/http";
+import { BehaviorSubject } from "rxjs";
 
 import { environment } from "../../environments/environment";
 import { SignupData } from "./auth-models/signup-data.model";
 import { LoginData } from "./auth-models/login-data.model";
 import { LoginRes } from "./auth-models/login-res.model";
 
+export const IS_PUBLIC_API_AUTH = new HttpContextToken<boolean>(() => false);
 const userServiceUrl: string = environment.apiUrl;
 const TOKEN_KEY = 'token';
 const EXPIRATION = 'expiration';
@@ -23,7 +24,7 @@ export class AuthService {
     private userId: string | null = '';
     private router = inject(Router);
     private http = inject(HttpClient);
-    private authStatusListener = new Subject<boolean>();
+    private authStatusListener = new BehaviorSubject<boolean>(false);
 
     public getToken() {
         return this.token;
@@ -42,7 +43,9 @@ export class AuthService {
     }
 
     public createUser(signupData: SignupData) {
-        this.http.post(userServiceUrl + '/signup', signupData).subscribe({
+        this.http.post(userServiceUrl + '/signup', signupData, {
+            context: new HttpContext().set(IS_PUBLIC_API_AUTH, true),
+        }).subscribe({
             next: () => {
                 this.router.navigate(['/login']);
             }, error: () => {
@@ -52,7 +55,9 @@ export class AuthService {
     }
 
     public login(loginData: LoginData) {
-        this.http.post<LoginRes>(userServiceUrl + '/login', loginData).subscribe({
+        this.http.post<LoginRes>(userServiceUrl + '/login', loginData, {
+            context: new HttpContext().set(IS_PUBLIC_API_AUTH, true),
+        }).subscribe({
             next: (res) => {
                 this.token = res.response.token;
                 if (res.response.token) {

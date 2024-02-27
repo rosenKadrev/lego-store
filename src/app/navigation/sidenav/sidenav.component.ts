@@ -4,7 +4,6 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatListModule } from '@angular/material/list';
 import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
-import { Subscription } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
 
@@ -18,18 +17,7 @@ import { AuthService } from '../../auth/auth.service';
 export class SidenavComponent {
     @Output() closeSidenav = new EventEmitter<void>();
     private authService = inject(AuthService);
-    public userIsAuth: boolean = false;
-    public authStatusObs$ = this.authService.getAuthStatusListener();
-    private authStatusSub: Subscription = new Subscription();
-
-    ngOnInit() {
-        this.userIsAuth = this.authService.getIsAuth();
-        this.authStatusSub = this.authStatusObs$.subscribe({
-            next: (isAuth) => {
-                this.userIsAuth = isAuth;
-            }
-        });
-    }
+    public userIsAuth$ = this.authService.getAuthStatusListener();
 
     public onClose() {
         this.closeSidenav.emit();
@@ -38,9 +26,5 @@ export class SidenavComponent {
     public onLogout() {
         this.onClose();
         this.authService.logout();
-    }
-
-    ngOnDestroy() {
-        this.authStatusSub.unsubscribe();
     }
 }

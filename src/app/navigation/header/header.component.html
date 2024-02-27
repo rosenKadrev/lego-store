@@ -15,20 +15,21 @@
         <ul class="navigation-items">
             <li><a routerLinkActive="active"
                    routerLink="/sets">Sets</a></li>
-            <li *ngIf="userIsAuth"><a routerLinkActive="active"
+            <li *ngIf="userIsAuth$ | async"><a routerLinkActive="active"
                    routerLink="/my-sets">My sets</a></li>
-            <li *ngIf="userIsAuth"><a routerLinkActive="active"
+            <li *ngIf="userIsAuth$ | async"><a routerLinkActive="active"
                    routerLink="/shop">Shop</a></li>
         </ul>
     </div>
     <div class="example-spacer"></div>
     <ul class="navigation-items d-flex a-items-center">
-        <li *ngIf="!userIsAuth" class="over-sm"><a routerLinkActive="active"
+        <li *ngIf="!(userIsAuth$ | async)"
+            class="over-sm"><a routerLinkActive="active"
                routerLink="/login">Login</a></li>
-        <div *ngIf="userIsAuth"
-             class="fs-16 over-sm">Hi, {{firstName}}
+        <div *ngIf="userIsAuth$ | async"
+             class="fs-16 over-sm">Hi, {{firstName$ | async}}
         </div>
-        <button *ngIf="userIsAuth"
+        <button *ngIf="userIsAuth$ | async"
                 mat-icon-button
                 [matMenuTriggerFor]="menu"
                 aria-label="Example icon-button with a menu">
@@ -46,7 +47,7 @@
                 <span>Logout</span>
             </button>
         </mat-menu>
-        <button *ngIf="userIsAuth"
+        <button *ngIf="userIsAuth$ | async"
                 mat-icon-button
                 (click)="onNavigateToShoppingCart()">
             <mat-icon>shopping_cart</mat-icon>

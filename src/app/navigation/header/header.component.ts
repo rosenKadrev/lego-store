@@ -6,7 +6,7 @@ import { MatIconModule, MatIconRegistry } from '@angular/material/icon';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatButtonModule } from '@angular/material/button';
 import { MatMenuModule } from '@angular/material/menu';
-import { Subscription } from 'rxjs';
+import { map } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
 
@@ -23,31 +23,14 @@ export class HeaderComponent {
     private domSanitizer = inject(DomSanitizer);
     private router = inject(Router);
     private authService = inject(AuthService);
-    public userIsAuth: boolean = false;
-    public firstName: string | null = '';
-    public authStatusObs$ = this.authService.getAuthStatusListener();
-    private authStatusSub: Subscription = new Subscription();
+    public userIsAuth$ = this.authService.getAuthStatusListener();
+    public firstName$ = this.userIsAuth$.pipe(map((isAuth: boolean) => isAuth ? this.authService.getUsername() : null));
 
     constructor() {
         this.matIconRegistry.addSvgIcon(
             'lego-logo',
             this.domSanitizer.bypassSecurityTrustResourceUrl('../../../assets/svg/lego-logo.svg')
         );
-    }
-
-    ngOnInit() {
-        this.userIsAuth = this.authService.getIsAuth();
-        this.firstName = this.authService.getUsername();
-        this.authStatusSub = this.authStatusObs$.subscribe({
-            next: (isAuth) => {
-                this.userIsAuth = isAuth;
-                if (this.userIsAuth) {
-                    this.firstName = this.authService.getUsername();
-                } else {
-                    this.firstName = null;
-                }
-            }
-        });
     }
 
     public onToggleSidenav() {
@@ -65,9 +48,5 @@ export class HeaderComponent {
     public onNavigateToShoppingCart() {
         this.router.navigate(['/shopping-cart']);
 
-    }
-
-    ngOnDestroy() {
-        this.authStatusSub.unsubscribe();
     }
 }

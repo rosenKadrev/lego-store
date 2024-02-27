@@ -35,18 +35,18 @@ export class SignupComponent {
     public maxDate: Date = new Date();
 
     public signupForm = new FormGroup({
-        firstName: new FormControl('', { validators: Validators.required }),
-        lastName: new FormControl('', { validators: Validators.required }),
-        email: new FormControl('', { validators: [Validators.required, Validators.email] }),
-        phone: new FormControl('+359', { validators: [Validators.required, phoneValidator()] }),
-        gender: new FormControl('', { validators: Validators.required }),
-        birthDate: new FormControl('', { validators: Validators.required }),
+        firstName: new FormControl<string>('', { validators: Validators.required }),
+        lastName: new FormControl<string>('', { validators: Validators.required }),
+        email: new FormControl<string>('', { validators: [Validators.required, Validators.email] }),
+        phone: new FormControl<string>('+359', { validators: [Validators.required, phoneValidator()] }),
+        gender: new FormControl<string>('', { validators: Validators.required }),
+        birthDate: new FormControl<string>('', { validators: Validators.required }),
         passwordGroup: new FormGroup({
-            password: new FormControl('', { validators: [Validators.required, Validators.minLength(6)] }),
-            confirmPassword: new FormControl('', { validators: [Validators.required, Validators.minLength(6)] })
+            password: new FormControl<string>('', { validators: [Validators.required, Validators.minLength(6)] }),
+            confirmPassword: new FormControl<string>('', { validators: [Validators.required, Validators.minLength(6)] })
         }, passwordMatchValidator),
-        confirmTermsAndConditions: new FormControl(false, { validators: [Validators.required, termsAndConditionsValidator] }),
-        role: new FormControl('member', { validators: Validators.required })
+        confirmTermsAndConditions: new FormControl<boolean>(false, { validators: [Validators.required, termsAndConditionsValidator] }),
+        role: new FormControl<string>('member', { validators: Validators.required })
     });
 
     ngOnInit() {
@@ -54,27 +54,19 @@ export class SignupComponent {
     }
 
     public onSubmit() {
-        if (this.signupForm.value.firstName &&
-            this.signupForm.value.lastName &&
-            this.signupForm.value.email &&
-            this.signupForm.value.gender &&
-            this.signupForm.value.birthDate &&
-            this.signupForm.value.passwordGroup?.password &&
-            this.signupForm.value.phone &&
-            this.signupForm.value.role) {
-
-            const newDate = new Date(this.signupForm.value.birthDate);
+        if (this.signupForm.valid) {
+            const newDate = new Date(this.signupForm.value.birthDate as string);
             const utcDate = new Date(Date.UTC(newDate.getFullYear(), newDate.getMonth(), newDate.getDate(), 0, 0, 0));
             const stringDate = utcDate.toISOString();
             const signupData: SignupData = {
-                firstName: this.signupForm.value.firstName,
-                lastName: this.signupForm.value.lastName,
-                email: this.signupForm.value.email,
-                phone: this.signupForm.value.phone,
-                gender: this.signupForm.value.gender,
+                firstName: this.signupForm.value.firstName as string,
+                lastName: this.signupForm.value.lastName as string,
+                email: this.signupForm.value.email as string,
+                phone: this.signupForm.value.phone as string,
+                gender: this.signupForm.value.gender as string,
                 birthDate: stringDate,
-                password: this.signupForm.value.passwordGroup.password,
-                role: this.signupForm.value.role
+                password: this.signupForm.value.passwordGroup!.password as string,
+                role: this.signupForm.value.role as string
             };
             this.authService.createUser(signupData);
         }

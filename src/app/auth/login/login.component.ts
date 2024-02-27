@@ -26,8 +26,8 @@ import { LoginData } from '../auth-models/login-data.model';
 export class LoginComponent {
     private authService = inject(AuthService);
     public loginForm = new FormGroup({
-        email: new FormControl('roro_901@abv.bg', { validators: [Validators.required, Validators.email] }),
-        password: new FormControl('roro91_02', { validators: [Validators.required, Validators.minLength(6)] }),
+        email: new FormControl<string>('roro_901@abv.bg', { validators: [Validators.required, Validators.email] }),
+        password: new FormControl<string>('roro91_02', { validators: [Validators.required, Validators.minLength(6)] }),
     });
 
     public onSubmit() {
