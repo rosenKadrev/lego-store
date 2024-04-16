@@ -1,7 +1,87 @@
-<h1 style="color: aqua; text-align: center;">SETS COMPONENT</h1>
+@if (selectValues$ | async; as selectValues) {
+<div class="filter-container d-flex j-content-center">
+    <form [formGroup]="filterForm"
+          (ngSubmit)="onSubmit()"
+          class="login-form">
+        <mat-form-field>
+            <mat-label>Select Theme</mat-label>
+            <mat-select formControlName="themeFilter">
+                @for (theme of selectValues.theme; track theme) {
+                <mat-option [value]="theme">{{theme}}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Select Subtheme</mat-label>
+            <mat-select formControlName="subthemeFilter">
+                @for (subtheme of selectValues.subtheme; track subtheme) {
+                <mat-option [value]="subtheme">{{subtheme}}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field>
+            <mat-label>Select Year</mat-label>
+            <mat-select formControlName="yearFilter">
+                @for (yearReleased of selectValues.yearReleased; track yearReleased) {
+                <mat-option [value]="yearReleased">{{yearReleased}}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+    </form>
+</div>
+}
 
-@for (item of items; track item.id) {
-<button (click)="onNavigateToSet(item.id)"> {{ item.name }} </button>
-} @empty {
-<li> There are no items.</li>
+@if (setsRes$ | async; as setsRes) {
+<div class="d-flex sets-container">
+    @for (set of setsRes.sets; track set) {
+    <mat-card class="example-card">
+        <mat-card-header>
+            <div class="d-flex a-items-center j-content-center mr-10">
+                <mat-icon class="hide-icon pr-10">ads_click</mat-icon>
+                <div class="d-flex f-direction-column j-content-center title-container">
+                    <mat-card-title class="lh-normal">{{set.name}}</mat-card-title>
+                    <mat-card-subtitle>Item: {{set.number}}</mat-card-subtitle>
+                </div>
+            </div>
+        </mat-card-header>
+        <div class="img-container">
+            <div class="img"
+                 [ngStyle]="{'background-image': 'url(' + set.mainImgUrl + ')' }">
+            </div>
+        </div>
+        <mat-card-content>
+            <div class="d-flex">
+                <div class="fs-16 py-4 pr-4">Theme:</div>
+                <div class="fs-16 fw-5 py-4">{{set.theme}}</div>
+            </div>
+            <div class="d-flex">
+                <div class="fs-16 py-4 pr-4">Subtheme:</div>
+                <div class="fs-16 fw-5 py-4">{{set.subtheme}}</div>
+            </div>
+            <div class="d-flex">
+                <div class="fs-16 py-4 pr-4">Year released:</div>
+                <div class="fs-16 fw-5 py-4">{{set.yearReleased}}</div>
+            </div>
+            <div class="d-flex">
+                <div class="fs-16 py-4 pr-4">Pieces:</div>
+                <div class="fs-16 fw-5 py-4">{{set.pieces}}</div>
+            </div>
+            <div class="d-flex">
+                <div class="fs-16 py-4 pr-4">Price new:</div>
+                <div class="fs-16 fw-5 py-4">{{set.priceNew}}$</div>
+            </div>
+        </mat-card-content>
+        <mat-card-actions>
+            <button mat-button
+                    (click)="onNavigateToSet(set.id)">View more ></button>
+        </mat-card-actions>
+    </mat-card>
+    }
+</div>
+<mat-paginator [length]="setsRes.totalCount"
+               [pageIndex]="pageIndex"
+               [pageSize]="setsPerPage"
+               [pageSizeOptions]="pageSizeOptions"
+               (page)="onChangedPage($event)">
+</mat-paginator>
 }

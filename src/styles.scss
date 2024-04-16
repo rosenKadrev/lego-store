@@ -24,6 +24,10 @@ body {
     align-items: center;
 }
 
+.f-direction-column {
+    flex-direction: column;
+}
+
 .j-content-center {
     justify-content: center;
 }
@@ -48,6 +52,10 @@ body {
     font-weight: 500;
 }
 
+.pr-4 {
+    padding-right: 0.25rem;
+}
+
 .pl-10 {
     padding-left: 0.625rem;
 }
@@ -59,6 +67,11 @@ body {
 .px-16 {
     padding-left: 1rem;
     padding-right: 1rem;
+}
+
+.py-4 {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
 }
 
 .ta-center {

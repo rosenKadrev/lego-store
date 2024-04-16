@@ -7,8 +7,7 @@
     @for (article of articles$ | async; track article) {
     <mat-card class="example-card">
         <img mat-card-image
-             [src]="article.imgUrl"
-             alt="Photo of a Shiba Inu">
+             [src]="article.imgUrl">
         <mat-card-header>
             <mat-card-title class="card-title"
                             [title]="article.title">{{article.title}}

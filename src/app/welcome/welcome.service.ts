@@ -1,10 +1,10 @@
 import { Injectable, inject } from "@angular/core";
-import { HttpClient, HttpContext, HttpContextToken } from "@angular/common/http";
+import { HttpClient, HttpContext } from "@angular/common/http";
 
 import { environment } from "../../environments/environment";
 import { WelcomeArticle } from "./welcome-models/welcome-article.model";
+import { IS_PUBLIC_API } from "../common/constants";
 
-export const IS_PUBLIC_API_WELCOME = new HttpContextToken<boolean>(() => false);
 const userServiceUrl: string = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
@@ -13,7 +13,7 @@ export class WelcomeService {
 
     public getArticles() {
         return this.http.get<WelcomeArticle[]>(userServiceUrl + '/articles', {
-            context: new HttpContext().set(IS_PUBLIC_API_WELCOME, true)
+            context: new HttpContext().set(IS_PUBLIC_API, true)
         });
     }
 
