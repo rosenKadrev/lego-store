@@ -32,7 +32,7 @@ export class SetsComponent {
     public activeFilters: any;
     public filterForm = new FormGroup({
         themeFilter: new FormControl(null),
-        subthemeFilter: new FormControl(null),
+        subthemeFilter: new FormControl({ value: null, disabled: true }),
         yearFilter: new FormControl(null)
     });
 

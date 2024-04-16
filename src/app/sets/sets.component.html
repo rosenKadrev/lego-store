@@ -1,5 +1,5 @@
 @if (selectValues$ | async; as selectValues) {
-<div class="filter-container d-flex j-content-center">
+<div class="filter-container  j-content-center">
     <form [formGroup]="filterForm"
           (ngSubmit)="onSubmit()"
           class="login-form">
@@ -13,7 +13,7 @@
         </mat-form-field>
         <mat-form-field>
             <mat-label>Select Subtheme</mat-label>
-            <mat-select formControlName="subthemeFilter">
+            <mat-select formControlName="subthemeFilter" [disabled]="!filterForm.get('themeFilter')?.value">
                 @for (subtheme of selectValues.subtheme; track subtheme) {
                 <mat-option [value]="subtheme">{{subtheme}}</mat-option>
                 }
@@ -27,6 +27,12 @@
                 }
             </mat-select>
         </mat-form-field>
+        <button type="button"
+                mat-raised-button
+                color="primary"
+                class="w-100 button-style"
+                [disabled]="!filterForm.valid">Clear Filters
+        </button>
     </form>
 </div>
 }
