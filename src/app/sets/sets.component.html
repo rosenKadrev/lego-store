@@ -6,15 +6,17 @@
         <mat-form-field>
             <mat-label>Select Theme</mat-label>
             <mat-select formControlName="themeFilter">
-                @for (theme of selectValues.theme; track theme) {
+                @for (theme of objectKeys(selectValues.themeSubthemes); track theme) {
                 <mat-option [value]="theme">{{theme}}</mat-option>
                 }
             </mat-select>
         </mat-form-field>
         <mat-form-field>
             <mat-label>Select Subtheme</mat-label>
-            <mat-select formControlName="subthemeFilter" [disabled]="!filterForm.get('themeFilter')?.value">
-                @for (subtheme of selectValues.subtheme; track subtheme) {
+            <mat-select formControlName="subthemeFilter">
+                @for (subtheme of
+                objectValues(selectValues.themeSubthemes[$any(this.filterForm.get('themeFilter')?.value)] || []); track
+                subtheme) {
                 <mat-option [value]="subtheme">{{subtheme}}</mat-option>
                 }
             </mat-select>
@@ -27,11 +29,12 @@
                 }
             </mat-select>
         </mat-form-field>
-        <button type="button"
+        <button type="submit"
                 mat-raised-button
                 color="primary"
                 class="w-100 button-style"
-                [disabled]="!filterForm.valid">Clear Filters
+                [disabled]="!filterForm.get('themeFilter')?.value && !filterForm.get('subthemeFilter')?.value && !filterForm.get('yearFilter')?.value">Clear
+            Filters
         </button>
     </form>
 </div>
@@ -43,7 +46,8 @@
     <mat-card class="example-card">
         <mat-card-header>
             <div class="d-flex a-items-center j-content-center mr-10">
-                <mat-icon class="hide-icon pr-10">ads_click</mat-icon>
+                <mat-icon *ngIf="(userIsAuth$ | async)"
+                          class="hide-icon cursor-pointer color-grey">favorite</mat-icon>
                 <div class="d-flex f-direction-column j-content-center title-container">
                     <mat-card-title class="lh-normal">{{set.name}}</mat-card-title>
                     <mat-card-subtitle>Item: {{set.number}}</mat-card-subtitle>

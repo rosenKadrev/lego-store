@@ -1,5 +1,4 @@
 export interface DistinctSelectValues {
-    subtheme: string[];
-    theme: string[];
+    themeSubthemes: any;
     yearReleased: string[];
 }
