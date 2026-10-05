@@ -52,16 +52,7 @@ import { SHOP_NAME } from '../core/models';
         </div>
       </div>
       <div class="border-t border-white/10">
-        <div
-          class="container-page flex flex-col gap-2 py-6 text-xs leading-relaxed text-zinc-500 md:flex-row md:items-center md:justify-between md:gap-8"
-        >
-          <p class="shrink-0 font-semibold text-zinc-400">© {{ year }} {{ shopName }}. Всички права запазени.</p>
-          <p class="md:text-right">
-            {{ shopName }} е независим магазин и не е свързан с LEGO Group. LEGO® е търговска марка на LEGO Group.
-            Каталожни данни:
-            <a href="https://rebrickable.com" target="_blank" rel="noopener" class="underline-offset-2 hover:text-zinc-300 hover:underline">Rebrickable</a>.
-          </p>
-        </div>
+        <p class="container-page py-6 text-xs font-semibold text-zinc-400">© {{ year }} {{ shopName }}. Всички права запазени.</p>
       </div>
     </footer>
   `,
