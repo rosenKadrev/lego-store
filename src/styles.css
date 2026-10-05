@@ -107,3 +107,19 @@ select.input {
   background-position: right 1.1rem center;
   background-size: 1rem;
 }
+
+/* Toast entrance */
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.98);
+  }
+}
+.toast-in {
+  animation: toast-in 0.2s ease-out;
+}
+@media (prefers-reduced-motion: reduce) {
+  .toast-in {
+    animation: none;
+  }
+}

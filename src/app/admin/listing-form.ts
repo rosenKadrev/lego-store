@@ -7,6 +7,7 @@ import { CONDITION_LABEL, displayItemNum, ItemCondition, ItemType, slugify } fro
 import { Supabase } from '../core/supabase';
 import { ColorSwatch } from '../shared/color-swatch';
 import { Icon } from '../shared/icon';
+import { ToastStore } from '../stores/toast.store';
 import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.store';
 
 @Component({
@@ -259,9 +260,6 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
               @if (store.error()) {
                 <p class="rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ store.error() }}</p>
               }
-              @if (savedMessage()) {
-                <p class="rounded-xl bg-emerald-50 p-3 text-sm text-emerald-800">{{ savedMessage() }}</p>
-              }
 
               <div class="flex flex-wrap gap-3">
                 <button type="submit" class="btn-primary" [disabled]="form.invalid || store.saving()">
@@ -327,6 +325,7 @@ export class ListingForm {
   protected readonly store = inject(ListingFormStore);
   private readonly supabase = inject(Supabase);
   private readonly router = inject(Router);
+  private readonly toast = inject(ToastStore);
   private readonly fb = inject(FormBuilder);
 
   /** Route param on /admin/listings/:id; undefined on /admin/listings/new. */
@@ -383,7 +382,6 @@ export class ListingForm {
         return 'Номер на част (3001), номер на елемент (300121) или име';
     }
   });
-  protected readonly savedMessage = signal<string | null>(null);
   protected readonly condition = toSignal(this.form.controls.condition.valueChanges, { initialValue: 'new' as ItemCondition });
   protected readonly boxDamaged = toSignal(this.form.controls.box_damaged.valueChanges, { initialValue: false });
   protected readonly hasNewOffer = computed(() => this.store.existingOffers().some((o) => o.condition === 'new' && !o.box_damaged));
@@ -467,7 +465,6 @@ export class ListingForm {
     const used = v.condition === 'used';
     const isSet = item.type === 'set';
     if (item.type === 'part' && item.color_id == null) return;
-    this.savedMessage.set(null);
 
     const id = await this.store.save({
       item_type: item.type,
@@ -488,12 +485,18 @@ export class ListingForm {
       description: v.description.trim() || null,
       is_published: v.is_published,
     });
-    if (id == null) return;
+    if (id == null) {
+      this.toast.error(this.store.error() ?? 'Обявата не можа да бъде запазена.');
+      return;
+    }
 
     if (this.isEdit()) {
-      this.savedMessage.set('Промените са запазени.');
+      this.toast.success('Промените са запазени.');
       this.form.markAsPristine();
     } else {
+      this.toast.success(
+        v.is_published ? 'Обявата е създадена и е видима в магазина. Сега можете да добавите снимки.' : 'Обявата е създадена като чернова.',
+      );
       // Continue on the edit page so photos can be added
       void this.router.navigate(['/admin/listings', id], { replaceUrl: true });
     }
@@ -501,11 +504,23 @@ export class ListingForm {
 
   protected async remove(): Promise<void> {
     if (!confirm('Да изтрия ли обявата? Това не може да бъде отменено.')) return;
-    if (await this.store.remove()) void this.router.navigate(['/admin/listings']);
+    if (await this.store.remove()) {
+      this.toast.success('Обявата е изтрита.');
+      void this.router.navigate(['/admin/listings']);
+    } else {
+      this.toast.error(this.store.error() ?? 'Обявата не можа да бъде изтрита.');
+    }
   }
 
   protected upload(event: Event): void {
     const input = event.target as HTMLInputElement;
-    if (input.files?.length) void this.store.upload(input.files).then(() => (input.value = ''));
+    if (!input.files?.length) return;
+    const before = this.store.images().length;
+    void this.store.upload(input.files).then(() => {
+      input.value = '';
+      const added = this.store.images().length - before;
+      if (added > 0) this.toast.success(added === 1 ? 'Снимката е качена.' : `Качени са ${added} снимки.`);
+      if (this.store.error()) this.toast.error(this.store.error()!);
+    });
   }
 }

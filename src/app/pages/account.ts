@@ -7,6 +7,7 @@ import { Order, OrderItem } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { OrderStatusBadge } from '../shared/order-status-badge';
 import { AuthStore } from '../stores/auth.store';
+import { ToastStore } from '../stores/toast.store';
 
 type OrderWithItems = Order & { order_items: OrderItem[] };
 
@@ -87,9 +88,6 @@ const MyOrdersStore = signalStore(
               <label class="label" for="phone">Телефон</label>
               <input id="phone" class="input" type="tel" formControlName="phone" />
             </div>
-            @if (message()) {
-              <p class="text-sm" [class]="messageIsError() ? 'text-brick-700' : 'text-emerald-700'">{{ message() }}</p>
-            }
             <button type="submit" class="btn-dark w-full" [disabled]="form.pristine">Запази</button>
           </form>
           <div class="mt-6 border-t border-zinc-200 pt-5">
@@ -108,8 +106,7 @@ export class Account implements OnInit {
   protected readonly orders = inject(MyOrdersStore);
 
   protected readonly form = inject(FormBuilder).nonNullable.group({ full_name: [''], phone: [''] });
-  protected readonly message = signal<string | null>(null);
-  protected readonly messageIsError = signal(false);
+  private readonly toast = inject(ToastStore);
   protected readonly passwordChanged = !!inject(Router).currentNavigation()?.extras.state?.['passwordChanged'];
 
   constructor() {
@@ -125,8 +122,11 @@ export class Account implements OnInit {
 
   protected async save(): Promise<void> {
     const error = await this.auth.updateProfile(this.form.getRawValue());
-    this.messageIsError.set(!!error);
-    this.message.set(error ?? 'Данните са запазени.');
-    if (!error) this.form.markAsPristine();
+    if (error) {
+      this.toast.error(error);
+      return;
+    }
+    this.toast.success('Данните са запазени.');
+    this.form.markAsPristine();
   }
 }

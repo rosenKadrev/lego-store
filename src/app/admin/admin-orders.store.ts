@@ -1,7 +1,8 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-import { Order, OrderItem, OrderStatus } from '../core/models';
+import { Order, OrderItem, ORDER_STATUS_LABEL, OrderStatus } from '../core/models';
 import { Supabase } from '../core/supabase';
+import { ToastStore } from '../stores/toast.store';
 
 export type AdminOrder = Order & { order_items: OrderItem[] };
 
@@ -36,7 +37,7 @@ export const AdminOrdersStore = signalStore(
   withComputed(({ orders }) => ({
     newCount: computed(() => orders().filter((o) => o.status === 'new').length),
   })),
-  withMethods((store, supabase = inject(Supabase)) => {
+  withMethods((store, supabase = inject(Supabase), toast = inject(ToastStore)) => {
     const db = supabase.client;
 
     async function load(): Promise<void> {
@@ -73,9 +74,10 @@ export const AdminOrdersStore = signalStore(
       async setShipping(order: AdminOrder, price: number): Promise<boolean> {
         const { error } = await db.rpc('set_order_shipping', { p_order_id: order.id, p_shipping_price: price });
         if (error) {
-          patchState(store, { error: error.message });
+          toast.error('Цената на доставката не беше запазена.');
           return false;
         }
+        toast.success(`${order.number}: доставката е записана.`);
         const shipping = Math.round(price * 100) / 100;
         patchState(store, {
           orders: store.orders().map((o) =>
@@ -92,9 +94,10 @@ export const AdminOrdersStore = signalStore(
           p_tracking_number: trackingNumber?.trim() || undefined,
         });
         if (error) {
-          patchState(store, { error: error.message });
+          toast.error('Статусът не беше променен.');
           return;
         }
+        toast.success(`${order.number}: ${ORDER_STATUS_LABEL[status].toLowerCase()}.`);
         patchState(store, {
           orders: store.orders().map((o) =>
             o.id === order.id ? { ...o, status, tracking_number: trackingNumber?.trim() || o.tracking_number } : o,

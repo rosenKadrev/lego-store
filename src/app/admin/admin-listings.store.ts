@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { CatalogListing, ItemCondition, ItemType } from '../core/models';
 import { Supabase } from '../core/supabase';
+import { ToastStore } from '../stores/toast.store';
 
 export type AdminListingFilters = {
   q: string;
@@ -28,7 +29,7 @@ export const AdminListingsStore = signalStore(
     page: 1,
     loading: true,
   }),
-  withMethods((store, supabase = inject(Supabase)) => {
+  withMethods((store, supabase = inject(Supabase), toast = inject(ToastStore)) => {
     const db = supabase.client;
     let requestId = 0;
 
@@ -71,14 +72,22 @@ export const AdminListingsStore = signalStore(
       async setStock(id: number, stock: number): Promise<void> {
         patchItem(id, { stock });
         const { error } = await db.from('listings').update({ stock }).eq('id', id);
-        if (error) void load();
+        if (error) {
+          toast.error('Наличността не беше запазена.');
+          void load();
+        }
       },
 
       async togglePublished(listing: CatalogListing): Promise<void> {
         const is_published = !listing.is_published;
         patchItem(listing.id!, { is_published });
         const { error } = await db.from('listings').update({ is_published }).eq('id', listing.id!);
-        if (error) void load();
+        if (error) {
+          toast.error('Промяната не беше запазена.');
+          void load();
+          return;
+        }
+        toast.success(is_published ? `„${listing.name}“ е публикувана.` : `„${listing.name}“ е скрита от магазина.`);
       },
     };
   }),
