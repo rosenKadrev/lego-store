@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { CartStore } from '../stores/cart.store';
 
 type InfoPage = { title: string; paragraphs: string[] };
 
@@ -8,10 +9,9 @@ const PAGES: Record<string, InfoPage> = {
   delivery: {
     title: 'Доставка и плащане',
     paragraphs: [
-      'Доставяме с Еконт и Спиди до офис или до адрес в цялата страна. Обичайният срок е 1–2 работни дни след потвърждение на поръчката.',
+      'Доставяме с Еконт и Спиди до офис или до адрес в цялата страна. Обичайният срок е 2–5 работни дни след потвърждение на поръчката.',
       'Цената на доставката зависи от куриера и размера на пратката — наш служител ще ви я каже, когато потвърждаваме поръчката по телефона.',
       'Плащането е с наложен платеж — плащате на куриера при получаване. Можете да прегледате пратката преди да платите.',
-      'Можете да вземете поръчката и лично — безплатно, с плащане в брой на място. Ще ви се обадим, когато е готова.',
     ],
   },
   returns: {
@@ -56,5 +56,22 @@ const PAGES: Record<string, InfoPage> = {
 })
 export class Info {
   readonly page_ = input.required<string>({ alias: 'page' });
-  protected readonly page = computed(() => PAGES[this.page_()] ?? null);
+  private readonly cart = inject(CartStore);
+
+  protected readonly page = computed<InfoPage | null>(() => {
+    const page = PAGES[this.page_()];
+    if (!page || this.page_() !== 'delivery') return page ?? null;
+    // Pickup details come from the shop settings, same as at checkout
+    const settings = this.cart.settings();
+    if (settings && !settings.pickup_enabled) return page;
+    const where = settings?.pickup_address ? ` на адрес ${settings.pickup_address}` : '';
+    const hours = settings?.pickup_hours ? ` Работно време: ${settings.pickup_hours.charAt(0).toLowerCase()}${settings.pickup_hours.slice(1)}.` : '';
+    return {
+      ...page,
+      paragraphs: [
+        ...page.paragraphs,
+        `Можете да вземете поръчката и лично${where} — безплатно, с плащане в брой на място.${hours} Ще ви се обадим, когато е готова.`,
+      ],
+    };
+  });
 }
