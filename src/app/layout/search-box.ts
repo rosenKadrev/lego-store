@@ -82,8 +82,9 @@ const SearchStore = signalStore(
         (input)="onInput($any($event.target).value)"
         (focus)="open.set(true)"
         (keydown)="onKeydown($event)"
-        placeholder="Търси сет, номер, фигурка, част…"
-        class="w-full rounded-full border-0 bg-zinc-100 py-2.5 pr-4 pl-10 text-sm transition focus:bg-white focus:ring-2 focus:ring-brick-600 focus:outline-none"
+        placeholder="Търси…"
+        title="Търси сет, номер, фигурка или част"
+        class="w-full truncate rounded-full border-0 bg-zinc-100 py-2.5 pr-4 pl-10 text-sm transition placeholder:truncate focus:bg-white focus:ring-2 focus:ring-brick-600 focus:outline-none"
         [attr.autofocus]="autofocus() ? '' : null"
       />
     </form>
