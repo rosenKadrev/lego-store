@@ -33,6 +33,22 @@
   :focus-visible {
     @apply outline-2 outline-offset-2 outline-brick-600;
   }
+  /* Tailwind 4 no longer sets a pointer cursor on buttons */
+  button,
+  [role='button'],
+  select,
+  summary,
+  label:has(> input[type='checkbox'], > input[type='radio'], > input[type='file']),
+  input[type='checkbox'],
+  input[type='radio'],
+  input[type='file'] {
+    cursor: pointer;
+  }
+  :disabled,
+  [aria-disabled='true'],
+  label:has(> input:disabled) {
+    cursor: not-allowed;
+  }
 }
 
 @utility container-page {
