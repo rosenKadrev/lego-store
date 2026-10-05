@@ -1,4 +1,4 @@
-# MBRBrickStore — LEGO магазин
+# MBR BrickStore — LEGO магазин
 
 Angular 22 (SPA, без SSR) + NgRx Signal Store + Tailwind CSS 4 + Supabase (Postgres, Auth, Storage, RLS).
 Плащане: наложен платеж. Каталог: Rebrickable CSV.

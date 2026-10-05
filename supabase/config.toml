@@ -245,7 +245,7 @@ otp_expiry = 3600
 # sender_name = "Admin"
 
 [auth.email.template.recovery]
-subject = "Смяна на парола — MBRBrickStore"
+subject = "Смяна на парола — MBR BrickStore"
 content_path = "./supabase/templates/recovery.html"
 
 # Uncomment to customize email template
