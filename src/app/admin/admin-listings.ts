@@ -33,6 +33,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
           <option [ngValue]="null">Всички видове</option>
           <option value="set">Сетове</option>
           <option value="minifig">Минифигурки</option>
+          <option value="part">Части</option>
         </select>
         <select class="input md:w-40" [ngModel]="f.status" (ngModelChange)="store.setFilters({ status: $event })">
           @for (s of statuses; track s.value) {
@@ -53,15 +54,17 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
               }
             </div>
             <div class="min-w-0 flex-1">
-              <a [routerLink]="['/admin/listings', l.id]" class="line-clamp-1 font-semibold hover:text-brick-600">{{ l.name }}</a>
+              <a [routerLink]="['/admin/listings', l.id]" class="line-clamp-1 font-semibold hover:text-brick-600">
+                {{ l.name }}@if (l.color_name) { <span class="font-normal text-zinc-500">— {{ l.color_name }}</span> }
+              </a>
               <p class="text-xs text-zinc-500">
                 {{ itemNum(l.item_num) }} ·
                 <span [class]="l.condition === 'new' ? 'text-emerald-700' : 'text-amber-700'">{{ conditionLabel[l.condition!] }}</span>
-                @if (l.theme_name) { · {{ l.theme_name }} }
+                @if (l.theme_name ?? l.part_category; as group) { · {{ group }} }
               </p>
             </div>
             <p class="w-24 text-right font-bold">{{ l.price | currency }}</p>
-            @if (l.condition === 'new') {
+            @if (l.condition === 'new' || l.item_type === 'part') {
               <app-quantity-stepper [value]="l.stock ?? 0" [max]="999" (valueChange)="store.setStock(l.id!, $event)" />
             } @else {
               <span class="chip w-[6.5rem] justify-center" [class]="l.stock ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'">

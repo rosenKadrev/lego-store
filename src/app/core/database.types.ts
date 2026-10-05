@@ -5,7 +5,33 @@ export type Database = {
   
   "public": {
           Tables: {
-            "listing_images": {
+            "colors": {
+                  Row: {
+                    "id": number,"is_trans": boolean,"name": string,"rgb": string
+                  }
+                  Insert: {
+                    "id": number,"is_trans"?: boolean,"name": string,"rgb": string
+                  }
+                  Update: {
+                    "id"?: number,"is_trans"?: boolean,"name"?: string,"rgb"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"elements": {
+                  Row: {
+                    "color_id": number,"element_id": string,"part_num": string
+                  }
+                  Insert: {
+                    "color_id": number,"element_id": string,"part_num": string
+                  }
+                  Update: {
+                    "color_id"?: number,"element_id"?: string,"part_num"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"listing_images": {
                   Row: {
                     "id": number,"listing_id": number,"path": string,"sort_order": number
                   }
@@ -32,21 +58,33 @@ isOneToOne: false
                   ]
                 },"listings": {
                   Row: {
-                    "compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"],"condition_notes": string | null,"created_at": string,"description": string | null,"fig_num": string | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number,"is_complete": boolean | null,"is_published": boolean,"item_type": Database["public"]['Enums']["item_type"],"minifigs_complete": boolean | null,"price": number,"set_num": string | null,"stock": number,"updated_at": string
+                    "color_id": number | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"],"condition_notes": string | null,"created_at": string,"description": string | null,"fig_num": string | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number,"is_complete": boolean | null,"is_published": boolean,"item_type": Database["public"]['Enums']["item_type"],"minifigs_complete": boolean | null,"part_num": string | null,"price": number,"set_num": string | null,"stock": number,"updated_at": string
                   }
                   Insert: {
-                    "compare_at_price"?: number | null,"condition": Database["public"]['Enums']["item_condition"],"condition_notes"?: string | null,"created_at"?: string,"description"?: string | null,"fig_num"?: string | null,"has_box"?: boolean | null,"has_instructions"?: boolean | null,"id"?: never,"is_complete"?: boolean | null,"is_published"?: boolean,"item_type": Database["public"]['Enums']["item_type"],"minifigs_complete"?: boolean | null,"price": number,"set_num"?: string | null,"stock"?: number,"updated_at"?: string
+                    "color_id"?: number | null,"compare_at_price"?: number | null,"condition": Database["public"]['Enums']["item_condition"],"condition_notes"?: string | null,"created_at"?: string,"description"?: string | null,"fig_num"?: string | null,"has_box"?: boolean | null,"has_instructions"?: boolean | null,"id"?: never,"is_complete"?: boolean | null,"is_published"?: boolean,"item_type": Database["public"]['Enums']["item_type"],"minifigs_complete"?: boolean | null,"part_num"?: string | null,"price": number,"set_num"?: string | null,"stock"?: number,"updated_at"?: string
                   }
                   Update: {
-                    "compare_at_price"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"],"condition_notes"?: string | null,"created_at"?: string,"description"?: string | null,"fig_num"?: string | null,"has_box"?: boolean | null,"has_instructions"?: boolean | null,"id"?: never,"is_complete"?: boolean | null,"is_published"?: boolean,"item_type"?: Database["public"]['Enums']["item_type"],"minifigs_complete"?: boolean | null,"price"?: number,"set_num"?: string | null,"stock"?: number,"updated_at"?: string
+                    "color_id"?: number | null,"compare_at_price"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"],"condition_notes"?: string | null,"created_at"?: string,"description"?: string | null,"fig_num"?: string | null,"has_box"?: boolean | null,"has_instructions"?: boolean | null,"id"?: never,"is_complete"?: boolean | null,"is_published"?: boolean,"item_type"?: Database["public"]['Enums']["item_type"],"minifigs_complete"?: boolean | null,"part_num"?: string | null,"price"?: number,"set_num"?: string | null,"stock"?: number,"updated_at"?: string
                   }
                   Relationships: [
                     {
+      foreignKeyName: "listings_color_id_fkey"
+      columns: ["color_id"]
+isOneToOne: false
+      referencedRelation: "colors"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "listings_fig_num_fkey"
       columns: ["fig_num"]
 isOneToOne: false
       referencedRelation: "minifigs"
       referencedColumns: ["fig_num"]
+    },{
+      foreignKeyName: "listings_part_num_fkey"
+      columns: ["part_num"]
+isOneToOne: false
+      referencedRelation: "parts"
+      referencedColumns: ["part_num"]
     },{
       foreignKeyName: "listings_set_num_fkey"
       columns: ["set_num"]
@@ -130,6 +168,63 @@ isOneToOne: false
                   }
                   Relationships: [
                     
+                  ]
+                },"part_categories": {
+                  Row: {
+                    "id": number,"name": string
+                  }
+                  Insert: {
+                    "id": number,"name": string
+                  }
+                  Update: {
+                    "id"?: number,"name"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
+                },"part_colors": {
+                  Row: {
+                    "color_id": number,"img_url": string | null,"part_num": string
+                  }
+                  Insert: {
+                    "color_id": number,"img_url"?: string | null,"part_num": string
+                  }
+                  Update: {
+                    "color_id"?: number,"img_url"?: string | null,"part_num"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "part_colors_color_id_fkey"
+      columns: ["color_id"]
+isOneToOne: false
+      referencedRelation: "colors"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "part_colors_part_num_fkey"
+      columns: ["part_num"]
+isOneToOne: false
+      referencedRelation: "parts"
+      referencedColumns: ["part_num"]
+    }
+                  ]
+                },"parts": {
+                  Row: {
+                    "img_url": string | null,"name": string,"part_cat_id": number | null,"part_num": string
+                  }
+                  Insert: {
+                    "img_url"?: string | null,"name": string,"part_cat_id"?: number | null,"part_num": string
+                  }
+                  Update: {
+                    "img_url"?: string | null,"name"?: string,"part_cat_id"?: number | null,"part_num"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "parts_part_cat_id_fkey"
+      columns: ["part_cat_id"]
+isOneToOne: false
+      referencedRelation: "part_categories"
+      referencedColumns: ["id"]
+    }
                   ]
                 },"profiles": {
                   Row: {
@@ -225,10 +320,22 @@ isOneToOne: false
           Views: {
             "catalog_listings": {
                   Row: {
-                    "catalog_img_url": string | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"condition_notes": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number | null,"is_complete": boolean | null,"is_published": boolean | null,"item_num": string | null,"item_type": Database["public"]['Enums']["item_type"] | null,"minifigs_complete": boolean | null,"name": string | null,"num_parts": number | null,"price": number | null,"stock": number | null,"theme_id": number | null,"theme_name": string | null,"year": number | null
+                    "catalog_img_url": string | null,"color_id": number | null,"color_name": string | null,"color_rgb": string | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"condition_notes": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number | null,"is_complete": boolean | null,"is_published": boolean | null,"item_num": string | null,"item_type": Database["public"]['Enums']["item_type"] | null,"minifigs_complete": boolean | null,"name": string | null,"num_parts": number | null,"part_cat_id": number | null,"part_category": string | null,"price": number | null,"stock": number | null,"theme_id": number | null,"theme_name": string | null,"year": number | null
                   }
                   Relationships: [
                     {
+      foreignKeyName: "listings_color_id_fkey"
+      columns: ["color_id"]
+isOneToOne: false
+      referencedRelation: "colors"
+      referencedColumns: ["id"]
+    },{
+      foreignKeyName: "parts_part_cat_id_fkey"
+      columns: ["part_cat_id"]
+isOneToOne: false
+      referencedRelation: "part_categories"
+      referencedColumns: ["id"]
+    },{
       foreignKeyName: "sets_theme_id_fkey"
       columns: ["theme_id"]
 isOneToOne: false
@@ -239,8 +346,19 @@ isOneToOne: false
                 }
           }
           Functions: {
-            "is_admin":
+            "admin_email":
+{ Args: Record<PropertyKey, never>; Returns: string
+                           },
+"is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"is_owner_account":
+{ Args: { "p_user_id": string }; Returns: boolean
+                           },
+"listed_part_filters":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "id": number,"kind": string,"listing_count": number,"name": string,"rgb": string
+            }[]
                            },
 "listed_root_themes":
 { Args: Record<PropertyKey, never>; Returns: {
@@ -257,7 +375,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "courier": "econt"|"speedy","delivery_type": "office"|"address","item_condition": "new"|"used","item_type": "set"|"minifig","order_status": "new"|"confirmed"|"shipped"|"delivered"|"paid"|"cancelled"|"refused"|"returned","payment_method": "cod","user_role": "customer"|"admin"
+            "courier": "econt"|"speedy","delivery_type": "office"|"address","item_condition": "new"|"used","item_type": "set"|"minifig"|"part","order_status": "new"|"confirmed"|"shipped"|"delivered"|"paid"|"cancelled"|"refused"|"returned","payment_method": "cod","user_role": "customer"|"admin"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -373,7 +491,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "courier": ["econt", "speedy"],"delivery_type": ["office", "address"],"item_condition": ["new", "used"],"item_type": ["set", "minifig"],"order_status": ["new", "confirmed", "shipped", "delivered", "paid", "cancelled", "refused", "returned"],"payment_method": ["cod"],"user_role": ["customer", "admin"]
+            "courier": ["econt", "speedy"],"delivery_type": ["office", "address"],"item_condition": ["new", "used"],"item_type": ["set", "minifig", "part"],"order_status": ["new", "confirmed", "shipped", "delivered", "paid", "cancelled", "refused", "returned"],"payment_method": ["cod"],"user_role": ["customer", "admin"]
           }
         }
 } as const

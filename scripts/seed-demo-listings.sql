@@ -46,3 +46,21 @@ limit 20;
 update public.listings set stock = 1 where condition = 'used';
 
 select condition, item_type, count(*) from public.listings group by 1, 2 order by 1, 2;
+
+-- Parts: common bricks/plates in popular colours, new and used
+insert into public.listings (item_type, part_num, color_id, condition, price, stock, is_published)
+select 'part', pc.part_num, pc.color_id,
+       (case when row_number() over () % 3 = 0 then 'used' else 'new' end)::public.item_condition,
+       (case when p.part_num in ('3001', '3007') then 0.29 else 0.12 end)
+         - (case when row_number() over () % 3 = 0 then 0.04 else 0 end),
+       20 + (row_number() over () % 7) * 25,
+       true
+from public.part_colors pc
+join public.parts p on p.part_num = pc.part_num
+join public.colors c on c.id = pc.color_id
+where pc.img_url is not null
+  and p.part_num in ('3001', '3003', '3004', '3005', '3010', '3020', '3022', '3023', '3024', '3062b', '3069b', '3039', '3040', '4073', '3070b')
+  and c.name in ('Red', 'Blue', 'Yellow', 'White', 'Black', 'Light Bluish Gray', 'Dark Bluish Gray', 'Green', 'Reddish Brown', 'Trans-Clear', 'Orange', 'Tan')
+limit 60;
+
+select item_type, condition, count(*) from public.listings group by 1, 2 order by 1, 2;

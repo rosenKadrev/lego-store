@@ -208,6 +208,7 @@ export class Header {
     { label: 'Нови сетове', params: { condition: 'new', type: 'set' } },
     { label: 'Употребявани', params: { condition: 'used' } },
     { label: 'Минифигурки', params: { type: 'minifig' } },
+    { label: 'Части', params: { type: 'part' } },
   ];
 
   protected readonly menuOpen = signal(false);

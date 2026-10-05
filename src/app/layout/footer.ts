@@ -30,6 +30,7 @@ import { Logo } from '../shared/logo';
             <li><a routerLink="/catalog" [queryParams]="{ condition: 'new' }" class="hover:text-white">Нови сетове</a></li>
             <li><a routerLink="/catalog" [queryParams]="{ condition: 'used' }" class="hover:text-white">Употребявани</a></li>
             <li><a routerLink="/catalog" [queryParams]="{ type: 'minifig' }" class="hover:text-white">Минифигурки</a></li>
+            <li><a routerLink="/catalog" [queryParams]="{ type: 'part' }" class="hover:text-white">Части</a></li>
             <li><a routerLink="/account" class="hover:text-white">Моят профил</a></li>
           </ul>
         </div>

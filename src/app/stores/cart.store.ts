@@ -72,7 +72,7 @@ export const CartStore = signalStore(
       }
       const item: CartItem = {
         listingId: listing.id,
-        name: listing.name ?? '',
+        name: listing.color_name ? `${listing.name} — ${listing.color_name}` : (listing.name ?? ''),
         itemNum: listing.item_num ?? '',
         condition: listing.condition ?? 'new',
         price: listing.price ?? 0,

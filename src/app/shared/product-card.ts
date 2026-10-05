@@ -4,12 +4,13 @@ import { RouterLink } from '@angular/router';
 import { CatalogListing, CONDITION_LABEL, displayItemNum, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { CartStore } from '../stores/cart.store';
+import { ColorSwatch } from './color-swatch';
 import { Icon } from './icon';
 
 @Component({
   selector: 'app-product-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, Icon],
+  imports: [RouterLink, CurrencyPipe, Icon, ColorSwatch],
   host: { class: 'block' },
   template: `
     @let l = listing();
@@ -39,11 +40,17 @@ import { Icon } from './icon';
 
       <div class="flex flex-1 flex-col gap-1 p-4">
         <p class="text-xs font-medium tracking-wide text-zinc-500 uppercase">
-          {{ l.theme_name ?? (l.item_type === 'minifig' ? 'Минифигурка' : 'LEGO') }} · {{ itemNum() }}
+          {{ l.theme_name ?? l.part_category ?? (l.item_type === 'minifig' ? 'Минифигурка' : 'LEGO') }} · {{ itemNum() }}
         </p>
         <h3 class="line-clamp-2 font-sans text-sm leading-snug font-semibold text-ink-900">
           <a [routerLink]="link()" class="after:absolute after:inset-0 after:content-['']">{{ l.name }}</a>
         </h3>
+        @if (l.item_type === 'part') {
+          <p class="flex items-center gap-1.5 text-xs text-zinc-600">
+            <app-color-swatch [rgb]="l.color_rgb" [trans]="!!l.color_name?.startsWith('Trans')" [size]="12" />
+            {{ l.color_name }} · {{ l.stock }} бр.
+          </p>
+        }
         @if (l.condition === 'used' && l.item_type === 'set') {
           <p class="text-xs text-zinc-500">
             {{ l.has_box ? 'С кутия' : 'Без кутия' }} · {{ l.is_complete === false ? 'Непълен' : 'Пълен' }}
@@ -56,6 +63,9 @@ import { Icon } from './icon';
             }
             <p class="font-display text-lg font-bold" [class.text-brick-600]="l.compare_at_price">
               {{ l.price | currency }}
+              @if (l.item_type === 'part') {
+                <span class="font-sans text-xs font-medium text-zinc-500">/ бр.</span>
+              }
             </p>
           </div>
           <button

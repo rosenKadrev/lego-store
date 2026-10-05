@@ -1,4 +1,6 @@
-// Imports the Rebrickable catalog (themes, sets, minifigs, set ↔ minifig links) into Supabase.
+// Imports the Rebrickable catalog into Supabase:
+//   themes, sets, minifigs, set ↔ minifig links, and the standalone parts catalog
+//   (part categories, colours, parts, elements, part ↔ colour combinations with photos).
 // Idempotent: rows are upserted, so it can be re-run with newer CSV dumps.
 //
 //   node --env-file=.env.local scripts/import-rebrickable.mjs              # uses CSVs in REBRICKABLE_DIR
@@ -6,11 +8,13 @@
 //
 // Env: SUPABASE_URL, SUPABASE_SECRET_KEY, REBRICKABLE_DIR (default: data/rebrickable)
 // CSVs from https://rebrickable.com/downloads/ (regenerated daily, public, no API key):
-//   themes.csv, sets.csv, minifigs.csv, inventories.csv, inventory_minifigs.csv
+//   themes, sets, minifigs, inventories, inventory_minifigs,
+//   part_categories, colors, parts, elements, inventory_parts (≈130 MB, streamed)
 
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { createReadStream, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gunzipSync } from 'node:zlib';
+import { parse as parseStream } from 'csv-parse';
 import { parse } from 'csv-parse/sync';
 import { createClient } from '@supabase/supabase-js';
 
@@ -20,7 +24,10 @@ if (!SUPABASE_URL || !SUPABASE_SECRET_KEY) {
   process.exit(1);
 }
 
-const FILES = ['themes', 'sets', 'minifigs', 'inventories', 'inventory_minifigs'];
+const FILES = [
+  'themes', 'sets', 'minifigs', 'inventories', 'inventory_minifigs',
+  'part_categories', 'colors', 'parts', 'elements', 'inventory_parts',
+];
 const DOWNLOAD_BASE = 'https://cdn.rebrickable.com/media/downloads';
 
 if (process.argv.includes('--download')) {
@@ -114,5 +121,56 @@ await upsert('themes', themes, 'id');
 await upsert('sets', sets, 'set_num');
 await upsert('minifigs', minifigs, 'fig_num');
 await upsert('set_minifigs', [...setMinifigs.values()], 'set_num,fig_num');
+
+// ---------------------------------------------------------------------
+// Parts catalog
+// ---------------------------------------------------------------------
+
+const partCategories = readCsv('part_categories').map((r) => ({ id: toInt(r.id), name: r.name }));
+const colors = readCsv('colors').map((r) => ({
+  id: toInt(r.id),
+  name: r.name,
+  rgb: r.rgb,
+  is_trans: r.is_trans === 'True' || r.is_trans === 't',
+}));
+const colorIds = new Set(colors.map((c) => c.id));
+
+// Distinct part + colour from every set inventory, keeping the first photo found.
+// inventory_parts is ~1.5M rows, so it is streamed instead of loaded at once.
+const partColors = new Map(); // `${part_num}|${color_id}` -> row
+const inventoryParts = createReadStream(join(REBRICKABLE_DIR, 'inventory_parts.csv')).pipe(
+  parseStream({ columns: true, skip_empty_lines: true }),
+);
+for await (const r of inventoryParts) {
+  const colorId = toInt(r.color_id);
+  if (!colorIds.has(colorId)) continue;
+  const key = `${r.part_num}|${colorId}`;
+  const existing = partColors.get(key);
+  if (!existing) partColors.set(key, { part_num: r.part_num, color_id: colorId, img_url: r.img_url || null });
+  else if (!existing.img_url && r.img_url) existing.img_url = r.img_url;
+}
+
+const partImage = new Map(); // representative photo per part (any colour)
+for (const pc of partColors.values()) {
+  if (pc.img_url && !partImage.has(pc.part_num)) partImage.set(pc.part_num, pc.img_url);
+}
+
+const parts = readCsv('parts').map((r) => ({
+  part_num: r.part_num,
+  name: r.name,
+  part_cat_id: toInt(r.part_cat_id),
+  img_url: partImage.get(r.part_num) ?? null,
+}));
+const partNums = new Set(parts.map((p) => p.part_num));
+
+const elements = readCsv('elements')
+  .filter((r) => partNums.has(r.part_num))
+  .map((r) => ({ element_id: r.element_id, part_num: r.part_num, color_id: toInt(r.color_id) }));
+
+await upsert('part_categories', partCategories, 'id');
+await upsert('colors', colors, 'id');
+await upsert('parts', parts, 'part_num');
+await upsert('part_colors', [...partColors.values()].filter((pc) => partNums.has(pc.part_num)), 'part_num,color_id');
+await upsert('elements', elements, 'element_id');
 
 console.log('Done.');

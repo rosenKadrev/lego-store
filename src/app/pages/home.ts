@@ -130,6 +130,16 @@ import { ThemesStore } from '../stores/themes.store';
 
     <section class="container-page mt-14">
       <app-product-rail
+        title="Части"
+        subtitle="Нови и употребявани части на брой"
+        [items]="parts()"
+        [loading]="loading()"
+        [moreParams]="{ type: 'part' }"
+      />
+    </section>
+
+    <section class="container-page mt-14">
+      <app-product-rail
         title="Минифигурки"
         [items]="minifigs()"
         [loading]="loading()"
@@ -146,6 +156,7 @@ export class Home implements OnInit {
   protected readonly newSets = signal<CatalogListing[]>([]);
   protected readonly usedSets = signal<CatalogListing[]>([]);
   protected readonly minifigs = signal<CatalogListing[]>([]);
+  protected readonly parts = signal<CatalogListing[]>([]);
   protected readonly heroImage = signal<string | null>(null);
 
   protected readonly usps = [
@@ -156,11 +167,13 @@ export class Home implements OnInit {
   ] as const;
 
   async ngOnInit(): Promise<void> {
-    const [newSets, usedSets, minifigs] = await Promise.all([
+    const [newSets, usedSets, minifigs, parts] = await Promise.all([
       this.fetch('new', 'set'),
       this.fetch('used', 'set'),
       this.fetch(null, 'minifig'),
+      this.fetch(null, 'part'),
     ]);
+    this.parts.set(parts);
     this.newSets.set(newSets);
     this.usedSets.set(usedSets);
     this.minifigs.set(minifigs);

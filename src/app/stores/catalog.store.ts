@@ -10,6 +10,9 @@ export type CatalogFilters = {
   condition: ItemCondition | null;
   type: ItemType | null;
   theme: number | null;
+  /** parts only */
+  color: number | null;
+  category: number | null;
   q: string;
   sort: CatalogSort;
   page: number;
@@ -19,6 +22,8 @@ export const EMPTY_FILTERS: CatalogFilters = {
   condition: null,
   type: null,
   theme: null,
+  color: null,
+  category: null,
   q: '',
   sort: 'newest',
   page: 1,
@@ -41,7 +46,7 @@ export const CatalogStore = signalStore(
     pageCount: computed(() => Math.max(1, Math.ceil(total() / PAGE_SIZE))),
     hasFilters: computed(() => {
       const f = filters();
-      return !!(f.condition || f.type || f.theme || f.q);
+      return !!(f.condition || f.type || f.theme || f.color || f.category || f.q);
     }),
   })),
   withMethods((store, supabase = inject(Supabase), themes = inject(ThemesStore)) => {
@@ -63,6 +68,8 @@ export const CatalogStore = signalStore(
         if (filters.condition) query = query.eq('condition', filters.condition);
         if (filters.type) query = query.eq('item_type', filters.type);
         if (filters.theme != null) query = query.in('theme_id', themes.withDescendants(filters.theme));
+        if (filters.color != null) query = query.eq('color_id', filters.color);
+        if (filters.category != null) query = query.eq('part_cat_id', filters.category);
 
         const q = filters.q.trim().replace(/[,()*%]/g, ' ').trim();
         if (q) query = query.or(`name.ilike.*${q}*,item_num.ilike.${q}*`);

@@ -22,6 +22,10 @@ npm start                          # http://localhost:4200
   (обновяват се всеки ден, без API ключ) в `data/rebrickable/` и ги импортира. Пуска се многократно —
   обновява съществуващите редове. В production го пуска `.github/workflows/sync-catalog.yml` всеки
   понеделник (нужни са GitHub secrets `SUPABASE_URL` и `SUPABASE_SECRET_KEY`; има и бутон „Run workflow“).
+- **Части:** отделен каталог (не е вързан към сетове/фигурки): `parts`, `part_categories`, `colors`,
+  `elements` (LEGO номера на елементи) и `part_colors` — комбинациите част + цвят със снимка, извлечени
+  при импорта от `inventory_parts` (≈130 MB; самият файл не се пази в базата). Обява за част = част + цвят,
+  нова или употребявана, цена за брой, наличност в бройки.
 - **Единично (нови сетове):** в „Нова обява“, ако номерът го няма, бутон „Търси в Rebrickable“ вика
   Edge Function `rebrickable-lookup`, която добавя сета (с темата и минифигурките) през Rebrickable API.
   API ключът (Rebrickable → Profile → Settings → API) е само на сървъра:
@@ -65,7 +69,7 @@ SUPABASE_URL=https://wagtffhpvowbybhqpwfj.supabase.co SUPABASE_SECRET_KEY=... \
 
 - `supabase/migrations` — схема, RLS, `place_order` (атомарно резервиране на наличност), `set_order_status`
 - `src/app/stores` — signal stores: auth, cart (localStorage), themes, catalog, product
-- `src/app/admin` — обяви (търсене в каталога, снимки), поръчки (статуси, товарителници, рискови клиенти)
+- `src/app/admin` — обяви за сетове, минифигурки и части (търсене в каталога, цвят, снимки), поръчки (статуси, товарителници, рискови клиенти)
 - `src/app/pages` — начало, каталог с филтри, продукт, количка, поръчка, вход/регистрация, профил
 
 **Модел:** `sets`/`minifigs` са каталогът; `listings` е това, което се продава. Нов продукт = една обява с

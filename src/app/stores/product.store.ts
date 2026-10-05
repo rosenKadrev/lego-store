@@ -50,9 +50,9 @@ export const ProductStore = signalStore(
         isSet
           ? db.from('set_minifigs').select('quantity, minifigs(fig_num, name, img_url)').eq('set_num', itemNum)
           : Promise.resolve({ data: [] }),
-        db
-          .from('catalog_listings')
-          .select('*')
+        (listing.color_id != null
+          ? db.from('catalog_listings').select('*').eq('color_id', listing.color_id)
+          : db.from('catalog_listings').select('*'))
           .eq('item_num', itemNum)
           .eq('is_published', true)
           .gt('stock', 0)

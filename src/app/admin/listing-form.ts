@@ -5,13 +5,14 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CONDITION_LABEL, displayItemNum, ItemCondition, ItemType, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
+import { ColorSwatch } from '../shared/color-swatch';
 import { Icon } from '../shared/icon';
-import { CatalogItem, ListingFormStore } from './listing-form.store';
+import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.store';
 
 @Component({
   selector: 'app-listing-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, Icon],
+  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, Icon, ColorSwatch],
   providers: [ListingFormStore],
   template: `
     <a routerLink="/admin/listings" class="mb-4 inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-ink-900">
@@ -40,13 +41,57 @@ import { CatalogItem, ListingFormStore } from './listing-form.store';
                     {{ itemNum(item.num) }}
                     @if (item.theme_name) { · {{ item.theme_name }} }
                     @if (item.year) { · {{ item.year }} }
-                    · {{ item.num_parts }} части
+                    @if (item.type !== 'part') { · {{ item.num_parts }} части }
                   </p>
+                  @if (item.color_name) {
+                    <p class="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                      <app-color-swatch [rgb]="item.color_rgb" [size]="16" /> {{ item.color_name }}
+                      @if (!isEdit()) {
+                        <button type="button" class="ml-1 text-xs text-brick-600 hover:underline" (click)="store.selectItem({ ...item, color_id: null, color_name: null, color_rgb: null })">
+                          смени цвета
+                        </button>
+                      }
+                    </p>
+                  }
                 </div>
                 @if (!isEdit()) {
                   <button type="button" class="btn-ghost" (click)="store.selectItem(null)">Смени</button>
                 }
               </div>
+
+              @if (item.type === 'part' && item.color_id == null) {
+                <div class="mt-4">
+                  <p class="label">Изберете цвят</p>
+                  @if (store.partColors().length) {
+                    <p class="mb-2 text-xs text-zinc-500">Цветове, в които частта се среща в сетове:</p>
+                    <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                      @for (c of store.partColors(); track c.id) {
+                        <button
+                          type="button"
+                          class="flex flex-col items-center gap-1 rounded-xl border border-zinc-200 p-2 text-center text-xs hover:border-brick-600"
+                          (click)="chooseColor(c)"
+                        >
+                          <span class="grid aspect-square w-full place-items-center rounded-lg bg-zinc-50">
+                            @if (c.img_url) {
+                              <img [src]="c.img_url" alt="" loading="lazy" class="size-full object-contain p-1 mix-blend-multiply" />
+                            } @else {
+                              <app-color-swatch [rgb]="c.rgb" [trans]="c.is_trans" [size]="28" />
+                            }
+                          </span>
+                          <span class="flex items-center gap-1"><app-color-swatch [rgb]="c.rgb" [trans]="c.is_trans" [size]="10" /> {{ c.name }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                  <label class="mt-3 block text-xs text-zinc-500" for="other-color">Друг цвят:</label>
+                  <select id="other-color" class="input mt-1 sm:w-72" (change)="chooseOtherColor($any($event.target).value)">
+                    <option value="">— избери —</option>
+                    @for (c of store.allColors(); track c.id) {
+                      <option [value]="c.id">{{ c.name }}</option>
+                    }
+                  </select>
+                </div>
+              }
 
               @if (store.existingOffers().length) {
                 <div class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm">
@@ -83,7 +128,7 @@ import { CatalogItem, ListingFormStore } from './listing-form.store';
                 <input
                   type="search"
                   class="input pl-10"
-                  [placeholder]="searchType() === 'set' ? 'Номер (75192) или име на сет' : 'Номер (fig-0001) или име на фигурка'"
+                  [placeholder]="searchPlaceholder()"
                   (input)="search($any($event.target).value)"
                   autofocus
                 />
@@ -127,7 +172,7 @@ import { CatalogItem, ListingFormStore } from './listing-form.store';
             }
           </section>
 
-          @if (store.item()) {
+          @if (store.item() && (store.item()!.type !== 'part' || store.item()!.color_id != null)) {
             <!-- Step 2: offer -->
             <form [formGroup]="form" (ngSubmit)="save()" class="card space-y-5 p-5 sm:p-6" novalidate>
               <h2 class="text-lg font-bold">{{ isEdit() ? 'Обява' : '2. Детайли на обявата' }}</h2>
@@ -155,7 +200,7 @@ import { CatalogItem, ListingFormStore } from './listing-form.store';
                 </div>
                 <div>
                   <label class="label" for="stock">Наличност</label>
-                  @if (condition() === 'used') {
+                  @if (condition() === 'used' && store.item()?.type !== 'part') {
                     <select id="stock" class="input" formControlName="stock">
                       <option [ngValue]="1">Налична (1)</option>
                       <option [ngValue]="0">Продадена (0)</option>
@@ -170,7 +215,7 @@ import { CatalogItem, ListingFormStore } from './listing-form.store';
               }
 
               @if (condition() === 'used') {
-                <fieldset class="grid gap-2 sm:grid-cols-2">
+                <fieldset class="grid gap-2 sm:grid-cols-2" [class.hidden]="store.item()?.type !== 'set'">
                   <legend class="label">Състояние</legend>
                   @for (flag of usedFlags; track flag.key) {
                     <label class="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 text-sm">
@@ -277,6 +322,7 @@ export class ListingForm {
   protected readonly types: { value: ItemType; label: string }[] = [
     { value: 'set', label: 'Сет' },
     { value: 'minifig', label: 'Минифигурка' },
+    { value: 'part', label: 'Част' },
   ];
   protected readonly usedFlags = [
     { key: 'has_box', label: 'С оригинална кутия' },
@@ -305,10 +351,20 @@ export class ListingForm {
   /** Offer the Rebrickable lookup for anything that looks like an item number, once the local search finished. */
   protected readonly canLookup = computed(() => {
     const t = this.term();
-    if (this.store.searching() || t.length < 3) return false;
+    if (this.store.searching() || t.length < 3 || this.searchType() === 'part') return false;
     const looksLikeNumber = this.searchType() === 'set' ? /^\d{3,}(-\d+)?$/.test(t) : /^fig-\d+$/i.test(t);
     const exactLocal = this.store.results().some((r) => r.num === t || r.num === `${t}-1`);
     return looksLikeNumber && !exactLocal;
+  });
+  protected readonly searchPlaceholder = computed(() => {
+    switch (this.searchType()) {
+      case 'set':
+        return 'Номер (75192) или име на сет';
+      case 'minifig':
+        return 'Номер (fig-0001) или име на фигурка';
+      default:
+        return 'Номер на част (3001), номер на елемент (300121) или име';
+    }
   });
   protected readonly savedMessage = signal<string | null>(null);
   protected readonly condition = toSignal(this.form.controls.condition.valueChanges, { initialValue: 'new' as ItemCondition });
@@ -344,9 +400,11 @@ export class ListingForm {
       });
     });
 
-    // A used item is a single physical piece
+    // A used set/minifig is a single physical piece (used parts are sold in any quantity)
     this.form.controls.condition.valueChanges.subscribe((c) => {
-      if (c === 'used' && this.form.controls.stock.value > 1) this.form.controls.stock.setValue(1);
+      if (c === 'used' && this.store.item()?.type !== 'part' && this.form.controls.stock.value > 1) {
+        this.form.controls.stock.setValue(1);
+      }
     });
   }
 
@@ -369,6 +427,15 @@ export class ListingForm {
     void this.store.selectItem(item);
   }
 
+  protected chooseColor(color: PartColorOption): void {
+    void this.store.chooseColor(color);
+  }
+
+  protected chooseOtherColor(id: string): void {
+    const color = this.store.allColors().find((c) => c.id === Number(id));
+    if (color) void this.store.chooseColor(color);
+  }
+
   protected imageUrl(path: string): string {
     return this.supabase.listingImageUrl(path);
   }
@@ -379,20 +446,24 @@ export class ListingForm {
     const v = this.form.getRawValue();
     if (v.compare_at_price != null && v.price != null && v.compare_at_price <= v.price) return;
     const used = v.condition === 'used';
+    const isSet = item.type === 'set';
+    if (item.type === 'part' && item.color_id == null) return;
     this.savedMessage.set(null);
 
     const id = await this.store.save({
       item_type: item.type,
       set_num: item.type === 'set' ? item.num : null,
       fig_num: item.type === 'minifig' ? item.num : null,
+      part_num: item.type === 'part' ? item.num : null,
+      color_id: item.type === 'part' ? (item.color_id ?? null) : null,
       condition: v.condition,
       price: v.price!,
       compare_at_price: v.compare_at_price || null,
-      stock: used ? Math.min(v.stock, 1) : v.stock,
-      has_box: used ? v.has_box : null,
-      has_instructions: used ? v.has_instructions : null,
-      is_complete: used ? v.is_complete : null,
-      minifigs_complete: used ? v.minifigs_complete : null,
+      stock: used && item.type !== 'part' ? Math.min(v.stock, 1) : v.stock,
+      has_box: used && isSet ? v.has_box : null,
+      has_instructions: used && isSet ? v.has_instructions : null,
+      is_complete: used && isSet ? v.is_complete : null,
+      minifigs_complete: used && isSet ? v.minifigs_complete : null,
       condition_notes: used ? v.condition_notes.trim() || null : null,
       description: v.description.trim() || null,
       is_published: v.is_published,

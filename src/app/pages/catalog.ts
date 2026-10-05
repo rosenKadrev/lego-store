@@ -8,7 +8,9 @@ import { SHOP_NAME } from '../core/models';
 import { Icon } from '../shared/icon';
 import { ProductCard } from '../shared/product-card';
 import { CatalogFilters, CatalogSort, CatalogStore, EMPTY_FILTERS } from '../stores/catalog.store';
+import { PartFiltersStore } from '../stores/part-filters.store';
 import { ThemesStore } from '../stores/themes.store';
+import { ColorSwatch } from '../shared/color-swatch';
 
 const SORTS: { value: CatalogSort; label: string }[] = [
   { value: 'newest', label: 'Най-нови' },
@@ -21,12 +23,17 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
   const condition = params.get('condition');
   const type = params.get('type');
   const sort = params.get('sort') as CatalogSort | null;
-  const theme = Number(params.get('theme'));
+  const id = (name: string) => {
+    const n = Number(params.get(name));
+    return Number.isInteger(n) && n > 0 ? n : null;
+  };
   const page = Number(params.get('page'));
   return {
     condition: condition === 'new' || condition === 'used' ? condition : null,
-    type: type === 'set' || type === 'minifig' ? type : null,
-    theme: Number.isInteger(theme) && theme > 0 ? theme : null,
+    type: type === 'set' || type === 'minifig' || type === 'part' ? type : null,
+    theme: id('theme'),
+    color: params.has('color') && Number.isInteger(Number(params.get('color'))) ? Number(params.get('color')) : null,
+    category: id('category'),
     q: params.get('q') ?? '',
     sort: SORTS.some((s) => s.value === sort) ? sort! : 'newest',
     page: Number.isInteger(page) && page > 0 ? page : 1,
@@ -36,7 +43,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 @Component({
   selector: 'app-catalog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ProductCard, Icon],
+  imports: [FormsModule, ProductCard, Icon, ColorSwatch],
   template: `
     @let f = store.filters();
     <div class="container-page pt-8">
@@ -77,7 +84,17 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
           }
           @if (f.type) {
             <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ type: null })">
-              {{ f.type === 'set' ? 'Сетове' : 'Минифигурки' }} <app-icon name="x" [size]="14" />
+              {{ typeLabel[f.type] }} <app-icon name="x" [size]="14" />
+            </button>
+          }
+          @if (colorName()) {
+            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ color: null })">
+              {{ colorName() }} <app-icon name="x" [size]="14" />
+            </button>
+          }
+          @if (categoryName()) {
+            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ category: null })">
+              {{ categoryName() }} <app-icon name="x" [size]="14" />
             </button>
           }
           @if (themeName()) {
@@ -131,7 +148,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 
             <fieldset>
               <legend class="label">Вид</legend>
-              <div class="grid grid-cols-3 gap-1 rounded-full bg-zinc-100 p-1 text-sm lg:grid-cols-1 lg:rounded-2xl">
+              <div class="grid grid-cols-4 gap-1 rounded-full bg-zinc-100 p-1 text-sm lg:grid-cols-1 lg:rounded-2xl">
                 @for (opt of typeOptions; track opt.label) {
                   <button
                     type="button"
@@ -145,7 +162,41 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               </div>
             </fieldset>
 
-            @if (themes.listed().length) {
+            @if (f.type === 'part') {
+              @if (partFilters.categories().length) {
+                <fieldset>
+                  <legend class="label">Категория</legend>
+                  <select class="input" [ngModel]="f.category" (ngModelChange)="update({ category: $event })">
+                    <option [ngValue]="null">Всички категории</option>
+                    @for (c of partFilters.categories(); track c.id) {
+                      <option [ngValue]="c.id">{{ c.name }} ({{ c.listing_count }})</option>
+                    }
+                  </select>
+                </fieldset>
+              }
+              @if (partFilters.colors().length) {
+                <fieldset>
+                  <legend class="label">Цвят</legend>
+                  <div class="flex flex-wrap gap-2">
+                    @for (c of partFilters.colors(); track c.id) {
+                      <button
+                        type="button"
+                        class="grid size-9 place-items-center rounded-full ring-2 ring-offset-2 transition"
+                        [class]="f.color === c.id ? 'ring-brick-600' : 'ring-transparent hover:ring-zinc-300'"
+                        [title]="c.name + ' (' + c.listing_count + ')'"
+                        [attr.aria-label]="c.name"
+                        [attr.aria-pressed]="f.color === c.id"
+                        (click)="update({ color: f.color === c.id ? null : c.id })"
+                      >
+                        <app-color-swatch [rgb]="c.rgb" [size]="28" [trans]="c.name.startsWith('Trans')" />
+                      </button>
+                    }
+                  </div>
+                </fieldset>
+              }
+            }
+
+            @if (themes.listed().length && f.type !== 'part' && f.type !== 'minifig') {
               <fieldset>
                 <legend class="label">Тема</legend>
                 <ul class="space-y-0.5 text-sm">
@@ -244,6 +295,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 export class Catalog {
   protected readonly store = inject(CatalogStore);
   protected readonly themes = inject(ThemesStore);
+  protected readonly partFilters = inject(PartFiltersStore);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly title = inject(Title);
@@ -259,7 +311,9 @@ export class Catalog {
     { value: null, label: 'Всички' },
     { value: 'set', label: 'Сетове' },
     { value: 'minifig', label: 'Фигурки' },
+    { value: 'part', label: 'Части' },
   ] as const;
+  protected readonly typeLabel = { set: 'Сетове', minifig: 'Минифигурки', part: 'Части' } as const;
 
   protected readonly filtersOpen = signal(false);
   protected searchText = '';
@@ -273,8 +327,22 @@ export class Catalog {
     return id != null ? (this.themes.byId().get(id)?.name ?? null) : null;
   });
 
+  protected readonly colorName = computed(() => {
+    const id = this.store.filters().color;
+    return id != null ? (this.partFilters.colors().find((c) => c.id === id)?.name ?? null) : null;
+  });
+
+  protected readonly categoryName = computed(() => {
+    const id = this.store.filters().category;
+    return id != null ? (this.partFilters.categories().find((c) => c.id === id)?.name ?? null) : null;
+  });
+
   protected readonly heading = computed(() => {
     const f = this.store.filters();
+    if (f.type === 'part') {
+      const base = this.categoryName() ?? 'Части';
+      return f.condition === 'used' ? `${base} (употребявани)` : f.condition === 'new' ? `${base} (нови)` : base;
+    }
     if (this.themeName()) return this.themeName()!;
     if (f.q) return `Резултати за „${f.q}“`;
     if (f.type === 'minifig') return f.condition === 'used' ? 'Употребявани минифигурки' : 'Минифигурки';
@@ -300,18 +368,29 @@ export class Catalog {
     effect(() => {
       const filters = this.filters();
       this.searchText = filters.q;
-      untracked(() => void this.store.load(filters));
+      untracked(() => {
+        if (filters.type === 'part') void this.partFilters.load();
+        void this.store.load(filters);
+      });
     });
     effect(() => this.title.setTitle(`${this.heading()} | ${SHOP_NAME}`));
   }
 
   protected update(changes: Partial<CatalogFilters>): void {
     const next = { ...this.store.filters(), page: 1, ...changes };
+    // Theme filters only apply to sets, colour/category only to parts
+    if (next.type !== 'part') {
+      next.color = null;
+      next.category = null;
+    }
+    if (next.type === 'part' || next.type === 'minifig') next.theme = null;
     void this.router.navigate([], {
       queryParams: {
         condition: next.condition,
         type: next.type,
         theme: next.theme,
+        color: next.color,
+        category: next.category,
         q: next.q || null,
         sort: next.sort === 'newest' ? null : next.sort,
         page: next.page > 1 ? next.page : null,

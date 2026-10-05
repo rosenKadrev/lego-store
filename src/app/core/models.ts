@@ -11,6 +11,9 @@ export type Courier = Enums['courier'];
 export type Theme = Tables<'themes'>;
 export type LegoSet = Tables<'sets'>;
 export type Minifig = Tables<'minifigs'>;
+export type Part = Tables<'parts'>;
+export type Color = Tables<'colors'>;
+export type PartCategory = Tables<'part_categories'>;
 export type Listing = Tables<'listings'>;
 export type ListingImage = Tables<'listing_images'>;
 export type Profile = Tables<'profiles'>;
@@ -26,6 +29,12 @@ export const SHOP_NAME = 'BrickStore';
 export const CONDITION_LABEL: Record<ItemCondition, string> = {
   new: 'Ново',
   used: 'Употребявано',
+};
+
+export const ITEM_TYPE_LABEL: Record<ItemType, string> = {
+  set: 'Сет',
+  minifig: 'Минифигурка',
+  part: 'Част',
 };
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {

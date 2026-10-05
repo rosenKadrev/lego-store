@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, input, si
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { CONDITION_LABEL, displayItemNum, SHOP_NAME, slugify } from '../core/models';
+import { ColorSwatch } from '../shared/color-swatch';
 import { Icon } from '../shared/icon';
 import { QuantityStepper } from '../shared/quantity-stepper';
 import { CartStore } from '../stores/cart.store';
@@ -12,7 +13,7 @@ import { ThemesStore } from '../stores/themes.store';
 @Component({
   selector: 'app-product',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper],
+  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper, ColorSwatch],
   providers: [ProductStore],
   template: `
     <div class="container-page pt-6">
@@ -41,6 +42,14 @@ import { ThemesStore } from '../stores/themes.store';
           @if (l.item_type === 'minifig') {
             <app-icon name="chevronRight" [size]="14" />
             <a routerLink="/catalog" [queryParams]="{ type: 'minifig' }" class="hover:text-ink-900">Минифигурки</a>
+          }
+          @if (l.item_type === 'part') {
+            <app-icon name="chevronRight" [size]="14" />
+            <a routerLink="/catalog" [queryParams]="{ type: 'part' }" class="hover:text-ink-900">Части</a>
+            @if (l.part_category) {
+              <app-icon name="chevronRight" [size]="14" />
+              <a routerLink="/catalog" [queryParams]="{ type: 'part', category: l.part_cat_id }" class="hover:text-ink-900">{{ l.part_category }}</a>
+            }
           }
         </nav>
 
@@ -77,12 +86,23 @@ import { ThemesStore } from '../stores/themes.store';
           <!-- Details -->
           <div>
             <p class="text-sm font-semibold tracking-wide text-brick-600 uppercase">
-              {{ l.theme_name ?? 'Минифигурка' }} · {{ itemNum() }}
+              {{ l.theme_name ?? l.part_category ?? 'Минифигурка' }} · {{ itemNum() }}
             </p>
             <h1 class="mt-2 text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">{{ l.name }}</h1>
+            @if (l.item_type === 'part') {
+              <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-zinc-100 py-1.5 pr-4 pl-2 text-sm font-medium">
+                <app-color-swatch [rgb]="l.color_rgb" [trans]="!!l.color_name?.startsWith('Trans')" [size]="20" />
+                {{ l.color_name }}
+              </p>
+            }
 
             <div class="mt-5 flex items-end gap-3">
-              <p class="font-display text-4xl font-extrabold" [class.text-brick-600]="l.compare_at_price">{{ l.price | currency }}</p>
+              <p class="font-display text-4xl font-extrabold" [class.text-brick-600]="l.compare_at_price">
+                {{ l.price | currency }}
+                @if (l.item_type === 'part') {
+                  <span class="font-sans text-base font-medium text-zinc-500">/ бр.</span>
+                }
+              </p>
               @if (l.compare_at_price) {
                 <p class="pb-1 text-lg text-zinc-400 line-through">{{ l.compare_at_price | currency }}</p>
               }
@@ -91,6 +111,8 @@ import { ThemesStore } from '../stores/themes.store';
               <span class="size-2 rounded-full" [class]="available() > 0 ? 'bg-emerald-500' : 'bg-brick-600'"></span>
               @if ((l.stock ?? 0) === 0) {
                 Изчерпан
+              } @else if (l.item_type === 'part') {
+                Налични {{ l.stock }} бр.
               } @else if (l.condition === 'used') {
                 Единствена бройка
               } @else if ((l.stock ?? 0) <= 3) {
@@ -101,7 +123,7 @@ import { ThemesStore } from '../stores/themes.store';
             </p>
 
             <div class="mt-6 flex flex-wrap items-center gap-3">
-              @if (l.condition === 'new' && (l.stock ?? 0) > 1) {
+              @if ((l.stock ?? 0) > 1) {
                 <app-quantity-stepper [large]="true" [value]="quantity()" [min]="1" [max]="available()" (valueChange)="quantity.set($event)" />
               }
               <button type="button" class="btn-primary h-11 flex-1 text-base sm:flex-none sm:px-10" [disabled]="available() === 0" (click)="addToCart()">
@@ -117,10 +139,10 @@ import { ThemesStore } from '../stores/themes.store';
               <li class="flex items-center gap-2"><app-icon name="refresh" [size]="18" class="text-brick-600" /> 14 дни право на връщане</li>
             </ul>
 
-            @if (l.condition === 'used') {
+            @if (l.condition === 'used' && (l.item_type === 'set' || l.condition_notes)) {
               <section class="mt-8">
                 <h2 class="text-lg font-bold">Състояние</h2>
-                <dl class="mt-3 grid grid-cols-2 gap-2 text-sm">
+                <dl class="mt-3 grid grid-cols-2 gap-2 text-sm" [class.hidden]="l.item_type !== 'set'">
                   @for (row of usedDetails(); track row.label) {
                     <div class="flex items-center gap-2 rounded-xl border border-zinc-200 p-3">
                       <app-icon [name]="row.ok ? 'check' : 'x'" [size]="18" [class]="row.ok ? 'text-emerald-600' : 'text-brick-600'" />
@@ -146,6 +168,12 @@ import { ThemesStore } from '../stores/themes.store';
               <h2 class="text-lg font-bold">Детайли</h2>
               <dl class="mt-3 divide-y divide-zinc-100 text-sm">
                 <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Номер</dt><dd class="font-medium">{{ itemNum() }}</dd></div>
+                @if (l.color_name) {
+                  <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Цвят</dt><dd class="font-medium">{{ l.color_name }}</dd></div>
+                }
+                @if (l.part_category) {
+                  <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Категория</dt><dd class="font-medium">{{ l.part_category }}</dd></div>
+                }
                 @if (l.year) {
                   <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Година</dt><dd class="font-medium">{{ l.year }}</dd></div>
                 }
@@ -162,7 +190,7 @@ import { ThemesStore } from '../stores/themes.store';
 
             @if (store.otherOffers().length) {
               <section class="mt-8">
-                <h2 class="text-lg font-bold">Други предложения за този сет</h2>
+                <h2 class="text-lg font-bold">Други предложения за {{ l.item_type === 'part' ? 'тази част' : l.item_type === 'minifig' ? 'тази фигурка' : 'този сет' }}</h2>
                 <ul class="mt-3 space-y-2">
                   @for (o of store.otherOffers(); track o.id) {
                     <li>
@@ -258,7 +286,8 @@ export class Product {
     effect(() => {
       const l = this.store.listing();
       if (!l) return;
-      this.title.setTitle(`${l.name} (${displayItemNum(l.item_num)}) — ${CONDITION_LABEL[l.condition!]} | ${SHOP_NAME}`);
+      const color = l.color_name ? `, ${l.color_name}` : '';
+      this.title.setTitle(`${l.name}${color} (${displayItemNum(l.item_num)}) — ${CONDITION_LABEL[l.condition!]} | ${SHOP_NAME}`);
       this.meta.updateTag({
         name: 'description',
         content: `${l.name} ${displayItemNum(l.item_num)} — ${CONDITION_LABEL[l.condition!].toLowerCase()}, ${l.price} €. Наложен платеж.`,
