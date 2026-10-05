@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { Icon } from '../shared/icon';
+import { Icon, IconName } from '../shared/icon';
 import { Logo } from '../shared/logo';
 
 @Component({
@@ -18,9 +18,14 @@ import { Logo } from '../shared/logo';
             получаване.
           </p>
           <div class="mt-6 grid max-w-md grid-cols-3 gap-3 text-xs">
-            <div class="rounded-xl bg-ink-800 p-3"><app-icon name="cash" class="mb-2 text-stud-400" /> Наложен платеж</div>
-            <div class="rounded-xl bg-ink-800 p-3"><app-icon name="eye" class="mb-2 text-stud-400" /> Преглед преди плащане</div>
-            <div class="rounded-xl bg-ink-800 p-3"><app-icon name="refresh" class="mb-2 text-stud-400" /> 14 дни за връщане</div>
+            @for (usp of usps; track usp.text) {
+              <div class="flex flex-col items-start gap-2.5 rounded-xl bg-ink-800 p-3.5 leading-snug">
+                <span class="grid size-8 place-items-center rounded-full bg-stud-400/15 text-stud-400">
+                  <app-icon [name]="usp.icon" [size]="18" />
+                </span>
+                <span class="text-zinc-200">{{ usp.text }}</span>
+              </div>
+            }
           </div>
         </div>
 
@@ -54,4 +59,10 @@ import { Logo } from '../shared/logo';
     </footer>
   `,
 })
-export class Footer {}
+export class Footer {
+  protected readonly usps: { icon: IconName; text: string }[] = [
+    { icon: 'cash', text: 'Наложен платеж' },
+    { icon: 'eye', text: 'Преглед преди плащане' },
+    { icon: 'refresh', text: '14 дни за връщане' },
+  ];
+}
