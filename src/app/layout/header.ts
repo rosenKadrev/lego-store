@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
@@ -232,6 +232,16 @@ export class Header {
         this.accountOpen.set(false);
         this.mobileSearchOpen.set(false);
       });
+
+    // Sticky elements below the header (catalog toolbar / filters) read its live height
+    const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;
+    const destroyRef = inject(DestroyRef);
+    afterNextRender(() => {
+      const root = document.documentElement;
+      const observer = new ResizeObserver(() => root.style.setProperty('--header-h', `${host.offsetHeight}px`));
+      observer.observe(host);
+      destroyRef.onDestroy(() => observer.disconnect());
+    });
   }
 
 

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
@@ -60,6 +60,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
   selector: 'app-catalog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, ProductCard, Icon, ColorSwatch],
+  host: { '(window:scroll)': 'onScroll()' },
   template: `
     @let f = store.filters();
     <div class="container-page pt-8">
@@ -70,62 +71,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
             @if (store.loading()) { Зареждане… } @else { {{ store.total() }} продукта }
           </p>
         </div>
-        <div class="flex w-full items-center gap-2 sm:w-auto">
-          <button type="button" class="btn-outline flex-1 lg:hidden" (click)="filtersOpen.set(true)">
-            <app-icon name="filter" [size]="18" /> Филтри
-            @if (store.hasFilters()) {
-              <span class="size-2 rounded-full bg-brick-600"></span>
-            }
-          </button>
-          <label class="sr-only" for="sort">Подреди</label>
-          <select id="sort" class="input flex-1 rounded-full sm:w-56" [ngModel]="f.sort" (ngModelChange)="update({ sort: $event })">
-            @for (s of sorts; track s.value) {
-              <option [value]="s.value">{{ s.label }}</option>
-            }
-          </select>
-        </div>
       </div>
-
-      @if (store.hasFilters()) {
-        <div class="mt-4 flex flex-wrap gap-2">
-          @if (f.q) {
-            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ q: '' })">
-              „{{ f.q }}“ <app-icon name="x" [size]="14" />
-            </button>
-          }
-          @if (f.condition) {
-            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ condition: null })">
-              {{ f.condition === 'new' ? 'Нови' : 'Употребявани' }} <app-icon name="x" [size]="14" />
-            </button>
-          }
-          @if (f.type) {
-            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ type: null })">
-              {{ typeLabel[f.type] }} <app-icon name="x" [size]="14" />
-            </button>
-          }
-          @if (colorName()) {
-            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ color: null })">
-              {{ colorName() }} <app-icon name="x" [size]="14" />
-            </button>
-          }
-          @if (categoryName()) {
-            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ category: null })">
-              {{ categoryName() }} <app-icon name="x" [size]="14" />
-            </button>
-          }
-          @if (priceLabel()) {
-            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="setPrice(null, null)">
-              {{ priceLabel() }} <app-icon name="x" [size]="14" />
-            </button>
-          }
-          @if (themeName()) {
-            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ theme: null })">
-              {{ themeName() }} <app-icon name="x" [size]="14" />
-            </button>
-          }
-          <button type="button" class="chip py-1.5 text-brick-700 hover:underline" (click)="reset()">Изчисти всички</button>
-        </div>
-      }
 
       <div class="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <!-- Filters: sidebar on desktop, bottom sheet on mobile -->
@@ -137,7 +83,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
         >
           <div class="absolute inset-0 bg-ink-900/50 lg:hidden" (click)="filtersOpen.set(false)"></div>
           <aside
-            class="space-y-7 max-lg:absolute max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[85vh] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-white max-lg:p-6 lg:sticky lg:top-28 lg:-mr-3 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-3 lg:pb-6 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
+            class="space-y-7 max-lg:absolute max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[85vh] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-white max-lg:p-6 lg:sticky lg:top-[calc(var(--header-h)+0.75rem)] lg:-mr-3 lg:max-h-[calc(100dvh-var(--header-h)-1.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-3 lg:pb-6 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
           >
             <div class="flex items-center justify-between lg:hidden">
               <h2 class="text-lg font-bold">Филтри</h2>
@@ -311,6 +257,77 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 
         <!-- Results -->
         <div class="min-w-0">
+          <!-- Sticky toolbar: sort, filters button and the active filters stay at hand while scrolling -->
+          <div
+            #toolbar
+            class="sticky top-(--header-h) z-30 -mx-4 mb-4 border-b px-4 py-3 transition-colors sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
+            [class]="stuck() ? 'border-zinc-200 bg-white/95 backdrop-blur-lg' : 'border-transparent bg-white'"
+          >
+            <div class="flex flex-wrap items-center gap-2 lg:flex-nowrap">
+              <button type="button" class="btn-outline flex-1 sm:flex-none lg:hidden" (click)="filtersOpen.set(true)">
+                <app-icon name="filter" [size]="18" /> Филтри
+                @if (store.hasFilters()) {
+                  <span class="size-2 rounded-full bg-brick-600"></span>
+                }
+              </button>
+              <label class="sr-only" for="sort">Подреди</label>
+              <select
+                id="sort"
+                class="input flex-1 rounded-full sm:ml-auto sm:w-56 sm:flex-none lg:order-last"
+                [ngModel]="f.sort"
+                (ngModelChange)="update({ sort: $event })"
+              >
+                @for (s of sorts; track s.value) {
+                  <option [value]="s.value">{{ s.label }}</option>
+                }
+              </select>
+              @if (store.hasFilters()) {
+                <div class="-mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:w-full sm:px-0 lg:w-auto lg:flex-1 lg:flex-wrap">
+                @if (f.q) {
+                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ q: '' })">
+                    „{{ f.q }}“ <app-icon name="x" [size]="14" />
+                  </button>
+                }
+                @if (f.condition) {
+                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ condition: null })">
+                    {{ f.condition === 'new' ? 'Нови' : 'Употребявани' }} <app-icon name="x" [size]="14" />
+                  </button>
+                }
+                @if (f.type) {
+                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ type: null })">
+                    {{ typeLabel[f.type] }} <app-icon name="x" [size]="14" />
+                  </button>
+                }
+                @if (colorName()) {
+                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ color: null })">
+                    {{ colorName() }} <app-icon name="x" [size]="14" />
+                  </button>
+                }
+                @if (categoryName()) {
+                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ category: null })">
+                    {{ categoryName() }} <app-icon name="x" [size]="14" />
+                  </button>
+                }
+                @if (priceLabel()) {
+                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="setPrice(null, null)">
+                    {{ priceLabel() }} <app-icon name="x" [size]="14" />
+                  </button>
+                }
+                @if (themeName()) {
+                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ theme: null })">
+                    {{ themeName() }} <app-icon name="x" [size]="14" />
+                  </button>
+                }
+                <button type="button" class="chip shrink-0 py-1.5 whitespace-nowrap text-brick-700 hover:underline" (click)="reset()">Изчисти всички</button>
+                </div>
+              } @else {
+                <p class="hidden flex-1 text-sm text-zinc-500 lg:block">
+                  @if (!store.loading()) { {{ store.total() }} продукта }
+                </p>
+              }
+            </div>
+          </div>
+
           @if (store.error()) {
             <p class="rounded-2xl bg-brick-50 p-4 text-sm text-brick-800">{{ store.error() }}</p>
           }
@@ -367,6 +384,18 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
         </div>
       </div>
     </div>
+
+    @if (showBackToTop()) {
+      <button
+        type="button"
+        class="toast-in fixed right-4 bottom-4 z-30 grid size-12 place-items-center rounded-full bg-ink-900 text-white shadow-xl shadow-ink-900/30 ring-1 ring-white/15 transition hover:bg-ink-700 sm:right-6 sm:bottom-6"
+        aria-label="Към началото"
+        title="Към началото"
+        (click)="backToTop()"
+      >
+        <app-icon name="arrowUp" [size]="20" [stroke]="2.5" />
+      </button>
+    }
   `,
 })
 export class Catalog {
@@ -393,6 +422,11 @@ export class Catalog {
   protected readonly typeLabel = { set: 'Сетове', minifig: 'Минифигурки', part: 'Части' } as const;
 
   protected readonly filtersOpen = signal(false);
+  private readonly toolbar = viewChild<ElementRef<HTMLElement>>('toolbar');
+  /** The toolbar is pinned under the header (gets a border / blur) */
+  protected readonly stuck = signal(false);
+  protected readonly showBackToTop = signal(false);
+  private scrollFrame = 0;
   protected readonly pricePresets = PRICE_PRESETS;
   protected minDraft: number | null = null;
   protected maxDraft: number | null = null;
@@ -515,6 +549,23 @@ export class Catalog {
     if (min != null && max != null && min > max) [min, max] = [max, min];
     const f = this.store.filters();
     if (min !== f.minPrice || max !== f.maxPrice) this.setPrice(min, max);
+  }
+
+  protected onScroll(): void {
+    if (this.scrollFrame) return;
+    this.scrollFrame = requestAnimationFrame(() => {
+      this.scrollFrame = 0;
+      const toolbar = this.toolbar()?.nativeElement;
+      if (toolbar) {
+        const top = parseFloat(getComputedStyle(toolbar).top) || 0;
+        this.stuck.set(window.scrollY > 0 && toolbar.getBoundingClientRect().top <= top + 0.5);
+      }
+      this.showBackToTop.set(window.scrollY > window.innerHeight * 1.5);
+    });
+  }
+
+  protected backToTop(): void {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   protected goToPage(page: number): void {

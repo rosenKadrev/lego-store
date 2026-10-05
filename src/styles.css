@@ -26,6 +26,8 @@
   html {
     @apply bg-white text-ink-900 antialiased;
     scroll-behavior: smooth;
+    /* Updated by the header at runtime; fallback = desktop height */
+    --header-h: 117px;
   }
   h1, h2, h3 {
     @apply font-display;
