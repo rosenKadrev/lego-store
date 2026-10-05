@@ -3,6 +3,10 @@ import { patchState, signalStore, withComputed, withHooks, withMethods, withStat
 import { Theme } from '../core/models';
 import { Supabase } from '../core/supabase';
 
+/** How many themes the header menu / catalog sidebar show before "Виж всички" */
+export const MENU_THEME_LIMIT = 10;
+export const SIDEBAR_THEME_LIMIT = 8;
+
 export type ListedTheme = {
   theme_id: number;
   name: string;

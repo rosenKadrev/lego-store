@@ -9,7 +9,7 @@ import { Icon } from '../shared/icon';
 import { ProductCard } from '../shared/product-card';
 import { CatalogFilters, CatalogSort, CatalogStore, EMPTY_FILTERS } from '../stores/catalog.store';
 import { PartFiltersStore } from '../stores/part-filters.store';
-import { ThemesStore } from '../stores/themes.store';
+import { SIDEBAR_THEME_LIMIT, ThemesStore } from '../stores/themes.store';
 import { ColorSwatch } from '../shared/color-swatch';
 
 const SORTS: { value: CatalogSort; label: string }[] = [
@@ -210,7 +210,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                       Всички теми
                     </button>
                   </li>
-                  @for (t of themes.listed(); track t.theme_id) {
+                  @for (t of visibleThemes(); track t.theme_id) {
                     <li>
                       <button
                         type="button"
@@ -223,6 +223,17 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                     </li>
                   }
                 </ul>
+                @if (themes.listed().length > sidebarLimit) {
+                  <button
+                    type="button"
+                    class="mt-1 flex w-full items-center gap-1 rounded-lg px-3 py-2 text-left text-sm font-semibold text-brick-600 hover:bg-brick-50"
+                    [attr.aria-expanded]="showAllThemes()"
+                    (click)="showAllThemes.set(!showAllThemes())"
+                  >
+                    {{ showAllThemes() ? 'Покажи по-малко' : 'Покажи всички (' + themes.listed().length + ')' }}
+                    <app-icon name="chevronDown" [size]="16" class="transition" [class.rotate-180]="showAllThemes()" />
+                  </button>
+                }
               </fieldset>
             }
 
@@ -316,6 +327,16 @@ export class Catalog {
   protected readonly typeLabel = { set: 'Сетове', minifig: 'Минифигурки', part: 'Части' } as const;
 
   protected readonly filtersOpen = signal(false);
+  protected readonly sidebarLimit = SIDEBAR_THEME_LIMIT;
+  protected readonly showAllThemes = signal(false);
+  /** First N themes, plus the selected one if it's further down the list */
+  protected readonly visibleThemes = computed(() => {
+    const all = this.themes.listed();
+    if (this.showAllThemes() || all.length <= this.sidebarLimit) return all;
+    const top = all.slice(0, this.sidebarLimit);
+    const selected = all.find((t) => t.theme_id === this.store.filters().theme);
+    return selected && !top.includes(selected) ? [...top, selected] : top;
+  });
   protected searchText = '';
 
   private readonly filters = toSignal(this.route.queryParamMap.pipe(map(filtersFromParams)), {

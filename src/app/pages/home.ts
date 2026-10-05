@@ -95,7 +95,12 @@ import { ThemesStore } from '../stores/themes.store';
 
     @if (themes.listed().length) {
       <section class="container-page mt-16">
-        <h2 class="mb-5 text-2xl font-extrabold tracking-tight sm:text-3xl">Пазарувай по тема</h2>
+        <div class="mb-5 flex items-end justify-between gap-4">
+          <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Пазарувай по тема</h2>
+          @if (themes.listed().length > 12) {
+            <a routerLink="/themes" class="btn-ghost">Виж всички ({{ themes.listed().length }}) <app-icon name="arrowRight" [size]="16" /></a>
+          }
+        </div>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
           @for (theme of themes.listed().slice(0, 12); track theme.theme_id) {
             <a

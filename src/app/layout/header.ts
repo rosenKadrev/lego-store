@@ -8,7 +8,7 @@ import { Logo } from '../shared/logo';
 import { SearchBox } from './search-box';
 import { AuthStore } from '../stores/auth.store';
 import { CartStore } from '../stores/cart.store';
-import { ThemesStore } from '../stores/themes.store';
+import { MENU_THEME_LIMIT, ThemesStore } from '../stores/themes.store';
 
 type NavLink = { label: string; params: Record<string, string> };
 
@@ -59,7 +59,7 @@ type NavLink = { label: string; params: Record<string, string> };
             @if (themesOpen()) {
               <div class="absolute top-full left-0 w-[34rem] pt-2">
                 <div class="card grid grid-cols-2 gap-1 p-3 shadow-2xl shadow-zinc-300/50">
-                  @for (theme of themes.listed(); track theme.theme_id) {
+                  @for (theme of themes.listed().slice(0, menuLimit); track theme.theme_id) {
                     <a
                       routerLink="/catalog"
                       [queryParams]="{ theme: theme.theme_id }"
@@ -75,6 +75,14 @@ type NavLink = { label: string; params: Record<string, string> };
                     </a>
                   } @empty {
                     <p class="col-span-2 p-3 text-sm text-zinc-500">Все още няма продукти.</p>
+                  }
+                  @if (themes.listed().length > menuLimit) {
+                    <a
+                      routerLink="/themes"
+                      class="col-span-2 mt-1 flex items-center justify-center gap-1 rounded-xl border-t border-zinc-100 p-3 text-sm font-semibold text-brick-600 hover:bg-brick-50"
+                    >
+                      Виж всички теми ({{ themes.listed().length }}) <app-icon name="arrowRight" [size]="16" />
+                    </a>
                   }
                 </div>
               </div>
@@ -171,13 +179,18 @@ type NavLink = { label: string; params: Record<string, string> };
           </nav>
           <p class="px-6 pt-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">Теми</p>
           <nav class="flex flex-col p-3">
-            @for (theme of themes.listed(); track theme.theme_id) {
+            @for (theme of themes.listed().slice(0, menuLimit); track theme.theme_id) {
               <a
                 routerLink="/catalog"
                 [queryParams]="{ theme: theme.theme_id }"
                 class="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:bg-zinc-50"
               >
                 {{ theme.name }} <span class="text-xs text-zinc-400">{{ theme.listing_count }}</span>
+              </a>
+            }
+            @if (themes.listed().length > menuLimit) {
+              <a routerLink="/themes" class="flex items-center gap-1 rounded-xl px-3 py-2.5 text-sm font-semibold text-brick-600 hover:bg-brick-50">
+                Виж всички теми ({{ themes.listed().length }}) <app-icon name="arrowRight" [size]="16" />
               </a>
             }
           </nav>
@@ -193,6 +206,7 @@ export class Header {
   private readonly router = inject(Router);
 
   protected readonly shopName = SHOP_NAME;
+  protected readonly menuLimit = MENU_THEME_LIMIT;
   protected readonly links: NavLink[] = [
     { label: 'Нови сетове', params: { condition: 'new', type: 'set' } },
     { label: 'Употребявани', params: { condition: 'used' } },

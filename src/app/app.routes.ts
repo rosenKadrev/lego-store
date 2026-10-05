@@ -5,6 +5,7 @@ import { Home } from './pages/home';
 export const routes: Routes = [
   { path: '', component: Home, title: 'MBRBrickStore — нови и употребявани LEGO® сетове' },
   { path: 'catalog', loadComponent: () => import('./pages/catalog').then((m) => m.Catalog) },
+  { path: 'themes', loadComponent: () => import('./pages/themes').then((m) => m.Themes), title: 'Всички теми | MBRBrickStore' },
   { path: 'p/:slug', loadComponent: () => import('./pages/product').then((m) => m.Product) },
   { path: 'cart', loadComponent: () => import('./pages/cart').then((m) => m.Cart), title: 'Количка | MBRBrickStore' },
   { path: 'checkout', loadComponent: () => import('./pages/checkout').then((m) => m.Checkout), title: 'Поръчка | MBRBrickStore' },
