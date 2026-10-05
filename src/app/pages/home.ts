@@ -37,7 +37,7 @@ import { ThemesStore } from '../stores/themes.store';
           <div class="relative z-10 sm:order-1">
             <span class="chip mb-4 w-fit bg-stud-400 text-ink-900">Ново в магазина</span>
             <h1 class="max-w-[14ch] text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">Строй нещо голямо.</h1>
-            <p class="mt-3 max-w-sm text-white/80">Нови сетове с гаранция, доставка до 2 дни и плащане при получаване.</p>
+            <p class="mt-3 max-w-sm text-white/80">Нови сетове, доставка до 5 дни и плащане при получаване.</p>
             <span class="btn mt-6 w-fit bg-white text-ink-900 group-hover:bg-stud-400">
               Разгледай новите <app-icon name="arrowRight" [size]="16" />
             </span>
@@ -52,7 +52,7 @@ import { ThemesStore } from '../stores/themes.store';
           >
             <app-icon name="refresh" [size]="120" [stroke]="1" class="absolute -top-6 -right-6 text-ink-900/10 transition group-hover:rotate-45" />
             <h2 class="text-2xl font-extrabold">Употребявани</h2>
-            <p class="mt-1 text-sm text-ink-900/70">Проверени бройки, собствени снимки, честни цени.</p>
+            <p class="mt-1 text-sm text-ink-900/70">Проверени бройки с описано състояние и реални снимки при интерес.</p>
             <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold">Виж всички <app-icon name="arrowRight" [size]="16" /></span>
           </a>
           <a
