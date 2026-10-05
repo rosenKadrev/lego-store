@@ -19,6 +19,20 @@ const SORTS: { value: CatalogSort; label: string }[] = [
   { value: 'name', label: 'Име' },
 ];
 
+function price(value: string | null): number | null {
+  if (value == null || value === '') return null;
+  const n = Number(value);
+  return Number.isFinite(n) && n >= 0 ? n : null;
+}
+
+export const PRICE_PRESETS: { label: string; min: number | null; max: number | null }[] = [
+  { label: 'до 20 €', min: null, max: 20 },
+  { label: '20–50 €', min: 20, max: 50 },
+  { label: '50–100 €', min: 50, max: 100 },
+  { label: '100–300 €', min: 100, max: 300 },
+  { label: 'над 300 €', min: 300, max: null },
+];
+
 function filtersFromParams(params: ParamMap): CatalogFilters {
   const condition = params.get('condition');
   const type = params.get('type');
@@ -34,6 +48,8 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
     theme: id('theme'),
     color: params.has('color') && Number.isInteger(Number(params.get('color'))) ? Number(params.get('color')) : null,
     category: id('category'),
+    minPrice: price(params.get('min')),
+    maxPrice: price(params.get('max')),
     q: params.get('q') ?? '',
     sort: SORTS.some((s) => s.value === sort) ? sort! : 'newest',
     page: Number.isInteger(page) && page > 0 ? page : 1,
@@ -97,6 +113,11 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               {{ categoryName() }} <app-icon name="x" [size]="14" />
             </button>
           }
+          @if (priceLabel()) {
+            <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="setPrice(null, null)">
+              {{ priceLabel() }} <app-icon name="x" [size]="14" />
+            </button>
+          }
           @if (themeName()) {
             <button type="button" class="chip gap-1 bg-zinc-100 py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ theme: null })">
               {{ themeName() }} <app-icon name="x" [size]="14" />
@@ -116,7 +137,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
         >
           <div class="absolute inset-0 bg-ink-900/50 lg:hidden" (click)="filtersOpen.set(false)"></div>
           <aside
-            class="space-y-7 max-lg:absolute max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[85vh] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-white max-lg:p-6 lg:sticky lg:top-32"
+            class="space-y-7 max-lg:absolute max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[85vh] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-white max-lg:p-6 lg:sticky lg:top-28 lg:-mr-3 lg:max-h-[calc(100dvh-8rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-3 lg:pb-6 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
           >
             <div class="flex items-center justify-between lg:hidden">
               <h2 class="text-lg font-bold">Филтри</h2>
@@ -157,6 +178,51 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                     (click)="update({ type: opt.value })"
                   >
                     {{ opt.label }}
+                  </button>
+                }
+              </div>
+            </fieldset>
+
+            <fieldset>
+              <legend class="label">Цена</legend>
+              <form class="flex items-center gap-2" (submit)="$event.preventDefault(); applyPrice()">
+                <label class="sr-only" for="price-min">Цена от</label>
+                <input
+                  id="price-min"
+                  class="input [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputmode="decimal"
+                  placeholder="от €"
+                  [(ngModel)]="minDraft"
+                  name="min"
+                  (change)="applyPrice()"
+                />
+                <span class="text-zinc-400">–</span>
+                <label class="sr-only" for="price-max">Цена до</label>
+                <input
+                  id="price-max"
+                  class="input [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                  type="number"
+                  min="0"
+                  step="1"
+                  inputmode="decimal"
+                  placeholder="до €"
+                  [(ngModel)]="maxDraft"
+                  name="max"
+                  (change)="applyPrice()"
+                />
+              </form>
+              <div class="mt-2 flex flex-wrap gap-1.5">
+                @for (preset of pricePresets; track preset.label) {
+                  <button
+                    type="button"
+                    class="chip py-1.5 transition"
+                    [class]="f.minPrice === preset.min && f.maxPrice === preset.max ? 'bg-ink-900 text-white' : 'bg-zinc-100 text-ink-900 hover:bg-zinc-200'"
+                    (click)="setPrice(preset.min, preset.max)"
+                  >
+                    {{ preset.label }}
                   </button>
                 }
               </div>
@@ -327,6 +393,16 @@ export class Catalog {
   protected readonly typeLabel = { set: 'Сетове', minifig: 'Минифигурки', part: 'Части' } as const;
 
   protected readonly filtersOpen = signal(false);
+  protected readonly pricePresets = PRICE_PRESETS;
+  protected minDraft: number | null = null;
+  protected maxDraft: number | null = null;
+  protected readonly priceLabel = computed(() => {
+    const { minPrice: min, maxPrice: max } = this.store.filters();
+    if (min != null && max != null) return `${min}–${max} €`;
+    if (min != null) return `над ${min} €`;
+    if (max != null) return `до ${max} €`;
+    return null;
+  });
   protected readonly sidebarLimit = SIDEBAR_THEME_LIMIT;
   protected readonly showAllThemes = signal(false);
   /** First N themes, plus the selected one if it's further down the list */
@@ -393,6 +469,8 @@ export class Catalog {
     effect(() => {
       const filters = this.filters();
       this.searchText = filters.q;
+      this.minDraft = filters.minPrice;
+      this.maxDraft = filters.maxPrice;
       untracked(() => {
         if (filters.type === 'part') void this.partFilters.load();
         void this.store.load(filters);
@@ -416,11 +494,27 @@ export class Catalog {
         theme: next.theme,
         color: next.color,
         category: next.category,
+        min: next.minPrice,
+        max: next.maxPrice,
         q: next.q || null,
         sort: next.sort === 'newest' ? null : next.sort,
         page: next.page > 1 ? next.page : null,
       },
     });
+  }
+
+  protected setPrice(min: number | null, max: number | null): void {
+    this.update({ minPrice: min, maxPrice: max });
+  }
+
+  /** From the "от / до" inputs; swaps the values if they were entered the wrong way round. */
+  protected applyPrice(): void {
+    const clean = (v: number | null) => (v == null || (v as unknown) === '' || Number.isNaN(Number(v)) || Number(v) < 0 ? null : Number(v));
+    let min = clean(this.minDraft);
+    let max = clean(this.maxDraft);
+    if (min != null && max != null && min > max) [min, max] = [max, min];
+    const f = this.store.filters();
+    if (min !== f.minPrice || max !== f.maxPrice) this.setPrice(min, max);
   }
 
   protected goToPage(page: number): void {

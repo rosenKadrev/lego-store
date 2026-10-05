@@ -13,6 +13,9 @@ export type CatalogFilters = {
   /** parts only */
   color: number | null;
   category: number | null;
+  /** price range in € (inclusive) */
+  minPrice: number | null;
+  maxPrice: number | null;
   q: string;
   sort: CatalogSort;
   page: number;
@@ -24,6 +27,8 @@ export const EMPTY_FILTERS: CatalogFilters = {
   theme: null,
   color: null,
   category: null,
+  minPrice: null,
+  maxPrice: null,
   q: '',
   sort: 'newest',
   page: 1,
@@ -46,7 +51,7 @@ export const CatalogStore = signalStore(
     pageCount: computed(() => Math.max(1, Math.ceil(total() / PAGE_SIZE))),
     hasFilters: computed(() => {
       const f = filters();
-      return !!(f.condition || f.type || f.theme || f.color || f.category || f.q);
+      return !!(f.condition || f.type || f.theme || f.color || f.category || f.q || f.minPrice != null || f.maxPrice != null);
     }),
   })),
   withMethods((store, supabase = inject(Supabase), themes = inject(ThemesStore)) => {
@@ -70,6 +75,8 @@ export const CatalogStore = signalStore(
         if (filters.theme != null) query = query.in('theme_id', themes.withDescendants(filters.theme));
         if (filters.color != null) query = query.eq('color_id', filters.color);
         if (filters.category != null) query = query.eq('part_cat_id', filters.category);
+        if (filters.minPrice != null) query = query.gte('price', filters.minPrice);
+        if (filters.maxPrice != null) query = query.lte('price', filters.maxPrice);
 
         const q = filters.q.trim().replace(/[,()*%]/g, ' ').trim();
         if (q) query = query.or(`name.ilike.*${q}*,item_num.ilike.${q}*`);
