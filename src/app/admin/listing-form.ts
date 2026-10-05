@@ -111,7 +111,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 </div>
               }
             } @else {
-              <div class="mt-4 grid grid-cols-2 gap-1 rounded-full bg-zinc-100 p-1 text-sm sm:w-72">
+              <div class="mt-4 grid grid-cols-3 gap-1 rounded-full bg-zinc-100 p-1 text-sm sm:w-96">
                 @for (t of types; track t.value) {
                   <button
                     type="button"
@@ -142,7 +142,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                     <button type="button" class="flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-zinc-50" (click)="choose(r)">
                       <span class="size-14 shrink-0 rounded-lg bg-zinc-50">
                         @if (r.img_url) {
-                          <img [src]="r.img_url" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" />
+                          <img [src]="r.img_url" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" (error)="$any($event.target).hidden = true" />
                         }
                       </span>
                       <span class="min-w-0">

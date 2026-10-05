@@ -1,11 +1,11 @@
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { FormsModule } from '@angular/forms';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
 import { SHOP_NAME } from '../core/models';
 import { Icon } from '../shared/icon';
 import { Logo } from '../shared/logo';
+import { SearchBox } from './search-box';
 import { AuthStore } from '../stores/auth.store';
 import { CartStore } from '../stores/cart.store';
 import { ThemesStore } from '../stores/themes.store';
@@ -15,7 +15,7 @@ type NavLink = { label: string; params: Record<string, string> };
 @Component({
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, FormsModule, Icon, Logo],
+  imports: [RouterLink, RouterLinkActive, Icon, Logo, SearchBox],
   host: { class: 'sticky top-0 z-40 block' },
   template: `
     <div class="bg-ink-900 text-xs text-white">
@@ -82,16 +82,7 @@ type NavLink = { label: string; params: Record<string, string> };
           </div>
         </nav>
 
-        <form class="relative ml-auto hidden max-w-xs flex-1 md:block" role="search" (submit)="search($event)">
-          <app-icon name="search" [size]="18" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-zinc-400" />
-          <input
-            type="search"
-            name="q"
-            [(ngModel)]="query"
-            placeholder="Търси сет, номер, фигурка…"
-            class="w-full rounded-full border-0 bg-zinc-100 py-2.5 pr-4 pl-10 text-sm transition focus:bg-white focus:ring-2 focus:ring-brick-600 focus:outline-none"
-          />
-        </form>
+        <app-search-box class="ml-auto hidden max-w-xs flex-1 md:block" />
 
         <div class="ml-auto flex items-center gap-1 md:ml-0">
           <button
@@ -156,9 +147,7 @@ type NavLink = { label: string; params: Record<string, string> };
       </div>
 
       @if (mobileSearchOpen()) {
-        <form class="container-page pb-3 md:hidden" role="search" (submit)="search($event)">
-          <input type="search" name="q" [(ngModel)]="query" placeholder="Търси сет, номер, фигурка…" class="input rounded-full" autofocus />
-        </form>
+        <div class="container-page pb-3 md:hidden"><app-search-box class="block" [autofocus]="true" /></div>
       }
     </div>
 
@@ -215,7 +204,6 @@ export class Header {
   protected readonly themesOpen = signal(false);
   protected readonly accountOpen = signal(false);
   protected readonly mobileSearchOpen = signal(false);
-  protected query = '';
 
   protected freeShipping(): number {
     return this.cart.freeShippingThreshold();
@@ -235,11 +223,6 @@ export class Header {
       });
   }
 
-  protected search(event: Event): void {
-    event.preventDefault();
-    const q = this.query.trim();
-    void this.router.navigate(['/catalog'], { queryParams: q ? { q } : {} });
-  }
 
   protected async signOut(): Promise<void> {
     this.accountOpen.set(false);
