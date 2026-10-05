@@ -61,7 +61,12 @@ const MyOrdersStore = signalStore(
                     <span class="text-zinc-500">
                       @if (order.tracking_number) { Товарителница: <b class="text-ink-900">{{ order.tracking_number }}</b> }
                     </span>
-                    <b>Общо {{ order.total | currency }}</b>
+                    <b>
+                      Общо {{ order.total | currency }}
+                      @if (order.shipping_price == null && order.delivery_type !== 'pickup') {
+                        <span class="font-normal text-zinc-500">+ доставка (уточнява се)</span>
+                      }
+                    </b>
                   </div>
                 </li>
               } @empty {

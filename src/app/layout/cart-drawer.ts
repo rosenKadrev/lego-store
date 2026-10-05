@@ -62,7 +62,7 @@ import { CartStore } from '../stores/cart.store';
               </div>
               <p class="flex items-center gap-1.5 text-xs text-zinc-500">
                 <app-icon name="truck" [size]="14" />
-                Доставка от {{ cart.shippingFor('office') ?? 0 | currency }} или безплатно лично взимане
+                Цената на доставката се уточнява от служител. Лично взимане — безплатно.
               </p>
               <a routerLink="/checkout" class="btn-primary w-full py-3.5 text-base" (click)="cart.closeDrawer()">
                 Към поръчката

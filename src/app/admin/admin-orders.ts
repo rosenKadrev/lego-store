@@ -1,5 +1,5 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { COURIER_LABEL, DELIVERY_LABEL, displayItemNum, ORDER_STATUS_LABEL, OrderStatus } from '../core/models';
 import { Icon } from '../shared/icon';
@@ -84,8 +84,39 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
                       <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
                     </li>
                   }
-                  <li class="flex justify-between text-zinc-500"><span>{{ order.delivery_type === 'pickup' ? 'Лично взимане' : 'Доставка' }}</span><span>{{ order.shipping_price | currency }}</span></li>
-                  <li class="flex justify-between border-t border-zinc-200 pt-1 font-bold"><span>Общо (наложен платеж)</span><span>{{ order.total | currency }}</span></li>
+                  @if (order.delivery_type === 'pickup') {
+                    <li class="flex justify-between text-zinc-500"><span>Лично взимане</span><span>{{ 0 | currency }}</span></li>
+                  } @else {
+                    <li class="flex items-center justify-between gap-3 text-zinc-500">
+                      <span>Доставка</span>
+                      @if (order.shipping_price != null && editingShipping() !== order.id) {
+                        <button type="button" class="hover:text-ink-900 hover:underline" title="Промени" (click)="startShippingEdit(order)">
+                          {{ order.shipping_price | currency }}
+                        </button>
+                      } @else {
+                        <form class="flex items-center gap-1" (submit)="$event.preventDefault(); saveShipping(order)">
+                          <input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            class="input w-24 py-1.5 text-right"
+                            placeholder="€"
+                            [attr.aria-label]="'Цена на доставката за ' + order.number"
+                            [(ngModel)]="shippingDraft[order.id]"
+                            [name]="'shipping-' + order.id"
+                          />
+                          <button type="submit" class="btn-dark px-3 py-1.5 text-xs">Запази</button>
+                        </form>
+                      }
+                    </li>
+                    @if (order.shipping_price == null) {
+                      <li class="text-xs text-amber-700">Цената на доставката още не е уточнена с клиента.</li>
+                    }
+                  }
+                  <li class="flex justify-between border-t border-zinc-200 pt-1 font-bold">
+                    <span>{{ order.delivery_type === 'pickup' ? 'Общо (в брой при взимане)' : 'Общо (наложен платеж)' }}</span>
+                    <span>{{ order.total | currency }}{{ order.shipping_price == null && order.delivery_type !== 'pickup' ? ' + доставка' : '' }}</span>
+                  </li>
                 </ul>
               </div>
 
@@ -169,7 +200,24 @@ export class AdminOrders implements OnInit {
     return labels[status];
   }
 
+  protected readonly editingShipping = signal<number | null>(null);
+  protected readonly shippingDraft: Record<number, number | null> = {};
+
+  protected startShippingEdit(order: AdminOrder): void {
+    this.shippingDraft[order.id] = order.shipping_price;
+    this.editingShipping.set(order.id);
+  }
+
+  protected async saveShipping(order: AdminOrder): Promise<void> {
+    const price = this.shippingDraft[order.id];
+    if (price == null || price < 0) return;
+    if (await this.store.setShipping(order, price)) this.editingShipping.set(null);
+  }
+
   protected changeStatus(order: AdminOrder, status: OrderStatus): void {
+    if (status === 'shipped' && order.delivery_type !== 'pickup' && order.shipping_price == null) {
+      if (!confirm('Цената на доставката още не е въведена. Да маркирам ли поръчката като изпратена въпреки това?')) return;
+    }
     if (this.isNegative(status) && !confirm(`${this.actionLabel(status, order)}? Наличността ще бъде върната.`)) return;
     const tracking = status === 'shipped' && order.delivery_type !== 'pickup' ? this.tracking[order.id] : undefined;
     void this.store.setStatus(order, status, tracking);

@@ -72,7 +72,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                     <span class="flex-1">
                       <span class="block font-semibold">{{ d.label }}</span>
                       <span class="text-sm text-zinc-500">
-                        @if (d.value === 'pickup') { Безплатно } @else if (cart.shippingFor(d.value) != null) { {{ cart.shippingFor(d.value) | currency }} }
+                        {{ d.value === 'pickup' ? 'Безплатно' : 'Цена по уточнение' }}
                       </span>
                     </span>
                   </label>
@@ -96,6 +96,13 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                   </div>
                 </div>
               } @else {
+                <div class="mt-5 flex gap-3 rounded-2xl bg-stud-300/30 p-4 text-sm">
+                  <app-icon name="truck" class="mt-0.5 shrink-0 text-ink-900" />
+                  <p>
+                    <b>Цената на доставката се уточнява от служител.</b>
+                    Ще ви се обадим, за да потвърдим поръчката и да ви кажем точната цена според куриера и размера на пратката.
+                  </p>
+                </div>
                 <p class="label mt-5">Куриер</p>
                 <div class="grid grid-cols-2 gap-3">
                   @for (c of couriers; track c.value) {
@@ -178,9 +185,9 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
               <div class="flex justify-between"><span>Продукти</span><span>{{ cart.subtotal() | currency }}</span></div>
               <div class="flex justify-between">
                 <span>Доставка</span>
-                <span>@if (deliveryType() === 'pickup') { Лично взимане } @else { {{ shipping() ?? 0 | currency }} }</span>
+                <span>@if (deliveryType() === 'pickup') { Лично взимане } @else { <span class="text-zinc-500">уточнява се</span> }</span>
               </div>
-              <div class="flex justify-between pt-2 text-lg font-bold"><span>Общо</span><span>{{ total() | currency }}</span></div>
+              <div class="flex justify-between pt-2 text-lg font-bold"><span>{{ deliveryType() === 'pickup' ? 'Общо' : 'Общо без доставка' }}</span><span>{{ total() | currency }}</span></div>
             </div>
 
             <label class="flex items-start gap-2 text-sm">

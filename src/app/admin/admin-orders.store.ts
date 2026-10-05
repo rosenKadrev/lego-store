@@ -69,6 +69,22 @@ export const AdminOrdersStore = signalStore(
         patchState(store, { expandedId: store.expandedId() === id ? null : id });
       },
 
+      /** Staff-confirmed courier price; the order total is recalculated in the database. */
+      async setShipping(order: AdminOrder, price: number): Promise<boolean> {
+        const { error } = await db.rpc('set_order_shipping', { p_order_id: order.id, p_shipping_price: price });
+        if (error) {
+          patchState(store, { error: error.message });
+          return false;
+        }
+        const shipping = Math.round(price * 100) / 100;
+        patchState(store, {
+          orders: store.orders().map((o) =>
+            o.id === order.id ? { ...o, shipping_price: shipping, total: Math.round((o.subtotal + shipping) * 100) / 100 } : o,
+          ),
+        });
+        return true;
+      },
+
       async setStatus(order: AdminOrder, status: OrderStatus, trackingNumber?: string): Promise<void> {
         const { error } = await db.rpc('set_order_status', {
           p_order_id: order.id,

@@ -51,9 +51,11 @@ import { CartStore } from '../stores/cart.store';
             <div class="flex justify-between text-sm"><span>Продукти ({{ cart.count() }})</span><b>{{ cart.subtotal() | currency }}</b></div>
             <div class="flex justify-between text-sm">
               <span>Доставка</span>
-              <span class="text-zinc-500">от {{ cart.shippingFor('office') ?? 0 | currency }}</span>
+              <span class="text-zinc-500">уточнява се</span>
             </div>
-            <p class="rounded-xl bg-white p-3 text-xs text-zinc-600">Можете да изберете и безплатно лично взимане при поръчката.</p>
+            <p class="rounded-xl bg-white p-3 text-xs text-zinc-600">
+              Служител ще се свърже с вас, за да уточни цената на доставката. Можете да изберете и безплатно лично взимане.
+            </p>
             <a routerLink="/checkout" class="btn-primary w-full py-3.5 text-base">Продължи към поръчка</a>
             <a routerLink="/catalog" class="btn-ghost w-full">Продължи пазаруването</a>
           </aside>

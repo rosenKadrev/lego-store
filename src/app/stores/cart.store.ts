@@ -39,12 +39,9 @@ export const CartStore = signalStore(
     subtotal: computed(() => round2(items().reduce((sum, item) => sum + item.price * item.quantity, 0))),
   })),
   withMethods((store, supabase = inject(Supabase)) => ({
-    /** Delivery price; pickup is free. `null` until the shop settings are loaded. */
+    /** Pickup is free; courier delivery is priced by staff when confirming the order (`null`). */
     shippingFor(delivery: DeliveryType): number | null {
-      if (delivery === 'pickup') return 0;
-      const s = store.settings();
-      if (!s) return null;
-      return delivery === 'office' ? s.shipping_price_office : s.shipping_price_address;
+      return delivery === 'pickup' ? 0 : null;
     },
 
     quantityOf(listingId: number): number {

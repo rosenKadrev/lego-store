@@ -19,14 +19,18 @@ type OrderState = { total?: number; email?: string; phone?: string; pickup?: boo
       <p class="mt-3 text-zinc-600">
         Номер на поръчката: <b class="text-ink-900">{{ number() }}</b>
         @if (state.total != null) {
-          <br />Сума за плащане {{ state.pickup ? 'при взимане' : 'при доставка' }}: <b class="text-ink-900">{{ state.total | currency }}</b>
+          @if (state.pickup) {
+            <br />Сума за плащане при взимане: <b class="text-ink-900">{{ state.total | currency }}</b>
+          } @else {
+            <br />Сума за продуктите: <b class="text-ink-900">{{ state.total | currency }}</b> + доставка (ще ви я кажем по телефона)
+          }
         }
       </p>
 
       <ol class="mt-10 space-y-4 rounded-3xl bg-zinc-50 p-6 text-left text-sm sm:p-8">
         <li class="flex gap-4">
           <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ink-900 font-bold text-white">1</span>
-          <span>Ще се свържем с вас{{ state.phone ? ' на ' + state.phone : '' }}, за да потвърдим поръчката.</span>
+          <span>Ще се свържем с вас{{ state.phone ? ' на ' + state.phone : '' }}, за да потвърдим поръчката{{ state.pickup ? '' : ' и цената на доставката' }}.</span>
         </li>
         <li class="flex gap-4">
           <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ink-900 font-bold text-white">2</span>

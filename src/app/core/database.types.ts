@@ -158,13 +158,13 @@ isOneToOne: false
                   ]
                 },"orders": {
                   Row: {
-                    "address": string | null,"city": string | null,"courier": Database["public"]['Enums']["courier"] | null,"created_at": string,"customer_name": string,"delivery_type": Database["public"]['Enums']["delivery_type"],"email": string,"id": number,"note": string | null,"number": string,"office_code": string | null,"payment_method": Database["public"]['Enums']["payment_method"],"phone": string,"shipping_price": number,"status": Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number": string | null,"updated_at": string,"user_id": string | null
+                    "address": string | null,"city": string | null,"courier": Database["public"]['Enums']["courier"] | null,"created_at": string,"customer_name": string,"delivery_type": Database["public"]['Enums']["delivery_type"],"email": string,"id": number,"note": string | null,"number": string,"office_code": string | null,"payment_method": Database["public"]['Enums']["payment_method"],"phone": string,"shipping_price": number | null,"status": Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number": string | null,"updated_at": string,"user_id": string | null
                   }
                   Insert: {
-                    "address"?: string | null,"city"?: string | null,"courier"?: Database["public"]['Enums']["courier"] | null,"created_at"?: string,"customer_name": string,"delivery_type": Database["public"]['Enums']["delivery_type"],"email": string,"id"?: never,"note"?: string | null,"number"?: string,"office_code"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"],"phone": string,"shipping_price": number,"status"?: Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null
+                    "address"?: string | null,"city"?: string | null,"courier"?: Database["public"]['Enums']["courier"] | null,"created_at"?: string,"customer_name": string,"delivery_type": Database["public"]['Enums']["delivery_type"],"email": string,"id"?: never,"note"?: string | null,"number"?: string,"office_code"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"],"phone": string,"shipping_price"?: number | null,"status"?: Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "address"?: string | null,"city"?: string | null,"courier"?: Database["public"]['Enums']["courier"] | null,"created_at"?: string,"customer_name"?: string,"delivery_type"?: Database["public"]['Enums']["delivery_type"],"email"?: string,"id"?: never,"note"?: string | null,"number"?: string,"office_code"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"],"phone"?: string,"shipping_price"?: number,"status"?: Database["public"]['Enums']["order_status"],"subtotal"?: number,"total"?: number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null
+                    "address"?: string | null,"city"?: string | null,"courier"?: Database["public"]['Enums']["courier"] | null,"created_at"?: string,"customer_name"?: string,"delivery_type"?: Database["public"]['Enums']["delivery_type"],"email"?: string,"id"?: never,"note"?: string | null,"number"?: string,"office_code"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"],"phone"?: string,"shipping_price"?: number | null,"status"?: Database["public"]['Enums']["order_status"],"subtotal"?: number,"total"?: number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -369,6 +369,9 @@ isOneToOne: false
 { Args: { "p_address"?: string,"p_city"?: string,"p_courier": Database["public"]['Enums']["courier"],"p_customer_name": string,"p_delivery_type": Database["public"]['Enums']["delivery_type"],"p_email": string,"p_items": Json,"p_note"?: string,"p_office_code"?: string,"p_phone": string }; Returns: {
               "order_id": number,"order_number": string,"total": number
             }[]
+                           },
+"set_order_shipping":
+{ Args: { "p_order_id": number,"p_shipping_price": number }; Returns: undefined
                            },
 "set_order_status":
 { Args: { "p_note"?: string,"p_order_id": number,"p_status": Database["public"]['Enums']["order_status"],"p_tracking_number"?: string }; Returns: undefined
