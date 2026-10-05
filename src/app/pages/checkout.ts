@@ -72,7 +72,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                     <span class="flex-1">
                       <span class="block font-semibold">{{ d.label }}</span>
                       <span class="text-sm text-zinc-500">
-                        @if (cart.shippingFor(d.value) === 0) { Безплатно } @else { {{ cart.shippingFor(d.value) | currency }} }
+                        @if (d.value === 'pickup') { Безплатно } @else if (cart.shippingFor(d.value) != null) { {{ cart.shippingFor(d.value) | currency }} }
                       </span>
                     </span>
                   </label>
@@ -178,7 +178,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
               <div class="flex justify-between"><span>Продукти</span><span>{{ cart.subtotal() | currency }}</span></div>
               <div class="flex justify-between">
                 <span>Доставка</span>
-                <span>@if (deliveryType() === 'pickup') { Лично взимане } @else if (shipping() === 0) { Безплатна } @else { {{ shipping() | currency }} }</span>
+                <span>@if (deliveryType() === 'pickup') { Лично взимане } @else { {{ shipping() ?? 0 | currency }} }</span>
               </div>
               <div class="flex justify-between pt-2 text-lg font-bold"><span>Общо</span><span>{{ total() | currency }}</span></div>
             </div>
@@ -237,7 +237,7 @@ export class Checkout {
 
   protected readonly deliveryType = toSignal(this.form.controls.deliveryType.valueChanges, { initialValue: 'office' as DeliveryType });
   protected readonly shipping = computed(() => this.cart.shippingFor(this.deliveryType()));
-  protected readonly total = computed(() => this.cart.subtotal() + this.shipping());
+  protected readonly total = computed(() => this.cart.subtotal() + (this.shipping() ?? 0));
   protected readonly submitting = signal(false);
   protected readonly submitted = signal(false);
   protected readonly error = signal<string | null>(null);

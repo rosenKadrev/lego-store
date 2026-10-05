@@ -285,13 +285,13 @@ isOneToOne: false
                   ]
                 },"shop_settings": {
                   Row: {
-                    "free_shipping_threshold": number,"id": boolean,"pickup_address": string | null,"pickup_enabled": boolean,"pickup_hours": string | null,"shipping_price_address": number,"shipping_price_office": number
+                    "free_shipping_threshold": number | null,"id": boolean,"pickup_address": string | null,"pickup_enabled": boolean,"pickup_hours": string | null,"shipping_price_address": number,"shipping_price_office": number
                   }
                   Insert: {
-                    "free_shipping_threshold"?: number,"id"?: boolean,"pickup_address"?: string | null,"pickup_enabled"?: boolean,"pickup_hours"?: string | null,"shipping_price_address"?: number,"shipping_price_office"?: number
+                    "free_shipping_threshold"?: number | null,"id"?: boolean,"pickup_address"?: string | null,"pickup_enabled"?: boolean,"pickup_hours"?: string | null,"shipping_price_address"?: number,"shipping_price_office"?: number
                   }
                   Update: {
-                    "free_shipping_threshold"?: number,"id"?: boolean,"pickup_address"?: string | null,"pickup_enabled"?: boolean,"pickup_hours"?: string | null,"shipping_price_address"?: number,"shipping_price_office"?: number
+                    "free_shipping_threshold"?: number | null,"id"?: boolean,"pickup_address"?: string | null,"pickup_enabled"?: boolean,"pickup_hours"?: string | null,"shipping_price_address"?: number,"shipping_price_office"?: number
                   }
                   Relationships: [
                     

@@ -34,22 +34,16 @@ const STORAGE_KEY = 'brickstore.cart.v1';
 export const CartStore = signalStore(
   { providedIn: 'root' },
   withState<CartState>({ items: [], settings: null, drawerOpen: false }),
-  withComputed(({ items, settings }) => {
-    const subtotal = computed(() =>
-      round2(items().reduce((sum, item) => sum + item.price * item.quantity, 0)),
-    );
-    const freeShippingThreshold = computed(() => settings()?.free_shipping_threshold ?? 55);
-    return {
-      count: computed(() => items().reduce((sum, item) => sum + item.quantity, 0)),
-      subtotal,
-      freeShippingThreshold,
-      remainingForFreeShipping: computed(() => Math.max(0, round2(freeShippingThreshold() - subtotal()))),
-    };
-  }),
+  withComputed(({ items }) => ({
+    count: computed(() => items().reduce((sum, item) => sum + item.quantity, 0)),
+    subtotal: computed(() => round2(items().reduce((sum, item) => sum + item.price * item.quantity, 0))),
+  })),
   withMethods((store, supabase = inject(Supabase)) => ({
-    shippingFor(delivery: DeliveryType): number {
+    /** Delivery price; pickup is free. `null` until the shop settings are loaded. */
+    shippingFor(delivery: DeliveryType): number | null {
+      if (delivery === 'pickup') return 0;
       const s = store.settings();
-      if (delivery === 'pickup' || !s || store.subtotal() >= s.free_shipping_threshold) return 0;
+      if (!s) return null;
       return delivery === 'office' ? s.shipping_price_office : s.shipping_price_address;
     },
 

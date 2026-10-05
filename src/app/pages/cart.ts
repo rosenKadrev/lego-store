@@ -51,15 +51,9 @@ import { CartStore } from '../stores/cart.store';
             <div class="flex justify-between text-sm"><span>Продукти ({{ cart.count() }})</span><b>{{ cart.subtotal() | currency }}</b></div>
             <div class="flex justify-between text-sm">
               <span>Доставка</span>
-              @if (cart.remainingForFreeShipping() === 0) {
-                <b class="text-emerald-700">Безплатна</b>
-              } @else {
-                <span class="text-zinc-500">от {{ cart.shippingFor('office') | currency }}</span>
-              }
+              <span class="text-zinc-500">от {{ cart.shippingFor('office') ?? 0 | currency }}</span>
             </div>
-            @if (cart.remainingForFreeShipping() > 0) {
-              <p class="rounded-xl bg-white p-3 text-xs">Добавете още <b>{{ cart.remainingForFreeShipping() | currency }}</b> за безплатна доставка.</p>
-            }
+            <p class="rounded-xl bg-white p-3 text-xs text-zinc-600">Можете да изберете и безплатно лично взимане при поръчката.</p>
             <a routerLink="/checkout" class="btn-primary w-full py-3.5 text-base">Продължи към поръчка</a>
             <a routerLink="/catalog" class="btn-ghost w-full">Продължи пазаруването</a>
           </aside>

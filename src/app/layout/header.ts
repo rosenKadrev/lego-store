@@ -20,7 +20,7 @@ type NavLink = { label: string; params: Record<string, string> };
   template: `
     <div class="bg-ink-900 text-xs text-white">
       <div class="container-page flex h-9 items-center justify-center gap-6 overflow-hidden whitespace-nowrap">
-        <span class="flex items-center gap-1.5"><app-icon name="truck" [size]="15" /> Безплатна доставка над {{ freeShipping() }} €</span>
+        <span class="flex items-center gap-1.5"><app-icon name="box" [size]="15" /> Безплатно лично взимане</span>
         <span class="hidden items-center gap-1.5 sm:flex"><app-icon name="cash" [size]="15" /> Плащане с наложен платеж</span>
         <span class="hidden items-center gap-1.5 md:flex"><app-icon name="eye" [size]="15" /> Преглед преди плащане</span>
       </div>
@@ -205,9 +205,6 @@ export class Header {
   protected readonly accountOpen = signal(false);
   protected readonly mobileSearchOpen = signal(false);
 
-  protected freeShipping(): number {
-    return this.cart.freeShippingThreshold();
-  }
 
   constructor() {
     this.router.events

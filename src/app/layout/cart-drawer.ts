@@ -23,19 +23,6 @@ import { CartStore } from '../stores/cart.store';
           </header>
 
           @if (cart.items().length) {
-            @if (cart.remainingForFreeShipping() > 0) {
-              <div class="bg-stud-300/40 px-5 py-3 text-sm">
-                Още <b>{{ cart.remainingForFreeShipping() | currency }}</b> до безплатна доставка
-                <div class="mt-2 h-1.5 overflow-hidden rounded-full bg-white">
-                  <div class="h-full rounded-full bg-brick-600 transition-all" [style.width.%]="progress()"></div>
-                </div>
-              </div>
-            } @else {
-              <div class="flex items-center gap-2 bg-emerald-50 px-5 py-3 text-sm text-emerald-800">
-                <app-icon name="truck" [size]="18" /> Доставката е безплатна!
-              </div>
-            }
-
             <ul class="flex-1 divide-y divide-zinc-100 overflow-y-auto px-5">
               @for (item of cart.items(); track item.listingId) {
                 <li class="flex gap-4 py-4">
@@ -73,6 +60,10 @@ import { CartStore } from '../stores/cart.store';
                 <span>Междинна сума</span>
                 <b>{{ cart.subtotal() | currency }}</b>
               </div>
+              <p class="flex items-center gap-1.5 text-xs text-zinc-500">
+                <app-icon name="truck" [size]="14" />
+                Доставка от {{ cart.shippingFor('office') ?? 0 | currency }} или безплатно лично взимане
+              </p>
               <a routerLink="/checkout" class="btn-primary w-full py-3.5 text-base" (click)="cart.closeDrawer()">
                 Към поръчката
               </a>
@@ -97,8 +88,4 @@ export class CartDrawer {
   protected readonly conditionLabel = CONDITION_LABEL;
   protected readonly itemNum = displayItemNum;
 
-  protected progress(): number {
-    const threshold = this.cart.freeShippingThreshold();
-    return threshold ? Math.min(100, (this.cart.subtotal() / threshold) * 100) : 100;
-  }
 }
