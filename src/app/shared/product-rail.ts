@@ -33,7 +33,7 @@ import { ProductCard } from './product-card';
     @if (loading()) {
       <div class="flex gap-4 overflow-hidden">
         @for (i of [1, 2, 3, 4, 5]; track i) {
-          <div class="aspect-[3/4] w-[46%] shrink-0 animate-pulse rounded-2xl bg-zinc-100 sm:w-[31%] lg:w-[23%] xl:w-[19%]"></div>
+          <div class="aspect-[3/4] w-[80%] shrink-0 min-[360px]:w-[46%] animate-pulse rounded-2xl bg-zinc-100 sm:w-[31%] lg:w-[23%] xl:w-[19%]"></div>
         }
       </div>
     } @else {
@@ -42,7 +42,7 @@ import { ProductCard } from './product-card';
         class="-mx-4 flex snap-x snap-mandatory scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 [scrollbar-width:none] sm:-mx-6 sm:scroll-px-6 sm:px-6 lg:mx-0 lg:scroll-px-0 lg:px-0 [&::-webkit-scrollbar]:hidden"
       >
         @for (item of items(); track item.id) {
-          <app-product-card [listing]="item" class="w-[46%] shrink-0 snap-start sm:w-[31%] lg:w-[23%] xl:w-[19%]" />
+          <app-product-card [listing]="item" class="w-[80%] shrink-0 min-[360px]:w-[46%] snap-start sm:w-[31%] lg:w-[23%] xl:w-[19%]" />
         } @empty {
           <p class="py-10 text-sm text-zinc-500">Скоро ще има продукти тук.</p>
         }
