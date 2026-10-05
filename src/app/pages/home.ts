@@ -167,6 +167,7 @@ export class Home implements OnInit {
   ] as const;
 
   async ngOnInit(): Promise<void> {
+    void this.themes.refreshListed();
     const [newSets, usedSets, minifigs, parts] = await Promise.all([
       this.fetch('new', 'set'),
       this.fetch('used', 'set'),

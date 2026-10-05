@@ -2,6 +2,7 @@ import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { CatalogListing, ItemCondition, ItemType } from '../core/models';
 import { Supabase } from '../core/supabase';
+import { ShopLists } from '../stores/shop-lists';
 import { ToastStore } from '../stores/toast.store';
 
 export type AdminListingFilters = {
@@ -29,7 +30,7 @@ export const AdminListingsStore = signalStore(
     page: 1,
     loading: true,
   }),
-  withMethods((store, supabase = inject(Supabase), toast = inject(ToastStore)) => {
+  withMethods((store, supabase = inject(Supabase), toast = inject(ToastStore), shopLists = inject(ShopLists)) => {
     const db = supabase.client;
     let requestId = 0;
 
@@ -75,7 +76,9 @@ export const AdminListingsStore = signalStore(
         if (error) {
           toast.error('Наличността не беше запазена.');
           void load();
+          return;
         }
+        shopLists.refresh(); // a listing that runs out (or comes back) changes the theme lists
       },
 
       async togglePublished(listing: CatalogListing): Promise<void> {
@@ -87,6 +90,7 @@ export const AdminListingsStore = signalStore(
           void load();
           return;
         }
+        shopLists.refresh();
         toast.success(is_published ? `„${listing.name}“ е публикувана.` : `„${listing.name}“ е скрита от магазина.`);
       },
     };

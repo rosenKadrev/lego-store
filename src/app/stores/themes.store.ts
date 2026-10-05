@@ -34,17 +34,20 @@ export const ThemesStore = signalStore(
     return { byId, children };
   }),
   withMethods((store, supabase = inject(Supabase)) => ({
+    /** The full theme tree rarely changes: loaded once per visit. */
     async load(): Promise<void> {
       if (store.loaded()) return;
-      const [themes, listed] = await Promise.all([
+      const [themes] = await Promise.all([
         supabase.client.from('themes').select('*').order('name'),
-        supabase.client.rpc('listed_root_themes'),
+        this.refreshListed(),
       ]);
-      patchState(store, {
-        themes: themes.data ?? [],
-        listed: (listed.data ?? []) as ListedTheme[],
-        loaded: true,
-      });
+      patchState(store, { themes: themes.data ?? [], loaded: true });
+    },
+
+    /** Themes that currently have listings for sale — re-read whenever listings may have changed. */
+    async refreshListed(): Promise<void> {
+      const { data } = await supabase.client.rpc('listed_root_themes');
+      if (data) patchState(store, { listed: data as ListedTheme[] });
     },
 
     /** The theme itself plus all nested sub-themes, for filtering. */

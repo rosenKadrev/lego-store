@@ -7,6 +7,7 @@ import { CONDITION_LABEL, displayItemNum, ItemCondition, ItemType, slugify } fro
 import { Supabase } from '../core/supabase';
 import { ColorSwatch } from '../shared/color-swatch';
 import { Icon } from '../shared/icon';
+import { ShopLists } from '../stores/shop-lists';
 import { ToastStore } from '../stores/toast.store';
 import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.store';
 
@@ -326,6 +327,7 @@ export class ListingForm {
   private readonly supabase = inject(Supabase);
   private readonly router = inject(Router);
   private readonly toast = inject(ToastStore);
+  private readonly shopLists = inject(ShopLists);
   private readonly fb = inject(FormBuilder);
 
   /** Route param on /admin/listings/:id; undefined on /admin/listings/new. */
@@ -490,6 +492,7 @@ export class ListingForm {
       return;
     }
 
+    this.shopLists.refresh();
     if (this.isEdit()) {
       this.toast.success('Промените са запазени.');
       this.form.markAsPristine();
@@ -505,6 +508,7 @@ export class ListingForm {
   protected async remove(): Promise<void> {
     if (!confirm('Да изтрия ли обявата? Това не може да бъде отменено.')) return;
     if (await this.store.remove()) {
+      this.shopLists.refresh();
       this.toast.success('Обявата е изтрита.');
       void this.router.navigate(['/admin/listings']);
     } else {

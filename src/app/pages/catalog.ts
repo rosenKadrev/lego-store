@@ -365,6 +365,10 @@ export class Catalog {
   });
 
   constructor() {
+    // Lists of themes / part filters may have changed since the visitor first opened the site
+    void this.themes.refreshListed();
+    void this.partFilters.load(true);
+
     effect(() => {
       const filters = this.filters();
       this.searchText = filters.q;

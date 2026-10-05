@@ -15,8 +15,9 @@ export const PartFiltersStore = signalStore(
   { providedIn: 'root' },
   withState<State>({ categories: [], colors: [], loaded: false }),
   withMethods((store, supabase = inject(Supabase)) => ({
-    async load(): Promise<void> {
-      if (store.loaded()) return;
+    /** `force` re-reads the filters (after listings changed or when the catalog opens). */
+    async load(force = false): Promise<void> {
+      if (store.loaded() && !force) return;
       const { data } = await supabase.client.rpc('listed_part_filters');
       const rows = (data ?? []) as (PartFilterOption & { kind: 'category' | 'color' })[];
       patchState(store, {
