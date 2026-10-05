@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Icon, IconName } from '../shared/icon';
 import { Logo } from '../shared/logo';
+import { SHOP_NAME } from '../core/models';
 
 @Component({
   selector: 'app-footer',
@@ -51,15 +52,23 @@ import { Logo } from '../shared/logo';
         </div>
       </div>
       <div class="border-t border-white/10">
-        <p class="container-page py-6 text-xs leading-relaxed text-zinc-500">
-          LEGO®, логото LEGO, минифигурката и DUPLO® са търговски марки на LEGO Group, която не спонсорира и не одобрява
-          този сайт. Каталожни данни: Rebrickable.
-        </p>
+        <div
+          class="container-page flex flex-col gap-2 py-6 text-xs leading-relaxed text-zinc-500 md:flex-row md:items-center md:justify-between md:gap-8"
+        >
+          <p class="shrink-0 font-semibold text-zinc-400">© {{ year }} {{ shopName }}. Всички права запазени.</p>
+          <p class="md:text-right">
+            {{ shopName }} е независим магазин и не е свързан с LEGO Group. LEGO® е търговска марка на LEGO Group.
+            Каталожни данни:
+            <a href="https://rebrickable.com" target="_blank" rel="noopener" class="underline-offset-2 hover:text-zinc-300 hover:underline">Rebrickable</a>.
+          </p>
+        </div>
       </div>
     </footer>
   `,
 })
 export class Footer {
+  protected readonly shopName = SHOP_NAME;
+  protected readonly year = new Date().getFullYear();
   protected readonly usps: { icon: IconName; text: string }[] = [
     { icon: 'cash', text: 'Наложен платеж' },
     { icon: 'eye', text: 'Преглед преди плащане' },
