@@ -20,14 +20,14 @@ type NavLink = { label: string; params: Record<string, string> };
   template: `
     <div class="bg-ink-900 text-xs text-white">
       <div class="container-page flex h-9 items-center justify-center gap-6 overflow-hidden whitespace-nowrap">
-        <span class="flex items-center gap-1.5"><app-icon name="box" [size]="15" /> Безплатно лично взимане</span>
-        <span class="hidden items-center gap-1.5 sm:flex"><app-icon name="cash" [size]="15" /> Плащане с наложен платеж</span>
+        <span class="flex items-center gap-1.5"><app-icon name="box" [size]="15" /> Безплатно взимане от място</span>
+        <span class="hidden items-center gap-1.5 sm:flex"><app-icon name="cash" [size]="15" /> Плащане с наложен платеж при доставка</span>
         <span class="hidden items-center gap-1.5 md:flex"><app-icon name="eye" [size]="15" /> Преглед преди плащане</span>
       </div>
     </div>
 
     <div class="border-b border-zinc-200 bg-white/90 backdrop-blur-lg">
-      <div class="container-page flex h-16 items-center gap-1.5 sm:gap-3 lg:h-20 lg:gap-8">
+      <div class="container-page flex h-16 items-center gap-1.5 sm:gap-3 lg:h-20 lg:gap-5 xl:gap-8">
         <button type="button" class="btn-ghost -ml-2 size-9 p-0 sm:size-10 lg:hidden" aria-label="Меню" (click)="menuOpen.set(true)">
           <app-icon name="menu" [size]="22" />
         </button>
@@ -43,14 +43,14 @@ type NavLink = { label: string; params: Record<string, string> };
               [queryParams]="link.params"
               routerLinkActive="!text-brick-600"
               [routerLinkActiveOptions]="{ queryParams: 'subset', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
-              class="rounded-full px-3 py-2 text-sm font-semibold text-ink-800 transition hover:bg-zinc-100"
+              class="rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-ink-800 transition hover:bg-zinc-100 xl:px-3"
               >{{ link.label }}</a
             >
           }
           <div class="relative" (mouseenter)="themesOpen.set(true)" (mouseleave)="themesOpen.set(false)">
             <button
               type="button"
-              class="flex items-center gap-1 rounded-full px-3 py-2 text-sm font-semibold text-ink-800 transition hover:bg-zinc-100"
+              class="flex items-center gap-1 rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-ink-800 transition hover:bg-zinc-100 xl:px-3"
               [attr.aria-expanded]="themesOpen()"
               (click)="themesOpen.set(!themesOpen())"
             >
@@ -82,12 +82,12 @@ type NavLink = { label: string; params: Record<string, string> };
           </div>
         </nav>
 
-        <app-search-box class="ml-auto hidden max-w-xs flex-1 md:block" />
+        <app-search-box class="ml-auto hidden max-w-xs flex-1 md:block lg:hidden xl:block" />
 
         <div class="ml-auto flex shrink-0 items-center sm:gap-1 md:ml-0">
           <button
             type="button"
-            class="btn-ghost size-9 p-0 sm:size-10 md:hidden"
+            class="btn-ghost size-9 p-0 sm:size-10 md:hidden lg:inline-flex xl:hidden"
             aria-label="Търсене"
             (click)="mobileSearchOpen.set(!mobileSearchOpen())"
           >
@@ -147,7 +147,7 @@ type NavLink = { label: string; params: Record<string, string> };
       </div>
 
       @if (mobileSearchOpen()) {
-        <div class="container-page pb-3 md:hidden"><app-search-box class="block" [autofocus]="true" /></div>
+        <div class="container-page pb-3 md:hidden lg:block xl:hidden"><app-search-box class="block" [autofocus]="true" /></div>
       }
     </div>
 

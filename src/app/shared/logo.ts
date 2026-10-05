@@ -18,7 +18,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       [class.text-white]="inverted()"
       [class.max-[359px]:sr-only]="collapsible()"
     >
-      Brick<span class="text-brick-600">Store</span>
+      MBRBrick<span class="text-brick-600">Store</span>
     </span>
   `,
 })

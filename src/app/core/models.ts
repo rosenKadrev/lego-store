@@ -24,7 +24,7 @@ export type ShopSettings = Tables<'shop_settings'>;
 /** Row of the `catalog_listings` view; columns of a view are nullable in generated types. */
 export type CatalogListing = Tables<'catalog_listings'>;
 
-export const SHOP_NAME = 'BrickStore';
+export const SHOP_NAME = 'MBRBrickStore';
 
 export const CONDITION_LABEL: Record<ItemCondition, string> = {
   new: 'Ново',
