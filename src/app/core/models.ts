@@ -1,0 +1,59 @@
+import { Database, Tables } from './database.types';
+
+type Enums = Database['public']['Enums'];
+
+export type ItemType = Enums['item_type'];
+export type ItemCondition = Enums['item_condition'];
+export type OrderStatus = Enums['order_status'];
+export type DeliveryType = Enums['delivery_type'];
+export type Courier = Enums['courier'];
+
+export type Theme = Tables<'themes'>;
+export type LegoSet = Tables<'sets'>;
+export type Minifig = Tables<'minifigs'>;
+export type Listing = Tables<'listings'>;
+export type ListingImage = Tables<'listing_images'>;
+export type Profile = Tables<'profiles'>;
+export type Order = Tables<'orders'>;
+export type OrderItem = Tables<'order_items'>;
+export type ShopSettings = Tables<'shop_settings'>;
+
+/** Row of the `catalog_listings` view; columns of a view are nullable in generated types. */
+export type CatalogListing = Tables<'catalog_listings'>;
+
+export const SHOP_NAME = 'BrickStore';
+
+export const CONDITION_LABEL: Record<ItemCondition, string> = {
+  new: 'Ново',
+  used: 'Употребявано',
+};
+
+export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
+  new: 'Нова',
+  confirmed: 'Потвърдена',
+  shipped: 'Изпратена',
+  delivered: 'Доставена',
+  paid: 'Платена',
+  cancelled: 'Отказана',
+  refused: 'Неприета пратка',
+  returned: 'Върната',
+};
+
+export const COURIER_LABEL: Record<Courier, string> = {
+  econt: 'Еконт',
+  speedy: 'Спиди',
+};
+
+export function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+}
+
+/** Rebrickable set numbers carry a '-1' variant suffix that buyers don't need to see. */
+export function displayItemNum(itemNum: string | null | undefined): string {
+  return (itemNum ?? '').replace(/-1$/, '');
+}

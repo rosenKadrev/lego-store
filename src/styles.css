@@ -1,0 +1,82 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Rubik', 'Inter', ui-sans-serif, system-ui, sans-serif;
+
+  --color-brick-50: #fff1f1;
+  --color-brick-100: #ffdfdf;
+  --color-brick-200: #ffc5c5;
+  --color-brick-500: #f03a3a;
+  --color-brick-600: #d01012;
+  --color-brick-700: #b00d0f;
+  --color-brick-800: #8f1012;
+  --color-brick-900: #5e0a0b;
+
+  --color-stud-300: #ffe066;
+  --color-stud-400: #ffd500;
+  --color-stud-500: #f5c400;
+
+  --color-ink-900: #16161d;
+  --color-ink-800: #23232d;
+  --color-ink-700: #33333f;
+}
+
+@layer base {
+  html {
+    @apply bg-white text-ink-900 antialiased;
+    scroll-behavior: smooth;
+  }
+  h1, h2, h3 {
+    @apply font-display;
+  }
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-brick-600;
+  }
+}
+
+@utility container-page {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-2.5 text-sm font-semibold transition
+  disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply btn bg-brick-600 text-white shadow-sm hover:bg-brick-700 active:bg-brick-800;
+}
+
+@utility btn-dark {
+  @apply btn bg-ink-900 text-white hover:bg-ink-700;
+}
+
+@utility btn-outline {
+  @apply btn border border-zinc-300 bg-white text-ink-900 hover:border-ink-900;
+}
+
+@utility btn-ghost {
+  @apply btn text-ink-900 hover:bg-zinc-100;
+}
+
+@utility input {
+  @apply block w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm placeholder:text-zinc-400
+  focus:border-brick-600 focus:ring-2 focus:ring-brick-100 focus:outline-none;
+}
+
+@utility label {
+  @apply mb-1.5 block text-sm font-medium text-zinc-700;
+}
+
+@utility field-error {
+  @apply mt-1 text-xs text-brick-700;
+}
+
+@utility card {
+  @apply rounded-2xl border border-zinc-200 bg-white;
+}
+
+@utility chip {
+  @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold;
+}

@@ -1,0 +1,24 @@
+# Weekly refresh of the Rebrickable catalog (themes, sets, minifigs, set ↔ minifig links).
+# Needs repository secrets SUPABASE_URL and SUPABASE_SECRET_KEY (Settings → Secrets and variables → Actions).
+name: Sync Rebrickable catalog
+
+on:
+  schedule:
+    - cron: '30 3 * * 1' # Mondays 03:30 UTC
+  workflow_dispatch: # "Run workflow" button for a manual sync
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npm run catalog:sync
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
