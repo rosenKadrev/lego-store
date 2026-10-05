@@ -24,7 +24,7 @@ import { ThemesStore } from '../stores/themes.store';
           <!-- Catalog photos are JPGs on white: a white disc makes the background disappear into it -->
           @if (heroImage(); as src) {
             <div
-              class="relative mx-auto grid aspect-square w-52 place-items-center rounded-full bg-white shadow-2xl shadow-brick-900/50 ring-8 ring-white/15 sm:order-2 sm:w-60 lg:w-72"
+              class="relative mx-auto grid aspect-square w-full max-w-52 place-items-center rounded-full bg-white shadow-2xl shadow-brick-900/50 ring-8 ring-white/15 sm:order-2 sm:w-60 sm:max-w-none lg:w-72"
             >
               <img
                 [src]="src"
@@ -71,7 +71,7 @@ import { ThemesStore } from '../stores/themes.store';
 
     <!-- USPs -->
     <section class="container-page mt-6">
-      <ul class="grid grid-cols-2 gap-3 rounded-3xl bg-zinc-50 p-4 text-sm sm:p-5 lg:grid-cols-4">
+      <ul class="grid grid-cols-1 gap-3 rounded-3xl bg-zinc-50 p-4 text-sm min-[360px]:grid-cols-2 sm:p-5 lg:grid-cols-4">
         @for (usp of usps; track usp.title) {
           <li class="flex items-center gap-3">
             <span class="grid size-10 shrink-0 place-items-center rounded-full bg-white text-brick-600 shadow-sm">

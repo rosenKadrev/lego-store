@@ -27,13 +27,13 @@ type NavLink = { label: string; params: Record<string, string> };
     </div>
 
     <div class="border-b border-zinc-200 bg-white/90 backdrop-blur-lg">
-      <div class="container-page flex h-16 items-center gap-3 lg:h-20 lg:gap-8">
-        <button type="button" class="btn-ghost -ml-2 size-10 p-0 lg:hidden" aria-label="Меню" (click)="menuOpen.set(true)">
+      <div class="container-page flex h-16 items-center gap-1.5 sm:gap-3 lg:h-20 lg:gap-8">
+        <button type="button" class="btn-ghost -ml-2 size-9 p-0 sm:size-10 lg:hidden" aria-label="Меню" (click)="menuOpen.set(true)">
           <app-icon name="menu" [size]="22" />
         </button>
 
-        <a routerLink="/" class="shrink-0" [attr.aria-label]="shopName">
-          <app-logo />
+        <a routerLink="/" class="min-w-0 shrink-0" [attr.aria-label]="shopName">
+          <app-logo [collapsible]="true" />
         </a>
 
         <nav class="hidden items-center gap-1 lg:flex" aria-label="Основна навигация">
@@ -84,10 +84,10 @@ type NavLink = { label: string; params: Record<string, string> };
 
         <app-search-box class="ml-auto hidden max-w-xs flex-1 md:block" />
 
-        <div class="ml-auto flex items-center gap-1 md:ml-0">
+        <div class="ml-auto flex shrink-0 items-center sm:gap-1 md:ml-0">
           <button
             type="button"
-            class="btn-ghost size-10 p-0 md:hidden"
+            class="btn-ghost size-9 p-0 sm:size-10 md:hidden"
             aria-label="Търсене"
             (click)="mobileSearchOpen.set(!mobileSearchOpen())"
           >
@@ -98,7 +98,7 @@ type NavLink = { label: string; params: Record<string, string> };
             <div class="relative">
               <button
                 type="button"
-                class="btn-ghost h-10 gap-2 px-2 sm:px-3"
+                class="btn-ghost h-9 gap-2 px-1.5 sm:h-10 sm:px-3"
                 [attr.aria-expanded]="accountOpen()"
                 (click)="accountOpen.set(!accountOpen())"
               >
@@ -128,13 +128,13 @@ type NavLink = { label: string; params: Record<string, string> };
               }
             </div>
           } @else {
-            <a routerLink="/login" class="btn-ghost h-10 gap-2 px-2 sm:px-3" aria-label="Вход">
+            <a routerLink="/login" class="btn-ghost h-9 gap-2 px-1.5 sm:h-10 sm:px-3" aria-label="Вход">
               <app-icon name="user" [size]="22" />
               <span class="hidden text-sm xl:inline">Вход</span>
             </a>
           }
 
-          <button type="button" class="btn-ghost relative size-10 p-0" aria-label="Количка" (click)="cart.openDrawer()">
+          <button type="button" class="btn-ghost relative size-9 p-0 sm:size-10" aria-label="Количка" (click)="cart.openDrawer()">
             <app-icon name="cart" [size]="22" />
             @if (cart.count()) {
               <span

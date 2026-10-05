@@ -13,11 +13,17 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       <rect x="25" y="5" width="6" height="2" rx="1" fill="white" opacity=".35" />
       <path d="M12 22h16" stroke="white" stroke-width="3.2" stroke-linecap="round" />
     </svg>
-    <span class="font-display text-xl leading-none font-extrabold tracking-tight lg:text-2xl" [class.text-white]="inverted()">
+    <span
+      class="font-display text-xl leading-none font-extrabold tracking-tight lg:text-2xl"
+      [class.text-white]="inverted()"
+      [class.max-[359px]:sr-only]="collapsible()"
+    >
       Brick<span class="text-brick-600">Store</span>
     </span>
   `,
 })
 export class Logo {
   readonly inverted = input(false);
+  /** Show only the brick icon on very narrow screens (< 360px) */
+  readonly collapsible = input(false);
 }

@@ -106,7 +106,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
         </div>
       }
 
-      <div class="mt-6 grid gap-8 lg:grid-cols-[15rem_1fr]">
+      <div class="mt-6 grid grid-cols-1 gap-8 lg:grid-cols-[15rem_minmax(0,1fr)]">
         <!-- Filters: sidebar on desktop, bottom sheet on mobile -->
         <div
           class="max-lg:fixed max-lg:inset-0 max-lg:z-50"
@@ -233,11 +233,11 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
         </div>
 
         <!-- Results -->
-        <div>
+        <div class="min-w-0">
           @if (store.error()) {
             <p class="rounded-2xl bg-brick-50 p-4 text-sm text-brick-800">{{ store.error() }}</p>
           }
-          <div class="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4" [class.opacity-60]="store.loading()">
+          <div class="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4" [class.opacity-60]="store.loading()">
             @for (item of store.items(); track item.id) {
               <app-product-card [listing]="item" />
             } @empty {

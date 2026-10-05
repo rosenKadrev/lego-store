@@ -155,7 +155,7 @@ import { ThemesStore } from '../stores/themes.store';
             @if (l.condition === 'used' && (l.item_type === 'set' || l.condition_notes)) {
               <section class="mt-8">
                 <h2 class="text-lg font-bold">Състояние</h2>
-                <dl class="mt-3 grid grid-cols-2 gap-2 text-sm" [class.hidden]="l.item_type !== 'set'">
+                <dl class="mt-3 grid grid-cols-1 gap-2 text-sm min-[360px]:grid-cols-2" [class.hidden]="l.item_type !== 'set'">
                   @for (row of usedDetails(); track row.label) {
                     <div class="flex items-center gap-2 rounded-xl border border-zinc-200 p-3">
                       <app-icon [name]="row.ok ? 'check' : 'x'" [size]="18" [class]="row.ok ? 'text-emerald-600' : 'text-brick-600'" />
@@ -180,21 +180,21 @@ import { ThemesStore } from '../stores/themes.store';
             <section class="mt-8">
               <h2 class="text-lg font-bold">Детайли</h2>
               <dl class="mt-3 divide-y divide-zinc-100 text-sm">
-                <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Номер</dt><dd class="font-medium">{{ itemNum() }}</dd></div>
+                <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Номер</dt><dd class="min-w-0 text-right font-medium break-words">{{ itemNum() }}</dd></div>
                 @if (l.color_name) {
-                  <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Цвят</dt><dd class="font-medium">{{ l.color_name }}</dd></div>
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Цвят</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.color_name }}</dd></div>
                 }
                 @if (l.part_category) {
-                  <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Категория</dt><dd class="font-medium">{{ l.part_category }}</dd></div>
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Категория</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.part_category }}</dd></div>
                 }
                 @if (l.year) {
-                  <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Година</dt><dd class="font-medium">{{ l.year }}</dd></div>
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Година</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.year }}</dd></div>
                 }
                 @if (l.num_parts) {
-                  <div class="flex justify-between py-2.5"><dt class="text-zinc-500">Части</dt><dd class="font-medium">{{ l.num_parts }}</dd></div>
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Части</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.num_parts }}</dd></div>
                 }
                 @if (store.minifigs().length) {
-                  <div class="flex justify-between py-2.5">
+                  <div class="flex justify-between gap-4 py-2.5">
                     <dt class="text-zinc-500">Минифигурки</dt><dd class="font-medium">{{ minifigCount() }}</dd>
                   </div>
                 }
