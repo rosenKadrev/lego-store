@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, effect, ElementRef, inject, signal, untracked, viewChild } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
@@ -60,7 +60,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
   selector: 'app-catalog',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [FormsModule, ProductCard, Icon, ColorSwatch],
-  host: { '(window:scroll)': 'onScroll()' },
+  host: { '(window:scroll)': 'onScroll()', '(window:resize)': 'onScroll()' },
   template: `
     @let f = store.filters();
     <div class="container-page pt-8">
@@ -83,7 +83,9 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
         >
           <div class="absolute inset-0 bg-ink-900/50 lg:hidden" (click)="filtersOpen.set(false)"></div>
           <aside
-            class="space-y-7 max-lg:absolute max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[85vh] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-white max-lg:p-6 lg:sticky lg:top-[calc(var(--header-h)+0.75rem)] lg:-mr-3 lg:max-h-[calc(100dvh-var(--header-h)-1.5rem)] lg:overflow-y-auto lg:overscroll-contain lg:pr-3 lg:pb-6 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
+            #sidebar
+            [style.--sidebar-max.px]="sidebarMax()"
+            class="space-y-7 max-lg:absolute max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[85vh] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-white max-lg:p-6 lg:sticky lg:top-[calc(var(--header-h)+0.75rem)] lg:-mr-3 lg:max-h-(--sidebar-max) lg:overflow-y-auto lg:overscroll-contain lg:pr-3 lg:pb-6 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
           >
             <div class="flex items-center justify-between lg:hidden">
               <h2 class="text-lg font-bold">Филтри</h2>
@@ -426,6 +428,9 @@ export class Catalog {
   /** The toolbar is pinned under the header (gets a border / blur) */
   protected readonly stuck = signal(false);
   protected readonly showBackToTop = signal(false);
+  private readonly sidebar = viewChild<ElementRef<HTMLElement>>('sidebar');
+  /** Desktop sidebar height: from where it currently starts down to the bottom of the screen */
+  protected readonly sidebarMax = signal<number | null>(null);
   private scrollFrame = 0;
   protected readonly pricePresets = PRICE_PRESETS;
   protected minDraft: number | null = null;
@@ -511,6 +516,7 @@ export class Catalog {
       });
     });
     effect(() => this.title.setTitle(`${this.heading()} | ${SHOP_NAME}`));
+    afterNextRender(() => this.onScroll());
   }
 
   protected update(changes: Partial<CatalogFilters>): void {
@@ -561,6 +567,13 @@ export class Catalog {
         this.stuck.set(window.scrollY > 0 && toolbar.getBoundingClientRect().top <= top + 0.5);
       }
       this.showBackToTop.set(window.scrollY > window.innerHeight * 1.5);
+      const sidebar = this.sidebar()?.nativeElement;
+      if (sidebar) {
+        // Before it gets pinned the sidebar sits lower (under the heading), so it must be shorter
+        const pinnedTop = parseFloat(getComputedStyle(sidebar).top) || 0;
+        const top = Math.max(sidebar.getBoundingClientRect().top, pinnedTop);
+        this.sidebarMax.set(Math.max(200, Math.floor(window.innerHeight - top - 16)));
+      }
     });
   }
 
