@@ -14,11 +14,11 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       <path d="M12 22h16" stroke="white" stroke-width="3.2" stroke-linecap="round" />
     </svg>
     <span
-      class="font-display text-xl leading-none font-extrabold tracking-tight lg:text-2xl"
+      class="font-display inline-flex items-center text-xl leading-none font-extrabold tracking-tight lg:text-2xl"
       [class.text-white]="inverted()"
       [class.max-[359px]:sr-only]="collapsible()"
     >
-      <span class="mr-1 inline-block rounded-md bg-stud-400 px-1.5 py-0.5 text-[0.85em] text-ink-900">MBR</span>Brick<span
+      <span class="mr-1 rounded-md bg-stud-400 px-1.5 py-1.5 text-[0.85em] leading-none text-ink-900">MBR</span>Brick<span
         class="text-brick-600"
         >Store</span
       >

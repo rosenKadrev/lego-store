@@ -203,9 +203,12 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
               <p class="rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ error() }}</p>
             }
 
-            <button type="submit" class="btn-primary w-full py-3.5 text-base" [disabled]="submitting()">
+            <button type="submit" class="btn-primary w-full py-3.5 text-base" [disabled]="submitting() || missing().length > 0">
               {{ submitting() ? 'Изпращане…' : 'Завърши поръчката' }}
             </button>
+            @if (missing().length && !submitting()) {
+              <p class="text-center text-xs text-zinc-500">Попълнете: {{ missing().join(', ') }}</p>
+            }
           </aside>
         </form>
       }
@@ -246,6 +249,26 @@ export class Checkout {
   protected readonly shipping = computed(() => this.cart.shippingFor(this.deliveryType()));
   protected readonly total = computed(() => this.cart.subtotal() + (this.shipping() ?? 0));
   protected readonly submitting = signal(false);
+
+  /** Re-evaluated on every value/validity change of the form */
+  private readonly formState = toSignal(this.form.events, { initialValue: null });
+  private readonly fieldLabels: Partial<Record<keyof typeof this.form.controls, string>> = {
+    customerName: 'име и фамилия',
+    phone: 'телефон',
+    email: 'имейл',
+    city: 'град',
+    officeCode: 'офис',
+    address: 'адрес',
+    acceptTerms: 'съгласие с условията',
+  };
+  /** Labels of required fields that are still empty/invalid, shown under the disabled button. */
+  protected readonly missing = computed(() => {
+    this.formState();
+    this.deliveryType();
+    return (Object.keys(this.fieldLabels) as (keyof typeof this.fieldLabels)[])
+      .filter((name) => this.form.controls[name].invalid)
+      .map((name) => this.fieldLabels[name]!);
+  });
   protected readonly submitted = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly notes = signal<string[]>([]);
