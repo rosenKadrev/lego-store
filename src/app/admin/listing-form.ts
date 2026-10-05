@@ -100,12 +100,12 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                     @for (o of store.existingOffers(); track o.id) {
                       <li>
                         <a [routerLink]="['/admin/listings', o.id]" class="underline">
-                          {{ conditionLabel[o.condition!] }} · {{ o.price | currency }} · {{ o.stock }} бр.{{ o.is_published ? '' : ' (чернова)' }}
+                          {{ conditionLabel[o.condition!] }}{{ o.box_damaged ? ', ударена кутия' : '' }} · {{ o.price | currency }} · {{ o.stock }} бр.{{ o.is_published ? '' : ' (чернова)' }}
                         </a>
                       </li>
                     }
                   </ul>
-                  @if (hasNewOffer() && form.value.condition === 'new') {
+                  @if (hasNewOffer() && form.value.condition === 'new' && !boxDamaged()) {
                     <p class="mt-2 text-amber-900">За нови бройки по-добре увеличете наличността на съществуващата обява.</p>
                   }
                 </div>
@@ -212,6 +212,22 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
               </div>
               @if (form.controls.compare_at_price.value != null && form.controls.price.value != null && form.controls.compare_at_price.value <= form.controls.price.value) {
                 <p class="field-error -mt-3">Старата цена трябва да е по-висока от цената.</p>
+              }
+
+              @if (condition() === 'new' && store.item()?.type === 'set') {
+                <div class="rounded-2xl border p-4" [class]="boxDamaged() ? 'border-amber-300 bg-amber-50' : 'border-zinc-200'">
+                  <label class="flex items-start gap-3 text-sm">
+                    <input type="checkbox" formControlName="box_damaged" class="mt-0.5 size-4 accent-amber-600" />
+                    <span>
+                      <span class="block font-semibold">Ударена кутия</span>
+                      <span class="text-zinc-500">Сетът е нов и запечатан, но кутията има козметични наранявания.</span>
+                    </span>
+                  </label>
+                  @if (boxDamaged()) {
+                    <label class="label mt-3" for="box-notes">Какво има по кутията <span class="font-normal text-zinc-400">(по избор)</span></label>
+                    <input id="box-notes" class="input" formControlName="condition_notes" placeholder="Напр. смачкан ъгъл, драскотина на гърба" />
+                  }
+                </div>
               }
 
               @if (condition() === 'used') {
@@ -341,6 +357,7 @@ export class ListingForm {
     is_complete: this.fb.nonNullable.control(true),
     minifigs_complete: this.fb.nonNullable.control(true),
     condition_notes: this.fb.nonNullable.control(''),
+    box_damaged: this.fb.nonNullable.control(false),
     description: this.fb.nonNullable.control(''),
     is_published: this.fb.nonNullable.control(true),
   });
@@ -368,7 +385,8 @@ export class ListingForm {
   });
   protected readonly savedMessage = signal<string | null>(null);
   protected readonly condition = toSignal(this.form.controls.condition.valueChanges, { initialValue: 'new' as ItemCondition });
-  protected readonly hasNewOffer = computed(() => this.store.existingOffers().some((o) => o.condition === 'new'));
+  protected readonly boxDamaged = toSignal(this.form.controls.box_damaged.valueChanges, { initialValue: false });
+  protected readonly hasNewOffer = computed(() => this.store.existingOffers().some((o) => o.condition === 'new' && !o.box_damaged));
   protected readonly slug = computed(() => slugify(this.store.item()?.name ?? ''));
   private searchTimer?: ReturnType<typeof setTimeout>;
 
@@ -393,6 +411,7 @@ export class ListingForm {
             is_complete: l.is_complete ?? true,
             minifigs_complete: l.minifigs_complete ?? true,
             condition_notes: l.condition_notes ?? '',
+            box_damaged: l.box_damaged,
             description: l.description ?? '',
             is_published: l.is_published,
           });
@@ -464,7 +483,8 @@ export class ListingForm {
       has_instructions: used && isSet ? v.has_instructions : null,
       is_complete: used && isSet ? v.is_complete : null,
       minifigs_complete: used && isSet ? v.minifigs_complete : null,
-      condition_notes: used ? v.condition_notes.trim() || null : null,
+      box_damaged: isSet && !used && v.box_damaged,
+      condition_notes: used || (isSet && v.box_damaged) ? v.condition_notes.trim() || null : null,
       description: v.description.trim() || null,
       is_published: v.is_published,
     });

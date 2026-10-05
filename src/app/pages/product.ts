@@ -2,7 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
-import { CONDITION_LABEL, displayItemNum, SHOP_NAME, slugify } from '../core/models';
+import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, SHOP_NAME, slugify } from '../core/models';
 import { ColorSwatch } from '../shared/color-swatch';
 import { Icon } from '../shared/icon';
 import { QuantityStepper } from '../shared/quantity-stepper';
@@ -60,11 +60,14 @@ import { ThemesStore } from '../stores/themes.store';
               @if (activeImage(); as src) {
                 <img [src]="src" [alt]="l.name" class="absolute inset-0 size-full object-contain p-6 mix-blend-multiply sm:p-10" />
               }
-              <span
-                class="chip absolute top-4 left-4 text-sm"
-                [class]="l.condition === 'new' ? 'bg-emerald-600 text-white' : 'bg-stud-400 text-ink-900'"
-                >{{ conditionLabel[l.condition!] }}</span
-              >
+              <div class="absolute top-4 left-4 flex flex-wrap gap-1.5">
+                <span class="chip text-sm" [class]="l.condition === 'new' ? 'bg-emerald-600 text-white' : 'bg-stud-400 text-ink-900'">{{
+                  conditionLabel[l.condition!]
+                }}</span>
+                @if (l.box_damaged) {
+                  <span class="chip bg-amber-100 text-sm text-amber-900 ring-1 ring-amber-300">{{ boxDamagedLabel }}</span>
+                }
+              </div>
             </div>
             @if (store.gallery().length > 1) {
               <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
@@ -138,6 +141,16 @@ import { ThemesStore } from '../stores/themes.store';
               <li class="flex items-center gap-2"><app-icon name="truck" [size]="18" class="text-brick-600" /> Еконт или Спиди, 1–2 дни</li>
               <li class="flex items-center gap-2"><app-icon name="refresh" [size]="18" class="text-brick-600" /> 14 дни право на връщане</li>
             </ul>
+
+            @if (l.box_damaged) {
+              <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm">
+                <h2 class="flex items-center gap-2 font-bold text-amber-900"><app-icon name="box" [size]="18" /> {{ boxDamagedLabel }}</h2>
+                <p class="mt-1 text-amber-900/80">Сетът е нов и запечатан. Кутията има козметични наранявания — съдържанието не е засегнато.</p>
+                @if (l.condition_notes) {
+                  <p class="mt-2 font-medium text-amber-950">{{ l.condition_notes }}</p>
+                }
+              </section>
+            }
 
             @if (l.condition === 'used' && (l.item_type === 'set' || l.condition_notes)) {
               <section class="mt-8">
@@ -246,6 +259,7 @@ export class Product {
   readonly slugParam = input.required<string>({ alias: 'slug' });
 
   protected readonly conditionLabel = CONDITION_LABEL;
+  protected readonly boxDamagedLabel = BOX_DAMAGED_LABEL;
   protected readonly activeIndex = signal(0);
   protected readonly quantity = signal(1);
 
@@ -286,7 +300,7 @@ export class Product {
     effect(() => {
       const l = this.store.listing();
       if (!l) return;
-      const color = l.color_name ? `, ${l.color_name}` : '';
+      const color = l.color_name ? `, ${l.color_name}` : l.box_damaged ? `, ${BOX_DAMAGED_LABEL.toLowerCase()}` : '';
       this.title.setTitle(`${l.name}${color} (${displayItemNum(l.item_num)}) — ${CONDITION_LABEL[l.condition!]} | ${SHOP_NAME}`);
       this.meta.updateTag({
         name: 'description',

@@ -9,7 +9,7 @@ import {
   withState,
 } from '@ngrx/signals';
 import { LocalStorage } from '../core/local-storage';
-import { CatalogListing, DeliveryType, ItemCondition, ShopSettings } from '../core/models';
+import { BOX_DAMAGED_LABEL, CatalogListing, DeliveryType, ItemCondition, ShopSettings } from '../core/models';
 import { Supabase } from '../core/supabase';
 
 export type CartItem = {
@@ -72,7 +72,9 @@ export const CartStore = signalStore(
       }
       const item: CartItem = {
         listingId: listing.id,
-        name: listing.color_name ? `${listing.name} — ${listing.color_name}` : (listing.name ?? ''),
+        name: listing.color_name
+          ? `${listing.name} — ${listing.color_name}`
+          : `${listing.name ?? ''}${listing.box_damaged ? ` (${BOX_DAMAGED_LABEL.toLowerCase()})` : ''}`,
         itemNum: listing.item_num ?? '',
         condition: listing.condition ?? 'new',
         price: listing.price ?? 0,

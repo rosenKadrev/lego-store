@@ -1,7 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CatalogListing, CONDITION_LABEL, displayItemNum, slugify } from '../core/models';
+import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { CartStore } from '../stores/cart.store';
 import { ColorSwatch } from './color-swatch';
@@ -32,6 +32,9 @@ import { Icon } from './icon';
           <span class="chip" [class]="l.condition === 'new' ? 'bg-emerald-600 text-white' : 'bg-stud-400 text-ink-900'">
             {{ conditionLabel() }}
           </span>
+          @if (l.box_damaged) {
+            <span class="chip bg-amber-100 text-amber-900 ring-1 ring-amber-300">{{ boxDamagedLabel }}</span>
+          }
           @if (discount(); as d) {
             <span class="chip bg-brick-600 text-white">-{{ d }}%</span>
           }
@@ -87,6 +90,7 @@ export class ProductCard {
   private readonly cart = inject(CartStore);
 
   readonly listing = input.required<CatalogListing>();
+  protected readonly boxDamagedLabel = BOX_DAMAGED_LABEL;
 
   protected readonly image = computed(() => this.supabase.coverUrl(this.listing()));
   protected readonly itemNum = computed(() => displayItemNum(this.listing().item_num));

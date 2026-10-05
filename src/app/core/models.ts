@@ -31,6 +31,9 @@ export const CONDITION_LABEL: Record<ItemCondition, string> = {
   used: 'Употребявано',
 };
 
+/** Short label for a new, sealed set whose box has cosmetic damage. */
+export const BOX_DAMAGED_LABEL = 'Ударена кутия';
+
 export const ITEM_TYPE_LABEL: Record<ItemType, string> = {
   set: 'Сет',
   minifig: 'Минифигурка',

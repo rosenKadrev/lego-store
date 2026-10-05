@@ -60,6 +60,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
               <p class="text-xs text-zinc-500">
                 {{ itemNum(l.item_num) }} ·
                 <span [class]="l.condition === 'new' ? 'text-emerald-700' : 'text-amber-700'">{{ conditionLabel[l.condition!] }}</span>
+                @if (l.box_damaged) { · <span class="text-amber-700">ударена кутия</span> }
                 @if (l.theme_name ?? l.part_category; as group) { · {{ group }} }
               </p>
             </div>
