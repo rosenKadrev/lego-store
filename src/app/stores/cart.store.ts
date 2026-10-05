@@ -49,7 +49,7 @@ export const CartStore = signalStore(
   withMethods((store, supabase = inject(Supabase)) => ({
     shippingFor(delivery: DeliveryType): number {
       const s = store.settings();
-      if (!s || store.subtotal() >= s.free_shipping_threshold) return 0;
+      if (delivery === 'pickup' || !s || store.subtotal() >= s.free_shipping_threshold) return 0;
       return delivery === 'office' ? s.shipping_price_office : s.shipping_price_address;
     },
 

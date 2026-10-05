@@ -4,7 +4,7 @@ import { Router, RouterLink } from '@angular/router';
 import { Icon } from '../shared/icon';
 import { AuthStore } from '../stores/auth.store';
 
-type OrderState = { total?: number; email?: string; phone?: string };
+type OrderState = { total?: number; email?: string; phone?: string; pickup?: boolean };
 
 @Component({
   selector: 'app-order-success',
@@ -19,7 +19,7 @@ type OrderState = { total?: number; email?: string; phone?: string };
       <p class="mt-3 text-zinc-600">
         Номер на поръчката: <b class="text-ink-900">{{ number() }}</b>
         @if (state.total != null) {
-          <br />Сума за плащане при доставка: <b class="text-ink-900">{{ state.total | currency }}</b>
+          <br />Сума за плащане {{ state.pickup ? 'при взимане' : 'при доставка' }}: <b class="text-ink-900">{{ state.total | currency }}</b>
         }
       </p>
 
@@ -30,11 +30,15 @@ type OrderState = { total?: number; email?: string; phone?: string };
         </li>
         <li class="flex gap-4">
           <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ink-900 font-bold text-white">2</span>
-          <span>Изпращаме пратката и ви пращаме номер за проследяване{{ state.email ? ' на ' + state.email : '' }}.</span>
+          @if (state.pickup) {
+            <span>Подготвяме поръчката и ви се обаждаме, когато е готова за взимане.</span>
+          } @else {
+            <span>Изпращаме пратката и ви пращаме номер за проследяване{{ state.email ? ' на ' + state.email : '' }}.</span>
+          }
         </li>
         <li class="flex gap-4">
           <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ink-900 font-bold text-white">3</span>
-          <span>Преглеждате пратката и плащате на куриера.</span>
+          <span>{{ state.pickup ? 'Идвате, преглеждате поръчката и плащате на място.' : 'Преглеждате пратката и плащате на куриера.' }}</span>
         </li>
       </ol>
 

@@ -36,7 +36,7 @@ import { ThemesStore } from '../stores/themes.store';
 
           <div class="relative z-10 sm:order-1">
             <span class="chip mb-4 w-fit bg-stud-400 text-ink-900">Ново в магазина</span>
-            <h1 class="max-w-[14ch] text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">Строй нещо голямо.</h1>
+            <h1 class="max-w-[14ch] text-4xl leading-[1.05] font-extrabold tracking-tight sm:text-5xl lg:text-6xl">Построй нещо голямо.</h1>
             <p class="mt-3 max-w-sm text-white/80">Нови сетове, доставка до 5 дни и плащане при получаване.</p>
             <span class="btn mt-6 w-fit bg-white text-ink-900 group-hover:bg-stud-400">
               Разгледай новите <app-icon name="arrowRight" [size]="16" />
@@ -162,7 +162,7 @@ export class Home implements OnInit {
   protected readonly usps = [
     { icon: 'cash', title: 'Наложен платеж', text: 'Плащаш при получаване' },
     { icon: 'eye', title: 'Преглед преди плащане', text: 'С Еконт и Спиди' },
-    { icon: 'truck', title: 'Бърза доставка', text: 'До офис или адрес' },
+    { icon: 'truck', title: 'Бърза доставка', text: 'До офис, адрес или лично' },
     { icon: 'refresh', title: '14 дни за връщане', text: 'Без излишни въпроси' },
   ] as const;
 

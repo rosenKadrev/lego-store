@@ -51,6 +51,12 @@ export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
   returned: 'Върната',
 };
 
+export const DELIVERY_LABEL: Record<DeliveryType, string> = {
+  office: 'до офис',
+  address: 'до адрес',
+  pickup: 'лично взимане',
+};
+
 export const COURIER_LABEL: Record<Courier, string> = {
   econt: 'Еконт',
   speedy: 'Спиди',

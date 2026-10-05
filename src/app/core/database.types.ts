@@ -158,13 +158,13 @@ isOneToOne: false
                   ]
                 },"orders": {
                   Row: {
-                    "address": string | null,"city": string | null,"courier": Database["public"]['Enums']["courier"],"created_at": string,"customer_name": string,"delivery_type": Database["public"]['Enums']["delivery_type"],"email": string,"id": number,"note": string | null,"number": string,"office_code": string | null,"payment_method": Database["public"]['Enums']["payment_method"],"phone": string,"shipping_price": number,"status": Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number": string | null,"updated_at": string,"user_id": string | null
+                    "address": string | null,"city": string | null,"courier": Database["public"]['Enums']["courier"] | null,"created_at": string,"customer_name": string,"delivery_type": Database["public"]['Enums']["delivery_type"],"email": string,"id": number,"note": string | null,"number": string,"office_code": string | null,"payment_method": Database["public"]['Enums']["payment_method"],"phone": string,"shipping_price": number,"status": Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number": string | null,"updated_at": string,"user_id": string | null
                   }
                   Insert: {
-                    "address"?: string | null,"city"?: string | null,"courier": Database["public"]['Enums']["courier"],"created_at"?: string,"customer_name": string,"delivery_type": Database["public"]['Enums']["delivery_type"],"email": string,"id"?: never,"note"?: string | null,"number"?: string,"office_code"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"],"phone": string,"shipping_price": number,"status"?: Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null
+                    "address"?: string | null,"city"?: string | null,"courier"?: Database["public"]['Enums']["courier"] | null,"created_at"?: string,"customer_name": string,"delivery_type": Database["public"]['Enums']["delivery_type"],"email": string,"id"?: never,"note"?: string | null,"number"?: string,"office_code"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"],"phone": string,"shipping_price": number,"status"?: Database["public"]['Enums']["order_status"],"subtotal": number,"total": number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null
                   }
                   Update: {
-                    "address"?: string | null,"city"?: string | null,"courier"?: Database["public"]['Enums']["courier"],"created_at"?: string,"customer_name"?: string,"delivery_type"?: Database["public"]['Enums']["delivery_type"],"email"?: string,"id"?: never,"note"?: string | null,"number"?: string,"office_code"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"],"phone"?: string,"shipping_price"?: number,"status"?: Database["public"]['Enums']["order_status"],"subtotal"?: number,"total"?: number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null
+                    "address"?: string | null,"city"?: string | null,"courier"?: Database["public"]['Enums']["courier"] | null,"created_at"?: string,"customer_name"?: string,"delivery_type"?: Database["public"]['Enums']["delivery_type"],"email"?: string,"id"?: never,"note"?: string | null,"number"?: string,"office_code"?: string | null,"payment_method"?: Database["public"]['Enums']["payment_method"],"phone"?: string,"shipping_price"?: number,"status"?: Database["public"]['Enums']["order_status"],"subtotal"?: number,"total"?: number,"tracking_number"?: string | null,"updated_at"?: string,"user_id"?: string | null
                   }
                   Relationships: [
                     
@@ -285,13 +285,13 @@ isOneToOne: false
                   ]
                 },"shop_settings": {
                   Row: {
-                    "free_shipping_threshold": number,"id": boolean,"shipping_price_address": number,"shipping_price_office": number
+                    "free_shipping_threshold": number,"id": boolean,"pickup_address": string | null,"pickup_enabled": boolean,"pickup_hours": string | null,"shipping_price_address": number,"shipping_price_office": number
                   }
                   Insert: {
-                    "free_shipping_threshold"?: number,"id"?: boolean,"shipping_price_address"?: number,"shipping_price_office"?: number
+                    "free_shipping_threshold"?: number,"id"?: boolean,"pickup_address"?: string | null,"pickup_enabled"?: boolean,"pickup_hours"?: string | null,"shipping_price_address"?: number,"shipping_price_office"?: number
                   }
                   Update: {
-                    "free_shipping_threshold"?: number,"id"?: boolean,"shipping_price_address"?: number,"shipping_price_office"?: number
+                    "free_shipping_threshold"?: number,"id"?: boolean,"pickup_address"?: string | null,"pickup_enabled"?: boolean,"pickup_hours"?: string | null,"shipping_price_address"?: number,"shipping_price_office"?: number
                   }
                   Relationships: [
                     
@@ -375,7 +375,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "courier": "econt"|"speedy","delivery_type": "office"|"address","item_condition": "new"|"used","item_type": "set"|"minifig"|"part","order_status": "new"|"confirmed"|"shipped"|"delivered"|"paid"|"cancelled"|"refused"|"returned","payment_method": "cod","user_role": "customer"|"admin"
+            "courier": "econt"|"speedy","delivery_type": "office"|"address"|"pickup","item_condition": "new"|"used","item_type": "set"|"minifig"|"part","order_status": "new"|"confirmed"|"shipped"|"delivered"|"paid"|"cancelled"|"refused"|"returned","payment_method": "cod","user_role": "customer"|"admin"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -491,7 +491,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "courier": ["econt", "speedy"],"delivery_type": ["office", "address"],"item_condition": ["new", "used"],"item_type": ["set", "minifig", "part"],"order_status": ["new", "confirmed", "shipped", "delivered", "paid", "cancelled", "refused", "returned"],"payment_method": ["cod"],"user_role": ["customer", "admin"]
+            "courier": ["econt", "speedy"],"delivery_type": ["office", "address", "pickup"],"item_condition": ["new", "used"],"item_type": ["set", "minifig", "part"],"order_status": ["new", "confirmed", "shipped", "delivered", "paid", "cancelled", "refused", "returned"],"payment_method": ["cod"],"user_role": ["customer", "admin"]
           }
         }
 } as const

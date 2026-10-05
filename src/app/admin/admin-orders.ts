@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { COURIER_LABEL, displayItemNum, ORDER_STATUS_LABEL, OrderStatus } from '../core/models';
+import { COURIER_LABEL, DELIVERY_LABEL, displayItemNum, ORDER_STATUS_LABEL, OrderStatus } from '../core/models';
 import { Icon } from '../shared/icon';
 import { OrderStatusBadge } from '../shared/order-status-badge';
 import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './admin-orders.store';
@@ -41,7 +41,7 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
             </span>
             <span class="min-w-0 flex-1">
               <span class="block truncate font-medium">{{ order.customer_name }}</span>
-              <span class="text-xs text-zinc-500">{{ order.phone }} · {{ order.city }}</span>
+              <span class="text-xs text-zinc-500">{{ order.phone }} · {{ order.delivery_type === 'pickup' ? 'Лично взимане' : order.city }}</span>
             </span>
             @if (risk) {
               <span class="chip bg-brick-600 text-white" title="Предишни неприети или върнати пратки">⚠ {{ risk }} отказ{{ risk > 1 ? 'а' : '' }}</span>
@@ -55,10 +55,14 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
             <div class="grid gap-6 border-t border-zinc-100 bg-zinc-50/60 p-4 md:grid-cols-2">
               <div class="space-y-3 text-sm">
                 <h3 class="font-bold">Доставка</h3>
-                <p>
-                  {{ courierLabel[order.courier] }} · {{ order.delivery_type === 'office' ? 'до офис' : 'до адрес' }}<br />
-                  {{ order.city }}, {{ order.delivery_type === 'office' ? order.office_code : order.address }}
-                </p>
+                @if (order.delivery_type === 'pickup') {
+                  <p class="font-semibold">Лично взимане</p>
+                } @else {
+                  <p>
+                    {{ order.courier ? courierLabel[order.courier] : '' }} · {{ deliveryLabel[order.delivery_type] }}<br />
+                    {{ order.city }}, {{ order.delivery_type === 'office' ? order.office_code : order.address }}
+                  </p>
+                }
                 <p>
                   <a [href]="'tel:' + order.phone" class="font-semibold text-brick-600">{{ order.phone }}</a><br />
                   <a [href]="'mailto:' + order.email" class="text-zinc-600">{{ order.email }}</a>
@@ -80,14 +84,14 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
                       <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
                     </li>
                   }
-                  <li class="flex justify-between text-zinc-500"><span>Доставка</span><span>{{ order.shipping_price | currency }}</span></li>
+                  <li class="flex justify-between text-zinc-500"><span>{{ order.delivery_type === 'pickup' ? 'Лично взимане' : 'Доставка' }}</span><span>{{ order.shipping_price | currency }}</span></li>
                   <li class="flex justify-between border-t border-zinc-200 pt-1 font-bold"><span>Общо (наложен платеж)</span><span>{{ order.total | currency }}</span></li>
                 </ul>
               </div>
 
               @if (next(order.status).length) {
                 <div class="flex flex-wrap items-end gap-2 md:col-span-2">
-                  @if (order.status === 'confirmed') {
+                  @if (order.status === 'confirmed' && order.delivery_type !== 'pickup') {
                     <div class="w-full sm:w-56">
                       <label class="label" [for]="'tracking-' + order.id">Товарителница</label>
                       <input [id]="'tracking-' + order.id" class="input" [(ngModel)]="tracking[order.id]" placeholder="Номер на пратката" />
@@ -99,7 +103,7 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
                       [class]="isNegative(status) ? 'btn-outline text-brick-700' : 'btn-dark'"
                       (click)="changeStatus(order, status)"
                     >
-                      {{ actionLabel(status) }}
+                      {{ actionLabel(status, order) }}
                     </button>
                   }
                 </div>
@@ -118,6 +122,7 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
 export class AdminOrders implements OnInit {
   protected readonly store = inject(AdminOrdersStore);
   protected readonly courierLabel = COURIER_LABEL;
+  protected readonly deliveryLabel = DELIVERY_LABEL;
   protected readonly itemNum = displayItemNum;
   protected readonly tracking: Record<number, string> = {};
 
@@ -145,7 +150,12 @@ export class AdminOrders implements OnInit {
     return status === 'cancelled' || status === 'refused' || status === 'returned';
   }
 
-  protected actionLabel(status: OrderStatus): string {
+  protected actionLabel(status: OrderStatus, order?: AdminOrder): string {
+    if (order?.delivery_type === 'pickup') {
+      if (status === 'shipped') return 'Готова за взимане';
+      if (status === 'delivered') return 'Взета';
+      if (status === 'refused') return 'Не дойде';
+    }
     const labels: Record<OrderStatus, string> = {
       new: 'Нова',
       confirmed: 'Потвърди',
@@ -160,7 +170,8 @@ export class AdminOrders implements OnInit {
   }
 
   protected changeStatus(order: AdminOrder, status: OrderStatus): void {
-    if (this.isNegative(status) && !confirm(`${this.actionLabel(status)}? Наличността ще бъде върната.`)) return;
-    void this.store.setStatus(order, status, status === 'shipped' ? this.tracking[order.id] : undefined);
+    if (this.isNegative(status) && !confirm(`${this.actionLabel(status, order)}? Наличността ще бъде върната.`)) return;
+    const tracking = status === 'shipped' && order.delivery_type !== 'pickup' ? this.tracking[order.id] : undefined;
+    void this.store.setStatus(order, status, tracking);
   }
 }

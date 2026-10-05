@@ -62,20 +62,8 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                 <span class="grid size-8 place-items-center rounded-full bg-ink-900 text-sm text-white">2</span> Доставка
               </h2>
 
-              <div class="mt-5 grid grid-cols-2 gap-3">
-                @for (c of couriers; track c.value) {
-                  <label
-                    class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition"
-                    [class]="form.value.courier === c.value ? 'border-brick-600 bg-brick-50' : 'border-zinc-200 hover:border-zinc-300'"
-                  >
-                    <input type="radio" formControlName="courier" [value]="c.value" class="accent-brick-600" />
-                    <span class="font-semibold">{{ c.label }}</span>
-                  </label>
-                }
-              </div>
-
-              <div class="mt-3 grid gap-3 sm:grid-cols-2">
-                @for (d of deliveryTypes; track d.value) {
+              <div class="mt-5 grid gap-3" [class]="deliveryTypes().length === 3 ? 'md:grid-cols-3' : 'sm:grid-cols-2'">
+                @for (d of deliveryTypes(); track d.value) {
                   <label
                     class="flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-4 transition"
                     [class]="deliveryType() === d.value ? 'border-brick-600 bg-brick-50' : 'border-zinc-200 hover:border-zinc-300'"
@@ -91,19 +79,52 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                 }
               </div>
 
-              <div class="mt-5 grid gap-4 sm:grid-cols-2">
-                <div [class.sm:col-span-2]="deliveryType() === 'office'">
-                  <label class="label" for="city">Град</label>
-                  <input id="city" class="input" formControlName="city" autocomplete="address-level2" />
-                  @if (showError('city')) { <p class="field-error">Въведете град.</p> }
+              @if (deliveryType() === 'pickup') {
+                <div class="mt-5 flex gap-3 rounded-2xl bg-zinc-50 p-4 text-sm">
+                  <app-icon name="box" class="mt-0.5 text-brick-600" />
+                  <div>
+                    <p class="font-semibold">Къде да вземете поръчката</p>
+                    @if (cart.settings()?.pickup_address; as address) {
+                      <p class="mt-1 text-zinc-700">{{ address }}</p>
+                    } @else {
+                      <p class="mt-1 text-zinc-700">Ще ви съобщим адреса, когато потвърждаваме поръчката по телефона.</p>
+                    }
+                    @if (cart.settings()?.pickup_hours; as hours) {
+                      <p class="mt-1 text-zinc-500">{{ hours }}</p>
+                    }
+                    <p class="mt-2 text-zinc-500">Ще ви се обадим, когато поръчката е готова за взимане.</p>
+                  </div>
                 </div>
+              } @else {
+                <p class="label mt-5">Куриер</p>
+                <div class="grid grid-cols-2 gap-3">
+                  @for (c of couriers; track c.value) {
+                    <label
+                      class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition"
+                      [class]="form.value.courier === c.value ? 'border-brick-600 bg-brick-50' : 'border-zinc-200 hover:border-zinc-300'"
+                    >
+                      <input type="radio" formControlName="courier" [value]="c.value" class="accent-brick-600" />
+                      <span class="font-semibold">{{ c.label }}</span>
+                    </label>
+                  }
+                </div>
+              }
+
+              <div class="mt-5 grid gap-4 sm:grid-cols-2">
+                @if (deliveryType() !== 'pickup') {
+                  <div [class.sm:col-span-2]="deliveryType() === 'office'">
+                    <label class="label" for="city">Град</label>
+                    <input id="city" class="input" formControlName="city" autocomplete="address-level2" />
+                    @if (showError('city')) { <p class="field-error">Въведете град.</p> }
+                  </div>
+                }
                 @if (deliveryType() === 'office') {
                   <div class="sm:col-span-2">
                     <label class="label" for="office">Офис на {{ form.value.courier === 'econt' ? 'Еконт' : 'Спиди' }}</label>
                     <input id="office" class="input" formControlName="officeCode" placeholder="Име или адрес на офиса" />
                     @if (showError('officeCode')) { <p class="field-error">Посочете офис.</p> }
                   </div>
-                } @else {
+                } @else if (deliveryType() === 'address') {
                   <div>
                     <label class="label" for="address">Адрес</label>
                     <input id="address" class="input" formControlName="address" autocomplete="street-address" placeholder="ул., №, бл., вх., ет., ап." />
@@ -124,8 +145,14 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
               <label class="mt-5 flex items-center gap-3 rounded-2xl border-2 border-brick-600 bg-brick-50 p-4">
                 <app-icon name="cash" class="text-brick-600" />
                 <span>
-                  <span class="block font-semibold">Наложен платеж</span>
-                  <span class="text-sm text-zinc-600">Плащате на куриера при получаване. Можете да прегледате пратката преди плащане.</span>
+                  <span class="block font-semibold">{{ deliveryType() === 'pickup' ? 'В брой при взимане' : 'Наложен платеж' }}</span>
+                  <span class="text-sm text-zinc-600">
+                    @if (deliveryType() === 'pickup') {
+                      Плащате в брой, когато вземете поръчката. Можете да я прегледате на място.
+                    } @else {
+                      Плащате на куриера при получаване. Можете да прегледате пратката преди плащане.
+                    }
+                  </span>
                 </span>
               </label>
             </section>
@@ -151,7 +178,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
               <div class="flex justify-between"><span>Продукти</span><span>{{ cart.subtotal() | currency }}</span></div>
               <div class="flex justify-between">
                 <span>Доставка</span>
-                <span>@if (shipping() === 0) { Безплатна } @else { {{ shipping() | currency }} }</span>
+                <span>@if (deliveryType() === 'pickup') { Лично взимане } @else if (shipping() === 0) { Безплатна } @else { {{ shipping() | currency }} }</span>
               </div>
               <div class="flex justify-between pt-2 text-lg font-bold"><span>Общо</span><span>{{ total() | currency }}</span></div>
             </div>
@@ -189,10 +216,11 @@ export class Checkout {
     { value: 'econt', label: 'Еконт' },
     { value: 'speedy', label: 'Спиди' },
   ];
-  protected readonly deliveryTypes: { value: DeliveryType; label: string }[] = [
+  protected readonly deliveryTypes = computed<{ value: DeliveryType; label: string }[]>(() => [
     { value: 'office', label: 'До офис' },
     { value: 'address', label: 'До адрес' },
-  ];
+    ...(this.cart.settings()?.pickup_enabled ? [{ value: 'pickup' as const, label: 'Лично взимане' }] : []),
+  ]);
 
   protected readonly form = this.fb.group({
     customerName: ['', [Validators.required, Validators.minLength(3)]],
@@ -216,13 +244,15 @@ export class Checkout {
   protected readonly notes = signal<string[]>([]);
 
   constructor() {
-    // Office vs. address: only the visible field is required
+    // Only the visible delivery fields are required (pickup needs none)
     this.form.controls.deliveryType.valueChanges.subscribe((type) => {
-      const { officeCode, address } = this.form.controls;
+      const { officeCode, address, city } = this.form.controls;
       officeCode.setValidators(type === 'office' ? Validators.required : null);
       address.setValidators(type === 'address' ? Validators.required : null);
+      city.setValidators(type === 'pickup' ? null : Validators.required);
       officeCode.updateValueAndValidity();
       address.updateValueAndValidity();
+      city.updateValueAndValidity();
     });
 
     // Prefill from the profile once it's loaded, without overwriting what the user typed
@@ -262,7 +292,7 @@ export class Checkout {
         p_email: v.email.trim(),
         p_courier: v.courier,
         p_delivery_type: v.deliveryType,
-        p_city: v.city.trim(),
+        p_city: v.deliveryType === 'pickup' ? undefined : v.city.trim(),
         p_office_code: v.deliveryType === 'office' ? v.officeCode.trim() : undefined,
         p_address: v.deliveryType === 'address' ? v.address.trim() : undefined,
         p_note: v.note.trim() || undefined,
@@ -282,7 +312,7 @@ export class Checkout {
       const order = data[0];
       this.cart.clear();
       void this.router.navigate(['/order', order.order_number], {
-        state: { total: order.total, email: v.email, phone: v.phone },
+        state: { total: order.total, email: v.email, phone: v.phone, pickup: v.deliveryType === 'pickup' },
       });
     } finally {
       this.submitting.set(false);
