@@ -58,7 +58,16 @@ export const AuthStore = signalStore(
       whenReady(): Promise<void> {
         ready ??= (async () => {
           const { data } = await db.auth.getSession();
-          patchState(store, { session: data.session });
+          let session = data.session;
+          // A stored session can outlive its account (deleted user): verify it with the server
+          if (session) {
+            const { data: check, error } = await db.auth.getUser();
+            if (!check.user && error && error.status !== undefined && error.status < 500) {
+              await db.auth.signOut({ scope: 'local' });
+              session = null;
+            }
+          }
+          patchState(store, { session });
           await loadProfile();
           patchState(store, { initialized: true });
 
@@ -123,8 +132,9 @@ export const AuthStore = signalStore(
       async updateProfile(changes: Pick<Profile, 'full_name' | 'phone'>): Promise<string | null> {
         const userId = store.session()?.user.id;
         if (!userId) return 'Не сте влезли в профила си.';
-        const { data, error } = await db.from('profiles').update(changes).eq('id', userId).select().single();
-        if (error) return error.message;
+        const { data, error } = await db.from('profiles').update(changes).eq('id', userId).select().maybeSingle();
+        if (error) return 'Данните не можаха да бъдат запазени. Опитайте отново.';
+        if (!data) return 'Профилът не е намерен. Излезте и влезте отново.';
         patchState(store, { profile: data });
         return null;
       },
