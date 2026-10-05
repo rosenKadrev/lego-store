@@ -2,5 +2,5 @@
 export const environment = {
   production: true,
   supabaseUrl: 'https://wagtffhpvowbybhqpwfj.supabase.co',
-  supabaseKey: 'REPLACE_WITH_PUBLISHABLE_KEY', // Dashboard → Project Settings → API Keys
+  supabaseKey: 'sb_publishable_P-321mcpz1VPLRXQKU2FaQ_vwV-1TKe',
 };
