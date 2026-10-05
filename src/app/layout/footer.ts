@@ -52,7 +52,7 @@ import { SHOP_NAME } from '../core/models';
         </div>
       </div>
       <div class="border-t border-white/10">
-        <p class="container-page py-6 text-xs font-semibold text-zinc-400">© {{ year }} {{ shopName }}. Всички права запазени.</p>
+        <p class="container-page py-6 text-center text-xs font-semibold text-zinc-400">© {{ year }} {{ shopName }}. Всички права запазени.</p>
       </div>
     </footer>
   `,
