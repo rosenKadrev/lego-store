@@ -47,14 +47,15 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
     <div class="mt-5 overflow-hidden rounded-2xl border border-line" [class.opacity-60]="store.loading()">
       <ul class="divide-y divide-line-soft">
         @for (l of store.items(); track l.id) {
+          <!-- Phones: photo + name / price, stock and actions on a second row; sm+: one row -->
           <li class="flex flex-wrap items-center gap-x-4 gap-y-3 p-3 sm:flex-nowrap sm:p-4">
             <div class="size-14 shrink-0 overflow-hidden rounded-xl bg-well">
               @if (cover(l); as src) {
                 <img [src]="src" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" />
               }
             </div>
-            <div class="min-w-0 flex-1">
-              <a [routerLink]="['/admin/listings', l.id]" class="line-clamp-1 font-semibold hover:text-accent">
+            <div class="min-w-0 flex-1 basis-[calc(100%-4.5rem)] sm:basis-0">
+              <a [routerLink]="['/admin/listings', l.id]" class="line-clamp-2 sm:line-clamp-1 font-semibold hover:text-accent">
                 {{ l.name }}@if (l.color_name) { <span class="font-normal text-fg-muted">— {{ l.color_name }}</span> }
               </a>
               <p class="text-xs text-fg-muted">
@@ -64,7 +65,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
                 @if (l.theme_name ?? l.part_category; as group) { · {{ group }} }
               </p>
             </div>
-            <p class="w-24 text-right font-bold">{{ l.price | currency }}</p>
+            <p class="font-bold sm:w-24 sm:text-right">{{ l.price | currency }}</p>
             @if (l.condition === 'new' || l.item_type === 'part') {
               <app-quantity-stepper [value]="l.stock ?? 0" [max]="999" (valueChange)="store.setStock(l.id!, $event)" />
             } @else {
@@ -74,7 +75,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
             }
             <button
               type="button"
-              class="btn size-10 p-0"
+              class="btn ml-auto size-10 p-0 sm:ml-0"
               [class]="l.is_published ? 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-400/10' : 'text-fg-faint hover:bg-surface-3'"
               [attr.aria-label]="l.is_published ? 'Скрий' : 'Публикувай'"
               [title]="l.is_published ? 'Публикувана — натисни, за да скриеш' : 'Чернова — натисни, за да публикуваш'"

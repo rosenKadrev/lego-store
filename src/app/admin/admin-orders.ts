@@ -12,11 +12,11 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
   imports: [FormsModule, CurrencyPipe, DatePipe, Icon, OrderStatusBadge],
   providers: [AdminOrdersStore],
   template: `
-    <div class="flex gap-2 overflow-x-auto pb-1">
+    <div class="flex flex-wrap gap-2">
       @for (f of filters; track f.value) {
         <button
           type="button"
-          class="chip shrink-0 px-4 py-2 text-sm"
+          class="chip px-3.5 py-2 text-sm"
           [class]="store.filter() === f.value ? 'bg-inverse text-on-inverse' : 'bg-surface-3 text-fg hover:bg-surface-4'"
           (click)="store.setFilter(f.value)"
         >
@@ -34,21 +34,22 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
         @let open = store.expandedId() === order.id;
         @let risk = store.riskByPhone()[order.phone] ?? 0;
         <li class="card overflow-hidden">
+          <!-- Phones: number + total / customer / badges + chevron; sm+: one row -->
           <button type="button" class="flex w-full flex-wrap items-center gap-x-4 gap-y-2 p-4 text-left hover:bg-surface-2" (click)="store.toggle(order.id)">
             <span class="min-w-28">
               <b class="block">{{ order.number }}</b>
               <span class="text-xs text-fg-muted">{{ order.created_at | date: 'd.MM.y HH:mm' }}</span>
             </span>
-            <span class="min-w-0 flex-1">
+            <span class="order-1 min-w-0 basis-full sm:order-none sm:basis-0 sm:flex-1">
               <span class="block truncate font-medium">{{ order.customer_name }}</span>
               <span class="text-xs text-fg-muted">{{ order.phone }} · {{ order.delivery_type === 'pickup' ? 'Лично взимане' : order.city }}</span>
             </span>
             @if (risk) {
-              <span class="chip bg-brick-600 text-white" title="Предишни неприети или върнати пратки">⚠ {{ risk }} отказ{{ risk > 1 ? 'а' : '' }}</span>
+              <span class="chip order-2 bg-brick-600 text-white sm:order-none" title="Предишни неприети или върнати пратки">⚠ {{ risk }} отказ{{ risk > 1 ? 'а' : '' }}</span>
             }
-            <app-order-status-badge [status]="order.status" />
-            <b class="w-24 text-right">{{ order.total | currency }}</b>
-            <app-icon name="chevronDown" [size]="18" class="transition" [class.rotate-180]="open" />
+            <app-order-status-badge class="order-2 sm:order-none" [status]="order.status" />
+            <b class="ml-auto text-right sm:ml-0 sm:w-24">{{ order.total | currency }}</b>
+            <app-icon name="chevronDown" [size]="18" class="order-2 ml-auto transition sm:order-none sm:ml-0" [class.rotate-180]="open" />
           </button>
 
           @if (open) {
