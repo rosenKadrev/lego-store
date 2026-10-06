@@ -26,6 +26,9 @@ export type CatalogListing = Tables<'catalog_listings'>;
 
 export const SHOP_NAME = 'MBR BrickStore';
 
+/** Contact e-mail shown on the info pages (returns, complaints). TODO: set the real address before going live. */
+export const SHOP_EMAIL = '';
+
 export const CONDITION_LABEL: Record<ItemCondition, string> = {
   new: 'Ново',
   used: 'Употребявано',
