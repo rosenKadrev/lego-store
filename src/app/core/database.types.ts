@@ -31,6 +31,19 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"favorites": {
+                  Row: {
+                    "created_at": string,"image_url": string | null,"item_key": string,"name": string,"user_id": string
+                  }
+                  Insert: {
+                    "created_at"?: string,"image_url"?: string | null,"item_key": string,"name": string,"user_id"?: string
+                  }
+                  Update: {
+                    "created_at"?: string,"image_url"?: string | null,"item_key"?: string,"name"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"listing_images": {
                   Row: {
                     "id": number,"listing_id": number,"path": string,"sort_order": number

@@ -9,6 +9,7 @@ import { Logo } from '../shared/logo';
 import { SearchBox } from './search-box';
 import { AuthStore } from '../stores/auth.store';
 import { CartStore } from '../stores/cart.store';
+import { FavoritesStore } from '../stores/favorites.store';
 import { MENU_THEME_LIMIT, ThemesStore } from '../stores/themes.store';
 
 type NavLink = { label: string; params: Record<string, string> };
@@ -153,6 +154,16 @@ type NavLink = { label: string; params: Record<string, string> };
             </a>
           }
 
+          <a routerLink="/favorites" class="btn-ghost relative hidden size-10 p-0 sm:inline-flex" aria-label="Любими" title="Любими">
+            <app-icon name="heart" [size]="22" />
+            @if (favorites.count()) {
+              <span
+                class="absolute -top-0.5 -right-0.5 grid min-w-5 place-items-center rounded-full bg-inverse px-1 text-[11px] leading-5 font-bold text-on-inverse"
+                >{{ favorites.count() }}</span
+              >
+            }
+          </a>
+
           <button type="button" class="btn-ghost relative size-9 p-0 sm:size-10" aria-label="Количка" (click)="cart.openDrawer()">
             <app-icon name="cart" [size]="22" />
             @if (cart.count()) {
@@ -187,6 +198,12 @@ type NavLink = { label: string; params: Record<string, string> };
                 link.label
               }}</a>
             }
+            <a routerLink="/favorites" class="flex items-center justify-between rounded-xl px-3 py-3 font-semibold hover:bg-surface-2">
+              <span class="flex items-center gap-2"><app-icon name="heart" [size]="18" /> Любими</span>
+              @if (favorites.count()) {
+                <span class="text-xs font-normal text-fg-faint">{{ favorites.count() }}</span>
+              }
+            </a>
           </nav>
           <p class="px-6 pt-2 text-xs font-semibold tracking-wider text-fg-faint uppercase">Теми</p>
           <nav class="flex flex-col p-3">
@@ -213,6 +230,7 @@ type NavLink = { label: string; params: Record<string, string> };
 export class Header {
   protected readonly auth = inject(AuthStore);
   protected readonly cart = inject(CartStore);
+  protected readonly favorites = inject(FavoritesStore);
   protected readonly themes = inject(ThemesStore);
   protected readonly theme = inject(ThemeService);
   private readonly router = inject(Router);

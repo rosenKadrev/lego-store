@@ -5,12 +5,13 @@ import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, slu
 import { Supabase } from '../core/supabase';
 import { CartStore } from '../stores/cart.store';
 import { ColorSwatch } from './color-swatch';
+import { FavoriteButton } from './favorite-button';
 import { Icon } from './icon';
 
 @Component({
   selector: 'app-product-card',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, Icon, ColorSwatch],
+  imports: [RouterLink, CurrencyPipe, Icon, ColorSwatch, FavoriteButton],
   host: { class: 'block' },
   template: `
     @let l = listing();
@@ -40,6 +41,7 @@ import { Icon } from './icon';
           }
         </div>
       </a>
+      <app-favorite-button class="absolute top-3 right-3 z-10" [listing]="l" />
 
       <div class="flex flex-1 flex-col gap-1 p-4">
         <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">

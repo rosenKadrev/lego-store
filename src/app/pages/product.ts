@@ -4,6 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, SHOP_NAME, slugify } from '../core/models';
 import { ColorSwatch } from '../shared/color-swatch';
+import { FavoriteButton } from '../shared/favorite-button';
 import { Icon } from '../shared/icon';
 import { QuantityStepper } from '../shared/quantity-stepper';
 import { CartStore } from '../stores/cart.store';
@@ -13,7 +14,7 @@ import { ThemesStore } from '../stores/themes.store';
 @Component({
   selector: 'app-product',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper, ColorSwatch],
+  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper, ColorSwatch, FavoriteButton],
   providers: [ProductStore],
   template: `
     <div class="container-page pt-6">
@@ -133,6 +134,7 @@ import { ThemesStore } from '../stores/themes.store';
                 <app-icon name="cart" [size]="20" />
                 {{ available() === 0 && inCart() ? 'Всички бройки са в количката' : 'Добави в количката' }}
               </button>
+              <app-favorite-button [listing]="l" [large]="true" />
             </div>
 
             <ul class="mt-6 grid gap-2 rounded-2xl bg-surface-2 p-4 text-sm sm:grid-cols-2">

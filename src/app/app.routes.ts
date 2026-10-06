@@ -7,6 +7,11 @@ export const routes: Routes = [
   { path: 'catalog', loadComponent: () => import('./pages/catalog').then((m) => m.Catalog) },
   { path: 'themes', loadComponent: () => import('./pages/themes').then((m) => m.Themes), title: 'Всички теми | MBR BrickStore' },
   { path: 'p/:slug', loadComponent: () => import('./pages/product').then((m) => m.Product) },
+  {
+    path: 'favorites',
+    loadComponent: () => import('./pages/favorites').then((m) => m.Favorites),
+    title: 'Любими | MBR BrickStore',
+  },
   { path: 'cart', loadComponent: () => import('./pages/cart').then((m) => m.Cart), title: 'Количка | MBR BrickStore' },
   { path: 'checkout', loadComponent: () => import('./pages/checkout').then((m) => m.Checkout), title: 'Поръчка | MBR BrickStore' },
   {
