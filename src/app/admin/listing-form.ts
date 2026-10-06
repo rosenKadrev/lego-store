@@ -17,12 +17,12 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
   imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, Icon, ColorSwatch],
   providers: [ListingFormStore],
   template: `
-    <a routerLink="/admin/listings" class="mb-4 inline-flex items-center gap-1 text-sm text-zinc-500 hover:text-ink-900">
+    <a routerLink="/admin/listings" class="mb-4 inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg">
       <app-icon name="chevronLeft" [size]="16" /> Всички обяви
     </a>
 
     @if (store.loading()) {
-      <div class="h-64 animate-pulse rounded-3xl bg-zinc-100"></div>
+      <div class="h-64 animate-pulse rounded-3xl bg-surface-3"></div>
     } @else {
       <div class="grid gap-6 lg:grid-cols-[1fr_22rem]">
         <div class="space-y-6">
@@ -31,15 +31,15 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
             <h2 class="text-lg font-bold">{{ isEdit() ? 'Продукт' : '1. Избери продукт от каталога' }}</h2>
 
             @if (store.item(); as item) {
-              <div class="mt-4 flex items-center gap-4 rounded-2xl bg-zinc-50 p-3">
-                <div class="size-20 shrink-0 rounded-xl bg-white">
+              <div class="mt-4 flex items-center gap-4 rounded-2xl bg-surface-2 p-3">
+                <div class="size-20 shrink-0 rounded-xl bg-well">
                   @if (item.img_url) {
                     <img [src]="item.img_url" alt="" class="size-full object-contain p-1" />
                   }
                 </div>
                 <div class="min-w-0 flex-1">
                   <p class="font-semibold">{{ item.name }}</p>
-                  <p class="text-sm text-zinc-500">
+                  <p class="text-sm text-fg-muted">
                     {{ itemNum(item.num) }}
                     @if (item.theme_name) { · {{ item.theme_name }} }
                     @if (item.year) { · {{ item.year }} }
@@ -49,7 +49,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                     <p class="mt-1 flex items-center gap-1.5 text-sm font-medium">
                       <app-color-swatch [rgb]="item.color_rgb" [size]="16" /> {{ item.color_name }}
                       @if (!isEdit()) {
-                        <button type="button" class="ml-1 text-xs text-brick-600 hover:underline" (click)="store.selectItem({ ...item, color_id: null, color_name: null, color_rgb: null })">
+                        <button type="button" class="ml-1 text-xs text-accent hover:underline" (click)="store.selectItem({ ...item, color_id: null, color_name: null, color_rgb: null })">
                           смени цвета
                         </button>
                       }
@@ -65,15 +65,15 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 <div class="mt-4">
                   <p class="label">Изберете цвят</p>
                   @if (store.partColors().length) {
-                    <p class="mb-2 text-xs text-zinc-500">Цветове, в които частта се среща в сетове:</p>
+                    <p class="mb-2 text-xs text-fg-muted">Цветове, в които частта се среща в сетове:</p>
                     <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
                       @for (c of store.partColors(); track c.id) {
                         <button
                           type="button"
-                          class="flex flex-col items-center gap-1 rounded-xl border border-zinc-200 p-2 text-center text-xs hover:border-brick-600"
+                          class="flex flex-col items-center gap-1 rounded-xl border border-line p-2 text-center text-xs hover:border-brick-600"
                           (click)="chooseColor(c)"
                         >
-                          <span class="grid aspect-square w-full place-items-center rounded-lg bg-zinc-50">
+                          <span class="grid aspect-square w-full place-items-center rounded-lg bg-well">
                             @if (c.img_url) {
                               <img [src]="c.img_url" alt="" loading="lazy" class="size-full object-contain p-1 mix-blend-multiply" />
                             } @else {
@@ -85,7 +85,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                       }
                     </div>
                   }
-                  <label class="mt-3 block text-xs text-zinc-500" for="other-color">Друг цвят:</label>
+                  <label class="mt-3 block text-xs text-fg-muted" for="other-color">Друг цвят:</label>
                   <select id="other-color" class="input mt-1 sm:w-72" (change)="chooseOtherColor($any($event.target).value)">
                     <option value="">— избери —</option>
                     @for (c of store.allColors(); track c.id) {
@@ -96,8 +96,8 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
               }
 
               @if (store.existingOffers().length) {
-                <div class="mt-3 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-sm">
-                  <p class="font-semibold text-amber-900">Вече има обяви за този продукт:</p>
+                <div class="mt-3 rounded-2xl border border-amber-200 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-400/10 p-3 text-sm">
+                  <p class="font-semibold text-amber-900 dark:text-amber-200">Вече има обяви за този продукт:</p>
                   <ul class="mt-1 space-y-1">
                     @for (o of store.existingOffers(); track o.id) {
                       <li>
@@ -108,17 +108,17 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                     }
                   </ul>
                   @if (hasNewOffer() && form.value.condition === 'new' && !boxDamaged()) {
-                    <p class="mt-2 text-amber-900">За нови бройки по-добре увеличете наличността на съществуващата обява.</p>
+                    <p class="mt-2 text-amber-900 dark:text-amber-200">За нови бройки по-добре увеличете наличността на съществуващата обява.</p>
                   }
                 </div>
               }
             } @else {
-              <div class="mt-4 grid grid-cols-3 gap-1 rounded-full bg-zinc-100 p-1 text-sm sm:w-96">
+              <div class="mt-4 grid grid-cols-3 gap-1 rounded-full bg-surface-3 p-1 text-sm sm:w-96">
                 @for (t of types; track t.value) {
                   <button
                     type="button"
                     class="rounded-full px-3 py-2 font-medium"
-                    [class]="searchType() === t.value ? 'bg-white shadow-sm' : 'text-zinc-600'"
+                    [class]="searchType() === t.value ? 'bg-surface shadow-sm' : 'text-fg-3'"
                     (click)="setSearchType(t.value)"
                   >
                     {{ t.label }}
@@ -126,7 +126,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 }
               </div>
               <div class="relative mt-3">
-                <app-icon name="search" [size]="18" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-zinc-400" />
+                <app-icon name="search" [size]="18" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-faint" />
                 <input
                   type="search"
                   class="input pl-10"
@@ -136,20 +136,20 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 />
               </div>
               @if (store.searching()) {
-                <p class="mt-3 text-sm text-zinc-500">Търсене…</p>
+                <p class="mt-3 text-sm text-fg-muted">Търсене…</p>
               }
-              <ul class="mt-3 max-h-112 divide-y divide-zinc-100 overflow-y-auto">
+              <ul class="mt-3 max-h-112 divide-y divide-line-soft overflow-y-auto">
                 @for (r of store.results(); track r.num) {
                   <li>
-                    <button type="button" class="flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-zinc-50" (click)="choose(r)">
-                      <span class="size-14 shrink-0 rounded-lg bg-zinc-50">
+                    <button type="button" class="flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-surface-2" (click)="choose(r)">
+                      <span class="size-14 shrink-0 rounded-lg bg-well">
                         @if (r.img_url) {
                           <img [src]="r.img_url" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" (error)="$any($event.target).hidden = true" />
                         }
                       </span>
                       <span class="min-w-0">
                         <span class="block truncate font-medium">{{ r.name }}</span>
-                        <span class="text-xs text-zinc-500">
+                        <span class="text-xs text-fg-muted">
                           {{ itemNum(r.num) }} @if (r.theme_name) { · {{ r.theme_name }} } @if (r.year) { · {{ r.year }} }
                         </span>
                       </span>
@@ -158,8 +158,8 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 }
               </ul>
               @if (canLookup()) {
-                <div class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-zinc-50 p-4 text-sm">
-                  <span class="text-zinc-600">
+                <div class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
+                  <span class="text-fg-3">
                     @if (store.results().length) { Не е този? } @else { Няма „{{ term() }}“ в каталога. }
                     Нови сетове се появяват тук след седмичното обновяване.
                   </span>
@@ -169,7 +169,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 </div>
               }
               @if (store.error() && !store.item()) {
-                <p class="mt-3 rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ store.error() }}</p>
+                <p class="mt-3 rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ store.error() }}</p>
               }
             }
           </section>
@@ -183,7 +183,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 @for (c of conditions; track c) {
                   <label
                     class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4"
-                    [class]="condition() === c ? 'border-brick-600 bg-brick-50' : 'border-zinc-200'"
+                    [class]="condition() === c ? 'border-brick-600 bg-accent-soft' : 'border-line'"
                   >
                     <input type="radio" formControlName="condition" [value]="c" class="accent-brick-600" />
                     <span class="font-semibold">{{ conditionLabel[c] }}</span>
@@ -217,16 +217,16 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
               }
 
               @if (condition() === 'new' && store.item()?.type === 'set') {
-                <div class="rounded-2xl border p-4" [class]="boxDamaged() ? 'border-amber-300 bg-amber-50' : 'border-zinc-200'">
+                <div class="rounded-2xl border p-4" [class]="boxDamaged() ? 'border-amber-300 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-400/10' : 'border-line'">
                   <label class="flex items-start gap-3 text-sm">
                     <input type="checkbox" formControlName="box_damaged" class="mt-0.5 size-4 accent-amber-600" />
                     <span>
                       <span class="block font-semibold">Ударена кутия</span>
-                      <span class="text-zinc-500">Сетът е нов и запечатан, но кутията има козметични наранявания.</span>
+                      <span class="text-fg-muted">Сетът е нов и запечатан, но кутията има козметични наранявания.</span>
                     </span>
                   </label>
                   @if (boxDamaged()) {
-                    <label class="label mt-3" for="box-notes">Какво има по кутията <span class="font-normal text-zinc-400">(по избор)</span></label>
+                    <label class="label mt-3" for="box-notes">Какво има по кутията <span class="font-normal text-fg-faint">(по избор)</span></label>
                     <input id="box-notes" class="input" formControlName="condition_notes" placeholder="Напр. смачкан ъгъл, драскотина на гърба" />
                   }
                 </div>
@@ -236,7 +236,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 <fieldset class="grid gap-2 sm:grid-cols-2" [class.hidden]="store.item()?.type !== 'set'">
                   <legend class="label">Състояние</legend>
                   @for (flag of usedFlags; track flag.key) {
-                    <label class="flex items-center gap-3 rounded-xl border border-zinc-200 p-3 text-sm">
+                    <label class="flex items-center gap-3 rounded-xl border border-line p-3 text-sm">
                       <input type="checkbox" [formControlName]="flag.key" class="size-4 accent-brick-600" />
                       {{ flag.label }}
                     </label>
@@ -249,7 +249,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
               }
 
               <div>
-                <label class="label" for="description">Описание <span class="font-normal text-zinc-400">(по избор)</span></label>
+                <label class="label" for="description">Описание <span class="font-normal text-fg-faint">(по избор)</span></label>
                 <textarea id="description" class="input min-h-24" formControlName="description"></textarea>
               </div>
 
@@ -259,7 +259,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
               </label>
 
               @if (store.error()) {
-                <p class="rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ store.error() }}</p>
+                <p class="rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ store.error() }}</p>
               }
 
               <div class="flex flex-wrap gap-3">
@@ -268,7 +268,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 </button>
                 @if (isEdit()) {
                   <a [routerLink]="['/p', store.listing()!.id + '-' + slug()]" class="btn-outline" target="_blank">Виж в магазина</a>
-                  <button type="button" class="btn-ghost text-brick-700 sm:ml-auto" (click)="remove()">
+                  <button type="button" class="btn-ghost text-accent-strong sm:ml-auto" (click)="remove()">
                     <app-icon name="trash" [size]="18" /> Изтрий
                   </button>
                 }
@@ -281,15 +281,15 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
         @if (store.item()) {
           <aside class="card h-fit p-5 sm:p-6 lg:sticky lg:top-32">
             <h2 class="text-lg font-bold">Снимки</h2>
-            <p class="mt-1 text-xs text-zinc-500">
+            <p class="mt-1 text-xs text-fg-muted">
               Първата снимка е корица. Без собствени снимки се показва каталожната. За употребявани качвайте реални снимки.
             </p>
             @if (!store.listing()) {
-              <p class="mt-4 rounded-xl bg-zinc-50 p-4 text-sm text-zinc-500">Създайте обявата, за да добавите снимки.</p>
+              <p class="mt-4 rounded-xl bg-surface-2 p-4 text-sm text-fg-muted">Създайте обявата, за да добавите снимки.</p>
             } @else {
               <div class="mt-4 grid grid-cols-3 gap-2">
                 @for (img of store.images(); track img.id; let i = $index; let last = $last) {
-                  <div class="group relative aspect-square overflow-hidden rounded-xl bg-zinc-50">
+                  <div class="group relative aspect-square overflow-hidden rounded-xl bg-well">
                     <img [src]="imageUrl(img.path)" alt="" class="size-full object-cover" />
                     @if (i === 0) {
                       <span class="chip absolute top-1 left-1 bg-ink-900 text-[10px] text-white">Корица</span>
@@ -308,7 +308,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                   </div>
                 }
                 <label
-                  class="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-zinc-300 text-xs text-zinc-500 hover:border-brick-600 hover:text-brick-600"
+                  class="flex aspect-square cursor-pointer flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-line-strong text-xs text-fg-muted hover:border-brick-600 hover:text-accent"
                 >
                   <app-icon [name]="store.uploading() ? 'refresh' : 'upload'" [class.animate-spin]="store.uploading()" />
                   {{ store.uploading() ? 'Качване…' : 'Добави' }}

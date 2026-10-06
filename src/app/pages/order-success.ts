@@ -12,28 +12,28 @@ type OrderState = { total?: number; email?: string; phone?: string; pickup?: boo
   imports: [RouterLink, CurrencyPipe, Icon],
   template: `
     <div class="container-page max-w-2xl pt-12 text-center">
-      <div class="mx-auto grid size-20 place-items-center rounded-full bg-emerald-100 text-emerald-600">
+      <div class="mx-auto grid size-20 place-items-center rounded-full bg-emerald-100 dark:bg-emerald-400/15 text-emerald-600 dark:text-emerald-400">
         <app-icon name="check" [size]="40" [stroke]="2.5" />
       </div>
       <h1 class="mt-6 text-3xl font-extrabold tracking-tight sm:text-4xl">Благодарим за поръчката!</h1>
-      <p class="mt-3 text-zinc-600">
-        Номер на поръчката: <b class="text-ink-900">{{ number() }}</b>
+      <p class="mt-3 text-fg-3">
+        Номер на поръчката: <b class="text-fg">{{ number() }}</b>
         @if (state.total != null) {
           @if (state.pickup) {
-            <br />Сума за плащане при взимане: <b class="text-ink-900">{{ state.total | currency }}</b>
+            <br />Сума за плащане при взимане: <b class="text-fg">{{ state.total | currency }}</b>
           } @else {
-            <br />Сума за продуктите: <b class="text-ink-900">{{ state.total | currency }}</b> + доставка (ще ви я кажем по телефона)
+            <br />Сума за продуктите: <b class="text-fg">{{ state.total | currency }}</b> + доставка (ще ви я кажем по телефона)
           }
         }
       </p>
 
-      <ol class="mt-10 space-y-4 rounded-3xl bg-zinc-50 p-6 text-left text-sm sm:p-8">
+      <ol class="mt-10 space-y-4 rounded-3xl bg-surface-2 p-6 text-left text-sm sm:p-8">
         <li class="flex gap-4">
-          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ink-900 font-bold text-white">1</span>
+          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-inverse font-bold text-on-inverse">1</span>
           <span>Ще се свържем с вас{{ state.phone ? ' на ' + state.phone : '' }}, за да потвърдим поръчката{{ state.pickup ? '' : ' и цената на доставката' }}.</span>
         </li>
         <li class="flex gap-4">
-          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ink-900 font-bold text-white">2</span>
+          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-inverse font-bold text-on-inverse">2</span>
           @if (state.pickup) {
             <span>Подготвяме поръчката и ви се обаждаме, когато е готова за взимане.</span>
           } @else {
@@ -41,7 +41,7 @@ type OrderState = { total?: number; email?: string; phone?: string; pickup?: boo
           }
         </li>
         <li class="flex gap-4">
-          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-ink-900 font-bold text-white">3</span>
+          <span class="grid size-8 shrink-0 place-items-center rounded-full bg-inverse font-bold text-on-inverse">3</span>
           <span>{{ state.pickup ? 'Идвате, преглеждате поръчката и плащате на място.' : 'Преглеждате пратката и плащате на куриера.' }}</span>
         </li>
       </ol>

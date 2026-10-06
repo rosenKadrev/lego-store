@@ -20,14 +20,14 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Поръчка</h1>
 
       @if (!cart.items().length) {
-        <div class="mt-10 flex flex-col items-center gap-4 rounded-3xl bg-zinc-50 py-20 text-center">
+        <div class="mt-10 flex flex-col items-center gap-4 rounded-3xl bg-surface-2 py-20 text-center">
           <p class="text-lg font-semibold">Количката е празна</p>
           <a routerLink="/catalog" class="btn-primary">Разгледай продуктите</a>
         </div>
       } @else {
         @if (!auth.isLoggedIn()) {
-          <p class="mt-4 text-sm text-zinc-600">
-            Имате профил? <a routerLink="/login" [queryParams]="{ redirect: '/checkout' }" class="font-semibold text-brick-600 hover:underline">Влезте</a>,
+          <p class="mt-4 text-sm text-fg-3">
+            Имате профил? <a routerLink="/login" [queryParams]="{ redirect: '/checkout' }" class="font-semibold text-accent hover:underline">Влезте</a>,
             за да следите поръчките си. Може да поръчате и без регистрация.
           </p>
         }
@@ -36,7 +36,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
           <div class="space-y-8">
             <section class="card p-5 sm:p-7">
               <h2 class="flex items-center gap-3 text-lg font-bold">
-                <span class="grid size-8 place-items-center rounded-full bg-ink-900 text-sm text-white">1</span> Данни за контакт
+                <span class="grid size-8 place-items-center rounded-full bg-inverse text-sm text-on-inverse">1</span> Данни за контакт
               </h2>
               <div class="mt-5 grid gap-4 sm:grid-cols-2">
                 <div class="sm:col-span-2">
@@ -59,19 +59,19 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
 
             <section class="card p-5 sm:p-7">
               <h2 class="flex items-center gap-3 text-lg font-bold">
-                <span class="grid size-8 place-items-center rounded-full bg-ink-900 text-sm text-white">2</span> Доставка
+                <span class="grid size-8 place-items-center rounded-full bg-inverse text-sm text-on-inverse">2</span> Доставка
               </h2>
 
               <div class="mt-5 grid gap-3" [class]="deliveryTypes().length === 3 ? 'md:grid-cols-3' : 'sm:grid-cols-2'">
                 @for (d of deliveryTypes(); track d.value) {
                   <label
                     class="flex cursor-pointer items-start gap-3 rounded-2xl border-2 p-4 transition"
-                    [class]="deliveryType() === d.value ? 'border-brick-600 bg-brick-50' : 'border-zinc-200 hover:border-zinc-300'"
+                    [class]="deliveryType() === d.value ? 'border-brick-600 bg-accent-soft' : 'border-line hover:border-line-strong'"
                   >
                     <input type="radio" formControlName="deliveryType" [value]="d.value" class="mt-1 accent-brick-600" />
                     <span class="flex-1">
                       <span class="block font-semibold">{{ d.label }}</span>
-                      <span class="text-sm text-zinc-500">
+                      <span class="text-sm text-fg-muted">
                         {{ d.value === 'pickup' ? 'Безплатно' : 'Цена по уточнение' }}
                       </span>
                     </span>
@@ -80,24 +80,24 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
               </div>
 
               @if (deliveryType() === 'pickup') {
-                <div class="mt-5 flex gap-3 rounded-2xl bg-zinc-50 p-4 text-sm">
-                  <app-icon name="box" class="mt-0.5 text-brick-600" />
+                <div class="mt-5 flex gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
+                  <app-icon name="box" class="mt-0.5 text-accent" />
                   <div>
                     <p class="font-semibold">Къде да вземете поръчката</p>
                     @if (cart.settings()?.pickup_address; as address) {
-                      <p class="mt-1 text-zinc-700">{{ address }}</p>
+                      <p class="mt-1 text-fg-2">{{ address }}</p>
                     } @else {
-                      <p class="mt-1 text-zinc-700">Ще ви съобщим адреса, когато потвърждаваме поръчката по телефона.</p>
+                      <p class="mt-1 text-fg-2">Ще ви съобщим адреса, когато потвърждаваме поръчката по телефона.</p>
                     }
                     @if (cart.settings()?.pickup_hours; as hours) {
-                      <p class="mt-1 text-zinc-500">{{ hours }}</p>
+                      <p class="mt-1 text-fg-muted">{{ hours }}</p>
                     }
-                    <p class="mt-2 text-zinc-500">Ще ви се обадим, когато поръчката е готова за взимане.</p>
+                    <p class="mt-2 text-fg-muted">Ще ви се обадим, когато поръчката е готова за взимане.</p>
                   </div>
                 </div>
               } @else {
-                <div class="mt-5 flex gap-3 rounded-2xl bg-stud-300/30 p-4 text-sm">
-                  <app-icon name="truck" class="mt-0.5 shrink-0 text-ink-900" />
+                <div class="mt-5 flex gap-3 rounded-2xl bg-stud-300/30 dark:bg-stud-400/15 p-4 text-sm">
+                  <app-icon name="truck" class="mt-0.5 shrink-0 text-fg" />
                   <p>
                     <b>Цената на доставката се уточнява от служител.</b>
                     Ще ви се обадим, за да потвърдим поръчката и да ви кажем точната цена според куриера и размера на пратката.
@@ -108,7 +108,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                   @for (c of couriers; track c.value) {
                     <label
                       class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition"
-                      [class]="form.value.courier === c.value ? 'border-brick-600 bg-brick-50' : 'border-zinc-200 hover:border-zinc-300'"
+                      [class]="form.value.courier === c.value ? 'border-brick-600 bg-accent-soft' : 'border-line hover:border-line-strong'"
                     >
                       <input type="radio" formControlName="courier" [value]="c.value" class="accent-brick-600" />
                       <span class="font-semibold">{{ c.label }}</span>
@@ -139,7 +139,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                   </div>
                 }
                 <div class="sm:col-span-2">
-                  <label class="label" for="note">Бележка към поръчката <span class="font-normal text-zinc-400">(по избор)</span></label>
+                  <label class="label" for="note">Бележка към поръчката <span class="font-normal text-fg-faint">(по избор)</span></label>
                   <textarea id="note" class="input min-h-20" formControlName="note"></textarea>
                 </div>
               </div>
@@ -147,13 +147,13 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
 
             <section class="card p-5 sm:p-7">
               <h2 class="flex items-center gap-3 text-lg font-bold">
-                <span class="grid size-8 place-items-center rounded-full bg-ink-900 text-sm text-white">3</span> Плащане
+                <span class="grid size-8 place-items-center rounded-full bg-inverse text-sm text-on-inverse">3</span> Плащане
               </h2>
-              <label class="mt-5 flex items-center gap-3 rounded-2xl border-2 border-brick-600 bg-brick-50 p-4">
-                <app-icon name="cash" class="text-brick-600" />
+              <label class="mt-5 flex items-center gap-3 rounded-2xl border-2 border-brick-600 bg-accent-soft p-4">
+                <app-icon name="cash" class="text-accent" />
                 <span>
                   <span class="block font-semibold">{{ deliveryType() === 'pickup' ? 'В брой при взимане' : 'Наложен платеж' }}</span>
-                  <span class="text-sm text-zinc-600">
+                  <span class="text-sm text-fg-3">
                     @if (deliveryType() === 'pickup') {
                       Плащате в брой, когато вземете поръчката. Можете да я прегледате на място.
                     } @else {
@@ -165,12 +165,12 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
             </section>
           </div>
 
-          <aside class="h-fit space-y-4 rounded-3xl bg-zinc-50 p-6 lg:sticky lg:top-32">
+          <aside class="h-fit space-y-4 rounded-3xl bg-surface-2 p-6 lg:sticky lg:top-32">
             <h2 class="text-lg font-bold">Вашата поръчка</h2>
             <ul class="space-y-3">
               @for (item of cart.items(); track item.listingId) {
                 <li class="flex items-center gap-3 text-sm">
-                  <span class="relative size-14 shrink-0 rounded-xl bg-white">
+                  <span class="relative size-14 shrink-0 rounded-xl bg-well">
                     @if (item.imageUrl) {
                       <img [src]="item.imageUrl" alt="" class="size-full object-contain p-1" />
                     }
@@ -181,11 +181,11 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                 </li>
               }
             </ul>
-            <div class="space-y-2 border-t border-zinc-200 pt-4 text-sm">
+            <div class="space-y-2 border-t border-line pt-4 text-sm">
               <div class="flex justify-between"><span>Продукти</span><span>{{ cart.subtotal() | currency }}</span></div>
               <div class="flex justify-between">
                 <span>Доставка</span>
-                <span>@if (deliveryType() === 'pickup') { Лично взимане } @else { <span class="text-zinc-500">уточнява се</span> }</span>
+                <span>@if (deliveryType() === 'pickup') { Лично взимане } @else { <span class="text-fg-muted">уточнява се</span> }</span>
               </div>
               <div class="flex justify-between pt-2 text-lg font-bold"><span>{{ deliveryType() === 'pickup' ? 'Общо' : 'Общо без доставка' }}</span><span>{{ total() | currency }}</span></div>
             </div>
@@ -197,17 +197,17 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
             @if (showError('acceptTerms')) { <p class="field-error">Необходимо е съгласие.</p> }
 
             @for (note of notes(); track note) {
-              <p class="rounded-xl bg-stud-300/40 p-3 text-sm">{{ note }}</p>
+              <p class="rounded-xl bg-stud-300/40 dark:bg-stud-400/15 p-3 text-sm">{{ note }}</p>
             }
             @if (error()) {
-              <p class="rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ error() }}</p>
+              <p class="rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ error() }}</p>
             }
 
             <button type="submit" class="btn-primary w-full py-3.5 text-base" [disabled]="submitting() || missing().length > 0">
               {{ submitting() ? 'Изпращане…' : 'Завърши поръчката' }}
             </button>
             @if (missing().length && !submitting()) {
-              <p class="text-center text-xs text-zinc-500">Попълнете: {{ missing().join(', ') }}</p>
+              <p class="text-center text-xs text-fg-muted">Попълнете: {{ missing().join(', ') }}</p>
             }
           </aside>
         </form>

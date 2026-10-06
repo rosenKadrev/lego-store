@@ -41,26 +41,26 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
           }
         </select>
       </div>
-      <p class="self-center text-sm text-zinc-500 md:ml-auto">{{ store.total() }} обяви</p>
+      <p class="self-center text-sm text-fg-muted md:ml-auto">{{ store.total() }} обяви</p>
     </div>
 
-    <div class="mt-5 overflow-hidden rounded-2xl border border-zinc-200" [class.opacity-60]="store.loading()">
-      <ul class="divide-y divide-zinc-100">
+    <div class="mt-5 overflow-hidden rounded-2xl border border-line" [class.opacity-60]="store.loading()">
+      <ul class="divide-y divide-line-soft">
         @for (l of store.items(); track l.id) {
           <li class="flex flex-wrap items-center gap-x-4 gap-y-3 p-3 sm:flex-nowrap sm:p-4">
-            <div class="size-14 shrink-0 overflow-hidden rounded-xl bg-zinc-50">
+            <div class="size-14 shrink-0 overflow-hidden rounded-xl bg-well">
               @if (cover(l); as src) {
                 <img [src]="src" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" />
               }
             </div>
             <div class="min-w-0 flex-1">
-              <a [routerLink]="['/admin/listings', l.id]" class="line-clamp-1 font-semibold hover:text-brick-600">
-                {{ l.name }}@if (l.color_name) { <span class="font-normal text-zinc-500">— {{ l.color_name }}</span> }
+              <a [routerLink]="['/admin/listings', l.id]" class="line-clamp-1 font-semibold hover:text-accent">
+                {{ l.name }}@if (l.color_name) { <span class="font-normal text-fg-muted">— {{ l.color_name }}</span> }
               </a>
-              <p class="text-xs text-zinc-500">
+              <p class="text-xs text-fg-muted">
                 {{ itemNum(l.item_num) }} ·
-                <span [class]="l.condition === 'new' ? 'text-emerald-700' : 'text-amber-700'">{{ conditionLabel[l.condition!] }}</span>
-                @if (l.box_damaged) { · <span class="text-amber-700">ударена кутия</span> }
+                <span [class]="l.condition === 'new' ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'">{{ conditionLabel[l.condition!] }}</span>
+                @if (l.box_damaged) { · <span class="text-amber-700 dark:text-amber-400">ударена кутия</span> }
                 @if (l.theme_name ?? l.part_category; as group) { · {{ group }} }
               </p>
             </div>
@@ -68,14 +68,14 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
             @if (l.condition === 'new' || l.item_type === 'part') {
               <app-quantity-stepper [value]="l.stock ?? 0" [max]="999" (valueChange)="store.setStock(l.id!, $event)" />
             } @else {
-              <span class="chip w-[6.5rem] justify-center" [class]="l.stock ? 'bg-emerald-100 text-emerald-800' : 'bg-zinc-200 text-zinc-600'">
+              <span class="chip w-[6.5rem] justify-center" [class]="l.stock ? 'bg-emerald-100 dark:bg-emerald-400/15 text-emerald-800 dark:text-emerald-300' : 'bg-surface-4 text-fg-3'">
                 {{ l.stock ? 'Наличен' : 'Продаден' }}
               </span>
             }
             <button
               type="button"
               class="btn size-10 p-0"
-              [class]="l.is_published ? 'text-emerald-700 hover:bg-emerald-50' : 'text-zinc-400 hover:bg-zinc-100'"
+              [class]="l.is_published ? 'text-emerald-700 dark:text-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-400/10' : 'text-fg-faint hover:bg-surface-3'"
               [attr.aria-label]="l.is_published ? 'Скрий' : 'Публикувай'"
               [title]="l.is_published ? 'Публикувана — натисни, за да скриеш' : 'Чернова — натисни, за да публикуваш'"
               (click)="store.togglePublished(l)"
@@ -87,8 +87,8 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
             </a>
           </li>
         } @empty {
-          <li class="p-10 text-center text-sm text-zinc-500">
-            @if (store.loading()) { Зареждане… } @else { Няма обяви. <a routerLink="/admin/listings/new" class="text-brick-600 underline">Създай първата</a>. }
+          <li class="p-10 text-center text-sm text-fg-muted">
+            @if (store.loading()) { Зареждане… } @else { Няма обяви. <a routerLink="/admin/listings/new" class="text-accent underline">Създай първата</a>. }
           </li>
         }
       </ul>

@@ -67,7 +67,7 @@ const SearchStore = signalStore(
   host: { class: 'relative', '(document:mousedown)': 'onDocumentMouseDown($event)' },
   template: `
     <form role="search" (submit)="$event.preventDefault(); submit()">
-      <app-icon name="search" [size]="18" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-zinc-400" />
+      <app-icon name="search" [size]="18" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-faint" />
       <input
         #input
         type="search"
@@ -84,7 +84,7 @@ const SearchStore = signalStore(
         (keydown)="onKeydown($event)"
         placeholder="Търси…"
         title="Търси сет, номер, фигурка или част"
-        class="w-full truncate rounded-full border-0 bg-zinc-100 py-2.5 pr-4 pl-10 text-sm transition placeholder:truncate focus:bg-white focus:ring-2 focus:ring-brick-600 focus:outline-none"
+        class="w-full truncate rounded-full border-0 bg-surface-3 py-2.5 pr-4 pl-10 text-sm transition placeholder:truncate focus:bg-surface focus:ring-2 focus:ring-brick-600 focus:outline-none"
         [attr.autofocus]="autofocus() ? '' : null"
       />
     </form>
@@ -93,7 +93,7 @@ const SearchStore = signalStore(
       <div
         id="search-suggestions"
         role="listbox"
-        class="card absolute top-full right-0 left-0 z-50 mt-2 max-h-[70vh] overflow-y-auto p-2 shadow-2xl shadow-zinc-300/60 md:-right-24 md:left-auto md:w-[28rem]"
+        class="card absolute top-full right-0 left-0 z-50 mt-2 max-h-[70vh] overflow-y-auto p-2 shadow-2xl shadow-zinc-300/60 dark:shadow-black/40 md:-right-24 md:left-auto md:w-[28rem]"
       >
         @for (item of store.results(); track item.id; let i = $index) {
           <button
@@ -102,38 +102,38 @@ const SearchStore = signalStore(
             [id]="'search-option-' + i"
             [attr.aria-selected]="i === activeIndex()"
             class="flex w-full items-center gap-3 rounded-xl p-2 text-left transition"
-            [class]="i === activeIndex() ? 'bg-zinc-100' : 'hover:bg-zinc-50'"
+            [class]="i === activeIndex() ? 'bg-surface-3' : 'hover:bg-surface-2'"
             (mouseenter)="activeIndex.set(i)"
             (click)="openItem(item)"
           >
-            <span class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-zinc-50">
+            <span class="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-well">
               @if (item.image) {
                 <img [src]="item.image" alt="" class="size-full object-contain p-1 mix-blend-multiply" (error)="$any($event.target).hidden = true" />
               }
             </span>
             <span class="min-w-0 flex-1">
               <span class="block truncate text-sm font-semibold">{{ item.name }}</span>
-              <span class="flex items-center gap-1.5 text-xs text-zinc-500">
+              <span class="flex items-center gap-1.5 text-xs text-fg-muted">
                 {{ itemNum(item.item_num) }}
                 @if (item.color_name) {
                   · <app-color-swatch [rgb]="item.color_rgb" [size]="10" /> {{ item.color_name }}
                 }
                 ·
-                <span [class]="item.condition === 'new' ? 'text-emerald-700' : 'text-amber-700'">{{ conditionLabel[item.condition!] }}</span>
+                <span [class]="item.condition === 'new' ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'">{{ conditionLabel[item.condition!] }}</span>
                 @if (item.box_damaged) { · {{ boxDamaged }} }
               </span>
             </span>
             <span class="shrink-0 text-sm font-bold">{{ item.price | currency }}</span>
           </button>
         } @empty {
-          <p class="p-4 text-center text-sm text-zinc-500">
+          <p class="p-4 text-center text-sm text-fg-muted">
             @if (store.loading()) { Търсене… } @else { Няма продукти за „{{ query().trim() }}“. }
           </p>
         }
         @if (store.results().length) {
           <button
             type="button"
-            class="mt-1 flex w-full items-center justify-center gap-1 rounded-xl border-t border-zinc-100 p-3 text-sm font-semibold text-brick-600 hover:bg-brick-50"
+            class="mt-1 flex w-full items-center justify-center gap-1 rounded-xl border-t border-line-soft p-3 text-sm font-semibold text-accent hover:bg-accent-soft"
             (click)="submit()"
           >
             Всички резултати за „{{ query().trim() }}“ <app-icon name="arrowRight" [size]="16" />

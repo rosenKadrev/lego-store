@@ -58,7 +58,7 @@ import { ThemesStore } from '../stores/themes.store';
           <a
             routerLink="/catalog"
             [queryParams]="{ type: 'minifig' }"
-            class="group relative flex min-h-52 flex-col justify-end overflow-hidden rounded-3xl bg-ink-900 p-6 text-white"
+            class="group relative flex min-h-52 flex-col justify-end overflow-hidden rounded-3xl bg-ink-900 p-6 text-white dark:ring-1 dark:ring-white/10"
           >
             <app-icon name="person" [size]="120" [stroke]="1" class="absolute -top-4 -right-4 text-white/10 transition group-hover:-translate-y-1" />
             <h2 class="text-2xl font-extrabold">Минифигурки</h2>
@@ -71,13 +71,13 @@ import { ThemesStore } from '../stores/themes.store';
 
     <!-- USPs -->
     <section class="container-page mt-6">
-      <ul class="grid grid-cols-1 gap-3 rounded-3xl bg-zinc-50 p-4 text-sm min-[360px]:grid-cols-2 sm:p-5 lg:grid-cols-4">
+      <ul class="grid grid-cols-1 gap-3 rounded-3xl bg-surface-2 p-4 text-sm min-[360px]:grid-cols-2 sm:p-5 lg:grid-cols-4">
         @for (usp of usps; track usp.title) {
           <li class="flex items-center gap-3">
-            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-white text-brick-600 shadow-sm">
+            <span class="grid size-10 shrink-0 place-items-center rounded-full bg-surface text-accent shadow-sm">
               <app-icon [name]="usp.icon" />
             </span>
-            <span><b class="block">{{ usp.title }}</b><span class="text-xs text-zinc-500">{{ usp.text }}</span></span>
+            <span><b class="block">{{ usp.title }}</b><span class="text-xs text-fg-muted">{{ usp.text }}</span></span>
           </li>
         }
       </ul>
@@ -106,22 +106,22 @@ import { ThemesStore } from '../stores/themes.store';
             <a
               routerLink="/catalog"
               [queryParams]="{ theme: theme.theme_id }"
-              class="group flex flex-col items-center gap-2 rounded-2xl border border-zinc-200 p-4 text-center transition hover:border-brick-600 hover:shadow-lg"
+              class="group flex flex-col items-center gap-2 rounded-2xl border border-line p-4 text-center transition hover:border-brick-600 hover:shadow-lg"
             >
-              <span class="grid aspect-square w-full place-items-center overflow-hidden">
+              <span class="grid aspect-square w-full place-items-center overflow-hidden rounded-xl dark:bg-well">
                 @if (theme.sample_img_url) {
                   <img [src]="theme.sample_img_url" alt="" loading="lazy" class="size-full object-contain mix-blend-multiply transition group-hover:scale-105" />
                 }
               </span>
               <span class="text-sm font-bold">{{ theme.name }}</span>
-              <span class="text-xs text-zinc-500">{{ theme.listing_count }} продукта</span>
+              <span class="text-xs text-fg-muted">{{ theme.listing_count }} продукта</span>
             </a>
           }
         </div>
       </section>
     }
 
-    <section class="mt-16 bg-zinc-50 py-14">
+    <section class="mt-16 bg-surface-2 py-14">
       <div class="container-page">
         <app-product-rail
           title="Употребявани"

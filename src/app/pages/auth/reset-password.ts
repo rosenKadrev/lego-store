@@ -21,10 +21,10 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
   template: `
     <app-auth-shell title="Нова парола" subtitle="Изберете парола с поне 8 символа.">
       @if (!ready()) {
-        <div class="h-40 animate-pulse rounded-2xl bg-zinc-100"></div>
+        <div class="h-40 animate-pulse rounded-2xl bg-surface-3"></div>
       } @else if (linkError()) {
         <div class="space-y-4 text-center">
-          <p class="rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ linkError() }}</p>
+          <p class="rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ linkError() }}</p>
           <a routerLink="/forgot-password" class="btn-primary w-full py-3">Поискай нов линк</a>
         </div>
       } @else {
@@ -44,7 +44,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
             }
           </div>
           @if (error()) {
-            <p class="rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ error() }}</p>
+            <p class="rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ error() }}</p>
           }
           <button type="submit" class="btn-primary w-full py-3" [disabled]="form.invalid || loading()">
             {{ loading() ? 'Запис…' : 'Запази паролата' }}

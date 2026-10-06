@@ -13,10 +13,10 @@ import { ThemesStore } from '../stores/themes.store';
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Всички теми</h1>
-          <p class="mt-1 text-sm text-zinc-500">{{ themes.listed().length }} теми с налични продукти</p>
+          <p class="mt-1 text-sm text-fg-muted">{{ themes.listed().length }} теми с налични продукти</p>
         </div>
         <div class="relative w-full sm:w-72">
-          <app-icon name="search" [size]="18" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-zinc-400" />
+          <app-icon name="search" [size]="18" class="pointer-events-none absolute top-1/2 left-3.5 -translate-y-1/2 text-fg-faint" />
           <input
             type="search"
             class="input rounded-full pl-10"
@@ -33,18 +33,18 @@ import { ThemesStore } from '../stores/themes.store';
           <a
             routerLink="/catalog"
             [queryParams]="{ theme: theme.theme_id }"
-            class="group flex flex-col items-center gap-2 rounded-2xl border border-zinc-200 p-4 text-center transition hover:border-brick-600 hover:shadow-lg"
+            class="group flex flex-col items-center gap-2 rounded-2xl border border-line p-4 text-center transition hover:border-brick-600 hover:shadow-lg"
           >
-            <span class="grid aspect-square w-full place-items-center overflow-hidden">
+            <span class="grid aspect-square w-full place-items-center overflow-hidden rounded-xl dark:bg-well">
               @if (theme.sample_img_url) {
                 <img [src]="theme.sample_img_url" alt="" loading="lazy" class="size-full object-contain mix-blend-multiply transition group-hover:scale-105" />
               }
             </span>
             <span class="text-sm font-bold">{{ theme.name }}</span>
-            <span class="text-xs text-zinc-500">{{ theme.listing_count }} продукта</span>
+            <span class="text-xs text-fg-muted">{{ theme.listing_count }} продукта</span>
           </a>
         } @empty {
-          <p class="col-span-full py-16 text-center text-sm text-zinc-500">
+          <p class="col-span-full py-16 text-center text-sm text-fg-muted">
             @if (query()) { Няма тема „{{ query() }}“. } @else { Все още няма продукти. }
           </p>
         }

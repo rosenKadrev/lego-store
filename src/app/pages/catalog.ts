@@ -67,7 +67,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{{ heading() }}</h1>
-          <p class="mt-1 text-sm text-zinc-500">
+          <p class="mt-1 text-sm text-fg-muted">
             @if (store.loading()) { Зареждане… } @else { {{ store.total() }} продукта }
           </p>
         </div>
@@ -85,7 +85,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
           <aside
             #sidebar
             [style.--sidebar-max.px]="sidebarMax()"
-            class="space-y-7 max-lg:absolute max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[85vh] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-white max-lg:p-6 lg:sticky lg:top-[calc(var(--header-h)+0.75rem)] lg:-mr-3 lg:max-h-(--sidebar-max) lg:overflow-y-auto lg:overscroll-contain lg:pr-3 lg:pb-6 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
+            class="space-y-7 max-lg:absolute max-lg:inset-x-0 max-lg:bottom-0 max-lg:max-h-[85vh] max-lg:overflow-y-auto max-lg:rounded-t-3xl max-lg:bg-surface max-lg:p-6 lg:sticky lg:top-[calc(var(--header-h)+0.75rem)] lg:-mr-3 lg:max-h-(--sidebar-max) lg:overflow-y-auto lg:overscroll-contain lg:pr-3 lg:pb-6 lg:[scrollbar-gutter:stable] lg:[scrollbar-width:thin]"
           >
             <div class="flex items-center justify-between lg:hidden">
               <h2 class="text-lg font-bold">Филтри</h2>
@@ -101,12 +101,12 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 
             <fieldset>
               <legend class="label">Състояние</legend>
-              <div class="grid grid-cols-3 gap-1 rounded-full bg-zinc-100 p-1 text-sm lg:grid-cols-1 lg:rounded-2xl">
+              <div class="grid grid-cols-3 gap-1 rounded-full bg-surface-3 p-1 text-sm lg:grid-cols-1 lg:rounded-2xl">
                 @for (opt of conditionOptions; track opt.label) {
                   <button
                     type="button"
                     class="rounded-full px-3 py-2 font-medium transition lg:rounded-xl lg:text-left"
-                    [class]="f.condition === opt.value ? 'bg-white shadow-sm' : 'text-zinc-600 hover:text-ink-900'"
+                    [class]="f.condition === opt.value ? 'bg-surface shadow-sm' : 'text-fg-3 hover:text-fg'"
                     (click)="update({ condition: opt.value })"
                   >
                     {{ opt.label }}
@@ -117,12 +117,12 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 
             <fieldset>
               <legend class="label">Вид</legend>
-              <div class="grid grid-cols-4 gap-1 rounded-full bg-zinc-100 p-1 text-sm lg:grid-cols-1 lg:rounded-2xl">
+              <div class="grid grid-cols-4 gap-1 rounded-full bg-surface-3 p-1 text-sm lg:grid-cols-1 lg:rounded-2xl">
                 @for (opt of typeOptions; track opt.label) {
                   <button
                     type="button"
                     class="rounded-full px-3 py-2 font-medium transition lg:rounded-xl lg:text-left"
-                    [class]="f.type === opt.value ? 'bg-white shadow-sm' : 'text-zinc-600 hover:text-ink-900'"
+                    [class]="f.type === opt.value ? 'bg-surface shadow-sm' : 'text-fg-3 hover:text-fg'"
                     (click)="update({ type: opt.value })"
                   >
                     {{ opt.label }}
@@ -147,7 +147,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                   name="min"
                   (change)="applyPrice()"
                 />
-                <span class="text-zinc-400">–</span>
+                <span class="text-fg-faint">–</span>
                 <label class="sr-only" for="price-max">Цена до</label>
                 <input
                   id="price-max"
@@ -167,7 +167,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                   <button
                     type="button"
                     class="chip py-1.5 transition"
-                    [class]="f.minPrice === preset.min && f.maxPrice === preset.max ? 'bg-ink-900 text-white' : 'bg-zinc-100 text-ink-900 hover:bg-zinc-200'"
+                    [class]="f.minPrice === preset.min && f.maxPrice === preset.max ? 'bg-inverse text-on-inverse' : 'bg-surface-3 text-fg hover:bg-surface-4'"
                     (click)="setPrice(preset.min, preset.max)"
                   >
                     {{ preset.label }}
@@ -196,7 +196,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                       <button
                         type="button"
                         class="grid size-9 place-items-center rounded-full ring-2 ring-offset-2 transition"
-                        [class]="f.color === c.id ? 'ring-brick-600' : 'ring-transparent hover:ring-zinc-300'"
+                        [class]="f.color === c.id ? 'ring-brick-600' : 'ring-transparent hover:ring-line-strong'"
                         [title]="c.name + ' (' + c.listing_count + ')'"
                         [attr.aria-label]="c.name"
                         [attr.aria-pressed]="f.color === c.id"
@@ -217,7 +217,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                   <li>
                     <button
                       type="button"
-                      class="w-full rounded-lg px-3 py-2 text-left hover:bg-zinc-50"
+                      class="w-full rounded-lg px-3 py-2 text-left hover:bg-surface-2"
                       [class.font-bold]="!f.theme"
                       (click)="update({ theme: null })"
                     >
@@ -228,11 +228,11 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                     <li>
                       <button
                         type="button"
-                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left hover:bg-zinc-50"
-                        [class]="f.theme === t.theme_id ? 'bg-brick-50 font-bold text-brick-700' : ''"
+                        class="flex w-full items-center justify-between rounded-lg px-3 py-2 text-left hover:bg-surface-2"
+                        [class]="f.theme === t.theme_id ? 'bg-accent-soft font-bold text-accent-strong' : ''"
                         (click)="update({ theme: t.theme_id })"
                       >
-                        {{ t.name }} <span class="text-xs text-zinc-400">{{ t.listing_count }}</span>
+                        {{ t.name }} <span class="text-xs text-fg-faint">{{ t.listing_count }}</span>
                       </button>
                     </li>
                   }
@@ -240,7 +240,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                 @if (themes.listed().length > sidebarLimit) {
                   <button
                     type="button"
-                    class="mt-1 flex w-full items-center gap-1 rounded-lg px-3 py-2 text-left text-sm font-semibold text-brick-600 hover:bg-brick-50"
+                    class="mt-1 flex w-full items-center gap-1 rounded-lg px-3 py-2 text-left text-sm font-semibold text-accent hover:bg-accent-soft"
                     [attr.aria-expanded]="showAllThemes()"
                     (click)="showAllThemes.set(!showAllThemes())"
                   >
@@ -263,7 +263,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
           <div
             #toolbar
             class="sticky top-(--header-h) z-30 -mx-4 mb-4 border-b px-4 py-3 transition-colors sm:-mx-6 sm:px-6 lg:mx-0 lg:px-0"
-            [class]="stuck() ? 'border-zinc-200 bg-white/95 backdrop-blur-lg' : 'border-transparent bg-white'"
+            [class]="stuck() ? 'border-line bg-page/95 backdrop-blur-lg' : 'border-transparent bg-page'"
           >
             <div class="flex flex-wrap items-center gap-2 lg:flex-nowrap">
               <button type="button" class="btn-outline flex-1 sm:flex-none lg:hidden" (click)="filtersOpen.set(true)">
@@ -286,44 +286,44 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               @if (store.hasFilters()) {
                 <div class="-mx-4 flex w-[calc(100%+2rem)] gap-2 overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:w-full sm:px-0 lg:w-auto lg:flex-1 lg:flex-wrap">
                 @if (f.q) {
-                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ q: '' })">
+                  <button type="button" class="chip shrink-0 gap-1 bg-surface-3 whitespace-nowrap py-1.5 text-fg hover:bg-surface-4" (click)="update({ q: '' })">
                     „{{ f.q }}“ <app-icon name="x" [size]="14" />
                   </button>
                 }
                 @if (f.condition) {
-                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ condition: null })">
+                  <button type="button" class="chip shrink-0 gap-1 bg-surface-3 whitespace-nowrap py-1.5 text-fg hover:bg-surface-4" (click)="update({ condition: null })">
                     {{ f.condition === 'new' ? 'Нови' : 'Употребявани' }} <app-icon name="x" [size]="14" />
                   </button>
                 }
                 @if (f.type) {
-                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ type: null })">
+                  <button type="button" class="chip shrink-0 gap-1 bg-surface-3 whitespace-nowrap py-1.5 text-fg hover:bg-surface-4" (click)="update({ type: null })">
                     {{ typeLabel[f.type] }} <app-icon name="x" [size]="14" />
                   </button>
                 }
                 @if (colorName()) {
-                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ color: null })">
+                  <button type="button" class="chip shrink-0 gap-1 bg-surface-3 whitespace-nowrap py-1.5 text-fg hover:bg-surface-4" (click)="update({ color: null })">
                     {{ colorName() }} <app-icon name="x" [size]="14" />
                   </button>
                 }
                 @if (categoryName()) {
-                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ category: null })">
+                  <button type="button" class="chip shrink-0 gap-1 bg-surface-3 whitespace-nowrap py-1.5 text-fg hover:bg-surface-4" (click)="update({ category: null })">
                     {{ categoryName() }} <app-icon name="x" [size]="14" />
                   </button>
                 }
                 @if (priceLabel()) {
-                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="setPrice(null, null)">
+                  <button type="button" class="chip shrink-0 gap-1 bg-surface-3 whitespace-nowrap py-1.5 text-fg hover:bg-surface-4" (click)="setPrice(null, null)">
                     {{ priceLabel() }} <app-icon name="x" [size]="14" />
                   </button>
                 }
                 @if (themeName()) {
-                  <button type="button" class="chip shrink-0 gap-1 bg-zinc-100 whitespace-nowrap py-1.5 text-ink-900 hover:bg-zinc-200" (click)="update({ theme: null })">
+                  <button type="button" class="chip shrink-0 gap-1 bg-surface-3 whitespace-nowrap py-1.5 text-fg hover:bg-surface-4" (click)="update({ theme: null })">
                     {{ themeName() }} <app-icon name="x" [size]="14" />
                   </button>
                 }
-                <button type="button" class="chip shrink-0 py-1.5 whitespace-nowrap text-brick-700 hover:underline" (click)="reset()">Изчисти всички</button>
+                <button type="button" class="chip shrink-0 py-1.5 whitespace-nowrap text-accent-strong hover:underline" (click)="reset()">Изчисти всички</button>
                 </div>
               } @else {
-                <p class="hidden flex-1 text-sm text-zinc-500 lg:block">
+                <p class="hidden flex-1 text-sm text-fg-muted lg:block">
                   @if (!store.loading()) { {{ store.total() }} продукта }
                 </p>
               }
@@ -331,7 +331,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
           </div>
 
           @if (store.error()) {
-            <p class="rounded-2xl bg-brick-50 p-4 text-sm text-brick-800">{{ store.error() }}</p>
+            <p class="rounded-2xl bg-accent-soft p-4 text-sm text-accent-ink">{{ store.error() }}</p>
           }
           <div class="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4" [class.opacity-60]="store.loading()">
             @for (item of store.items(); track item.id) {
@@ -339,13 +339,13 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
             } @empty {
               @if (store.loading()) {
                 @for (i of skeleton; track i) {
-                  <div class="aspect-[3/4] animate-pulse rounded-2xl bg-zinc-100"></div>
+                  <div class="aspect-[3/4] animate-pulse rounded-2xl bg-surface-3"></div>
                 }
               } @else {
                 <div class="col-span-full flex flex-col items-center gap-3 py-20 text-center">
-                  <app-icon name="search" [size]="40" class="text-zinc-300" />
+                  <app-icon name="search" [size]="40" class="text-fg-ghost" />
                   <p class="font-semibold">Няма намерени продукти</p>
-                  <p class="text-sm text-zinc-500">Опитайте с други филтри или друго търсене.</p>
+                  <p class="text-sm text-fg-muted">Опитайте с други филтри или друго търсене.</p>
                   <button type="button" class="btn-outline mt-2" (click)="reset()">Изчисти филтрите</button>
                 </div>
               }
@@ -359,12 +359,12 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               </button>
               @for (p of pages(); track $index) {
                 @if (p === null) {
-                  <span class="px-1 text-zinc-400">…</span>
+                  <span class="px-1 text-fg-faint">…</span>
                 } @else {
                   <button
                     type="button"
                     class="btn size-10 p-0"
-                    [class]="p === f.page ? 'bg-ink-900 text-white' : 'hover:bg-zinc-100'"
+                    [class]="p === f.page ? 'bg-inverse text-on-inverse' : 'hover:bg-surface-3'"
                     [attr.aria-current]="p === f.page ? 'page' : null"
                     (click)="goToPage(p)"
                   >
@@ -390,7 +390,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
     @if (showBackToTop()) {
       <button
         type="button"
-        class="toast-in fixed right-4 bottom-4 z-30 grid size-12 place-items-center rounded-full bg-ink-900 text-white shadow-xl shadow-ink-900/30 ring-1 ring-white/15 transition hover:bg-ink-700 sm:right-6 sm:bottom-6"
+        class="toast-in fixed right-4 bottom-4 z-30 grid size-12 place-items-center rounded-full bg-inverse text-on-inverse shadow-xl shadow-ink-900/30 ring-1 ring-white/15 transition hover:bg-inverse-hover sm:right-6 sm:bottom-6"
         aria-label="Към началото"
         title="Към началото"
         (click)="backToTop()"

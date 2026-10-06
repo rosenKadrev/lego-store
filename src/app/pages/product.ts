@@ -19,36 +19,36 @@ import { ThemesStore } from '../stores/themes.store';
     <div class="container-page pt-6">
       @if (store.loading()) {
         <div class="grid gap-8 lg:grid-cols-2">
-          <div class="aspect-square animate-pulse rounded-3xl bg-zinc-100"></div>
+          <div class="aspect-square animate-pulse rounded-3xl bg-surface-3"></div>
           <div class="space-y-4">
-            <div class="h-6 w-1/3 animate-pulse rounded bg-zinc-100"></div>
-            <div class="h-10 w-3/4 animate-pulse rounded bg-zinc-100"></div>
-            <div class="h-24 animate-pulse rounded bg-zinc-100"></div>
+            <div class="h-6 w-1/3 animate-pulse rounded bg-surface-3"></div>
+            <div class="h-10 w-3/4 animate-pulse rounded bg-surface-3"></div>
+            <div class="h-24 animate-pulse rounded bg-surface-3"></div>
           </div>
         </div>
       } @else if (store.notFound()) {
         <div class="flex flex-col items-center gap-4 py-24 text-center">
           <h1 class="text-3xl font-extrabold">Продуктът не е намерен</h1>
-          <p class="text-zinc-500">Може би вече е продаден или връзката е грешна.</p>
+          <p class="text-fg-muted">Може би вече е продаден или връзката е грешна.</p>
           <a routerLink="/catalog" class="btn-primary">Към каталога</a>
         </div>
       } @else if (store.listing(); as l) {
-        <nav class="mb-5 flex flex-wrap items-center gap-1 text-sm text-zinc-500" aria-label="Навигация">
-          <a routerLink="/" class="hover:text-ink-900">Начало</a>
+        <nav class="mb-5 flex flex-wrap items-center gap-1 text-sm text-fg-muted" aria-label="Навигация">
+          <a routerLink="/" class="hover:text-fg">Начало</a>
           @for (t of themePath(); track t.id) {
             <app-icon name="chevronRight" [size]="14" />
-            <a routerLink="/catalog" [queryParams]="{ theme: t.id }" class="hover:text-ink-900">{{ t.name }}</a>
+            <a routerLink="/catalog" [queryParams]="{ theme: t.id }" class="hover:text-fg">{{ t.name }}</a>
           }
           @if (l.item_type === 'minifig') {
             <app-icon name="chevronRight" [size]="14" />
-            <a routerLink="/catalog" [queryParams]="{ type: 'minifig' }" class="hover:text-ink-900">Минифигурки</a>
+            <a routerLink="/catalog" [queryParams]="{ type: 'minifig' }" class="hover:text-fg">Минифигурки</a>
           }
           @if (l.item_type === 'part') {
             <app-icon name="chevronRight" [size]="14" />
-            <a routerLink="/catalog" [queryParams]="{ type: 'part' }" class="hover:text-ink-900">Части</a>
+            <a routerLink="/catalog" [queryParams]="{ type: 'part' }" class="hover:text-fg">Части</a>
             @if (l.part_category) {
               <app-icon name="chevronRight" [size]="14" />
-              <a routerLink="/catalog" [queryParams]="{ type: 'part', category: l.part_cat_id }" class="hover:text-ink-900">{{ l.part_category }}</a>
+              <a routerLink="/catalog" [queryParams]="{ type: 'part', category: l.part_cat_id }" class="hover:text-fg">{{ l.part_category }}</a>
             }
           }
         </nav>
@@ -56,7 +56,7 @@ import { ThemesStore } from '../stores/themes.store';
         <div class="grid gap-8 lg:grid-cols-2 lg:gap-14">
           <!-- Gallery -->
           <div class="lg:sticky lg:top-32 lg:self-start">
-            <div class="relative aspect-square overflow-hidden rounded-3xl bg-zinc-50">
+            <div class="relative aspect-square overflow-hidden rounded-3xl bg-well">
               @if (activeImage(); as src) {
                 <img [src]="src" [alt]="l.name" class="absolute inset-0 size-full object-contain p-6 mix-blend-multiply sm:p-10" />
               }
@@ -74,8 +74,8 @@ import { ThemesStore } from '../stores/themes.store';
                 @for (src of store.gallery(); track src; let i = $index) {
                   <button
                     type="button"
-                    class="size-20 shrink-0 overflow-hidden rounded-xl border-2 bg-zinc-50 transition"
-                    [class]="i === activeIndex() ? 'border-brick-600' : 'border-transparent hover:border-zinc-300'"
+                    class="size-20 shrink-0 overflow-hidden rounded-xl border-2 bg-well transition"
+                    [class]="i === activeIndex() ? 'border-brick-600' : 'border-transparent hover:border-line-strong'"
                     [attr.aria-label]="'Снимка ' + (i + 1)"
                     (click)="activeIndex.set(i)"
                   >
@@ -88,29 +88,29 @@ import { ThemesStore } from '../stores/themes.store';
 
           <!-- Details -->
           <div>
-            <p class="text-sm font-semibold tracking-wide text-brick-600 uppercase">
+            <p class="text-sm font-semibold tracking-wide text-accent uppercase">
               {{ l.theme_name ?? l.part_category ?? 'Минифигурка' }} · {{ itemNum() }}
             </p>
             <h1 class="mt-2 text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">{{ l.name }}</h1>
             @if (l.item_type === 'part') {
-              <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-zinc-100 py-1.5 pr-4 pl-2 text-sm font-medium">
+              <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-surface-3 py-1.5 pr-4 pl-2 text-sm font-medium">
                 <app-color-swatch [rgb]="l.color_rgb" [trans]="!!l.color_name?.startsWith('Trans')" [size]="20" />
                 {{ l.color_name }}
               </p>
             }
 
             <div class="mt-5 flex items-end gap-3">
-              <p class="font-display text-4xl font-extrabold" [class.text-brick-600]="l.compare_at_price">
+              <p class="font-display text-4xl font-extrabold" [class.text-accent]="l.compare_at_price">
                 {{ l.price | currency }}
                 @if (l.item_type === 'part') {
-                  <span class="font-sans text-base font-medium text-zinc-500">/ бр.</span>
+                  <span class="font-sans text-base font-medium text-fg-muted">/ бр.</span>
                 }
               </p>
               @if (l.compare_at_price) {
-                <p class="pb-1 text-lg text-zinc-400 line-through">{{ l.compare_at_price | currency }}</p>
+                <p class="pb-1 text-lg text-fg-faint line-through">{{ l.compare_at_price | currency }}</p>
               }
             </div>
-            <p class="mt-2 flex items-center gap-1.5 text-sm" [class]="available() > 0 ? 'text-emerald-700' : 'text-brick-700'">
+            <p class="mt-2 flex items-center gap-1.5 text-sm" [class]="available() > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-accent-strong'">
               <span class="size-2 rounded-full" [class]="available() > 0 ? 'bg-emerald-500' : 'bg-brick-600'"></span>
               @if ((l.stock ?? 0) === 0) {
                 Изчерпан
@@ -135,19 +135,19 @@ import { ThemesStore } from '../stores/themes.store';
               </button>
             </div>
 
-            <ul class="mt-6 grid gap-2 rounded-2xl bg-zinc-50 p-4 text-sm sm:grid-cols-2">
-              <li class="flex items-center gap-2"><app-icon name="cash" [size]="18" class="text-brick-600" /> Плащане с наложен платеж</li>
-              <li class="flex items-center gap-2"><app-icon name="eye" [size]="18" class="text-brick-600" /> Преглед преди плащане</li>
-              <li class="flex items-center gap-2"><app-icon name="truck" [size]="18" class="text-brick-600" /> Еконт или Спиди, 1–2 дни</li>
-              <li class="flex items-center gap-2"><app-icon name="refresh" [size]="18" class="text-brick-600" /> 14 дни право на връщане</li>
+            <ul class="mt-6 grid gap-2 rounded-2xl bg-surface-2 p-4 text-sm sm:grid-cols-2">
+              <li class="flex items-center gap-2"><app-icon name="cash" [size]="18" class="text-accent" /> Плащане с наложен платеж</li>
+              <li class="flex items-center gap-2"><app-icon name="eye" [size]="18" class="text-accent" /> Преглед преди плащане</li>
+              <li class="flex items-center gap-2"><app-icon name="truck" [size]="18" class="text-accent" /> Еконт или Спиди, 1–2 дни</li>
+              <li class="flex items-center gap-2"><app-icon name="refresh" [size]="18" class="text-accent" /> 14 дни право на връщане</li>
             </ul>
 
             @if (l.box_damaged) {
-              <section class="mt-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm">
-                <h2 class="flex items-center gap-2 font-bold text-amber-900"><app-icon name="box" [size]="18" /> {{ boxDamagedLabel }}</h2>
-                <p class="mt-1 text-amber-900/80">Сетът е нов и запечатан. Кутията има козметични наранявания — съдържанието не е засегнато.</p>
+              <section class="mt-6 rounded-2xl border border-amber-200 dark:border-amber-400/30 bg-amber-50 dark:bg-amber-400/10 p-4 text-sm">
+                <h2 class="flex items-center gap-2 font-bold text-amber-900 dark:text-amber-200"><app-icon name="box" [size]="18" /> {{ boxDamagedLabel }}</h2>
+                <p class="mt-1 text-amber-900/80 dark:text-amber-200/80">Сетът е нов и запечатан. Кутията има козметични наранявания — съдържанието не е засегнато.</p>
                 @if (l.condition_notes) {
-                  <p class="mt-2 font-medium text-amber-950">{{ l.condition_notes }}</p>
+                  <p class="mt-2 font-medium text-amber-950 dark:text-amber-200">{{ l.condition_notes }}</p>
                 }
               </section>
             }
@@ -157,15 +157,15 @@ import { ThemesStore } from '../stores/themes.store';
                 <h2 class="text-lg font-bold">Състояние</h2>
                 <dl class="mt-3 grid grid-cols-1 gap-2 text-sm min-[360px]:grid-cols-2" [class.hidden]="l.item_type !== 'set'">
                   @for (row of usedDetails(); track row.label) {
-                    <div class="flex items-center gap-2 rounded-xl border border-zinc-200 p-3">
-                      <app-icon [name]="row.ok ? 'check' : 'x'" [size]="18" [class]="row.ok ? 'text-emerald-600' : 'text-brick-600'" />
+                    <div class="flex items-center gap-2 rounded-xl border border-line p-3">
+                      <app-icon [name]="row.ok ? 'check' : 'x'" [size]="18" [class]="row.ok ? 'text-emerald-600 dark:text-emerald-400' : 'text-accent'" />
                       <dt class="sr-only">{{ row.label }}</dt>
                       <dd>{{ row.text }}</dd>
                     </div>
                   }
                 </dl>
                 @if (l.condition_notes) {
-                  <p class="mt-3 rounded-xl bg-stud-300/30 p-3 text-sm">{{ l.condition_notes }}</p>
+                  <p class="mt-3 rounded-xl bg-stud-300/30 dark:bg-stud-400/15 p-3 text-sm">{{ l.condition_notes }}</p>
                 }
               </section>
             }
@@ -173,29 +173,29 @@ import { ThemesStore } from '../stores/themes.store';
             @if (l.description) {
               <section class="mt-8">
                 <h2 class="text-lg font-bold">Описание</h2>
-                <p class="mt-2 text-sm leading-relaxed whitespace-pre-line text-zinc-700">{{ l.description }}</p>
+                <p class="mt-2 text-sm leading-relaxed whitespace-pre-line text-fg-2">{{ l.description }}</p>
               </section>
             }
 
             <section class="mt-8">
               <h2 class="text-lg font-bold">Детайли</h2>
-              <dl class="mt-3 divide-y divide-zinc-100 text-sm">
-                <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Номер</dt><dd class="min-w-0 text-right font-medium break-words">{{ itemNum() }}</dd></div>
+              <dl class="mt-3 divide-y divide-line-soft text-sm">
+                <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Номер</dt><dd class="min-w-0 text-right font-medium break-words">{{ itemNum() }}</dd></div>
                 @if (l.color_name) {
-                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Цвят</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.color_name }}</dd></div>
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Цвят</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.color_name }}</dd></div>
                 }
                 @if (l.part_category) {
-                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Категория</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.part_category }}</dd></div>
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Категория</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.part_category }}</dd></div>
                 }
                 @if (l.year) {
-                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Година</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.year }}</dd></div>
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Година</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.year }}</dd></div>
                 }
                 @if (l.num_parts) {
-                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-zinc-500">Части</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.num_parts }}</dd></div>
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Части</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.num_parts }}</dd></div>
                 }
                 @if (store.minifigs().length) {
                   <div class="flex justify-between gap-4 py-2.5">
-                    <dt class="text-zinc-500">Минифигурки</dt><dd class="font-medium">{{ minifigCount() }}</dd>
+                    <dt class="text-fg-muted">Минифигурки</dt><dd class="font-medium">{{ minifigCount() }}</dd>
                   </div>
                 }
               </dl>
@@ -207,11 +207,11 @@ import { ThemesStore } from '../stores/themes.store';
                 <ul class="mt-3 space-y-2">
                   @for (o of store.otherOffers(); track o.id) {
                     <li>
-                      <a [routerLink]="['/p', o.id + '-' + slug()]" class="flex items-center justify-between rounded-xl border border-zinc-200 p-3 text-sm hover:border-ink-900">
+                      <a [routerLink]="['/p', o.id + '-' + slug()]" class="flex items-center justify-between rounded-xl border border-line p-3 text-sm hover:border-fg">
                         <span>
                           <b>{{ conditionLabel[o.condition!] }}</b>
                           @if (o.condition === 'used') {
-                            <span class="text-zinc-500"> · {{ o.has_box ? 'с кутия' : 'без кутия' }}</span>
+                            <span class="text-fg-muted"> · {{ o.has_box ? 'с кутия' : 'без кутия' }}</span>
                           }
                         </span>
                         <span class="font-bold">{{ o.price | currency }}</span>
@@ -229,8 +229,8 @@ import { ThemesStore } from '../stores/themes.store';
             <h2 class="text-2xl font-extrabold tracking-tight">Минифигурки в сета</h2>
             <div class="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
               @for (fig of store.minifigs(); track fig.fig_num) {
-                <div class="rounded-2xl border border-zinc-200 p-2 text-center">
-                  <div class="relative aspect-square">
+                <div class="rounded-2xl border border-line p-2 text-center">
+                  <div class="relative aspect-square rounded-xl dark:bg-well">
                     @if (fig.img_url) {
                       <img [src]="fig.img_url" [alt]="fig.name" loading="lazy" class="size-full object-contain" />
                     }

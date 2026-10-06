@@ -18,20 +18,20 @@ import { AuthShell } from './auth-shell';
         <div>
           <div class="mb-1.5 flex items-baseline justify-between">
             <label class="label mb-0" for="password">Парола</label>
-            <a routerLink="/forgot-password" class="text-xs font-medium text-brick-600 hover:underline">Забравена парола?</a>
+            <a routerLink="/forgot-password" class="text-xs font-medium text-accent hover:underline">Забравена парола?</a>
           </div>
           <input id="password" class="input" type="password" formControlName="password" autocomplete="current-password" />
         </div>
         @if (error()) {
-          <p class="rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ error() }}</p>
+          <p class="rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ error() }}</p>
         }
         <button type="submit" class="btn-primary w-full py-3" [disabled]="form.invalid || loading()">
           {{ loading() ? 'Влизане…' : 'Вход' }}
         </button>
       </form>
-      <p class="mt-6 text-center text-sm text-zinc-600">
+      <p class="mt-6 text-center text-sm text-fg-3">
         Нямате профил?
-        <a routerLink="/register" [queryParams]="{ redirect: redirect() }" class="font-semibold text-brick-600 hover:underline">Регистрация</a>
+        <a routerLink="/register" [queryParams]="{ redirect: redirect() }" class="font-semibold text-accent hover:underline">Регистрация</a>
       </p>
     </app-auth-shell>
   `,

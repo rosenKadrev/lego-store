@@ -32,13 +32,13 @@ const MyOrdersStore = signalStore(
   template: `
     <div class="container-page pt-8">
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Здравей, {{ auth.displayName() }}!</h1>
-      <p class="mt-1 text-sm text-zinc-500">{{ auth.user()?.email }}</p>
+      <p class="mt-1 text-sm text-fg-muted">{{ auth.user()?.email }}</p>
 
       <div class="mt-8 grid gap-8 lg:grid-cols-[1fr_20rem]">
         <section>
           <h2 class="text-xl font-bold">Моите поръчки</h2>
           @if (orders.loading()) {
-            <div class="mt-4 h-32 animate-pulse rounded-2xl bg-zinc-100"></div>
+            <div class="mt-4 h-32 animate-pulse rounded-2xl bg-surface-3"></div>
           } @else {
             <ul class="mt-4 space-y-3">
               @for (order of orders.orders(); track order.id) {
@@ -46,11 +46,11 @@ const MyOrdersStore = signalStore(
                   <div class="flex flex-wrap items-center justify-between gap-2">
                     <div>
                       <p class="font-bold">{{ order.number }}</p>
-                      <p class="text-xs text-zinc-500">{{ order.created_at | date: 'd MMMM y, HH:mm' }}</p>
+                      <p class="text-xs text-fg-muted">{{ order.created_at | date: 'd MMMM y, HH:mm' }}</p>
                     </div>
                     <app-order-status-badge [status]="order.status" />
                   </div>
-                  <ul class="mt-3 space-y-1 text-sm text-zinc-700">
+                  <ul class="mt-3 space-y-1 text-sm text-fg-2">
                     @for (item of order.order_items; track item.id) {
                       <li class="flex justify-between gap-4">
                         <span class="truncate">{{ item.quantity }} × {{ item.name }}</span>
@@ -58,26 +58,26 @@ const MyOrdersStore = signalStore(
                       </li>
                     }
                   </ul>
-                  <div class="mt-3 flex flex-wrap justify-between gap-2 border-t border-zinc-100 pt-3 text-sm">
-                    <span class="text-zinc-500">
-                      @if (order.tracking_number) { Товарителница: <b class="text-ink-900">{{ order.tracking_number }}</b> }
+                  <div class="mt-3 flex flex-wrap justify-between gap-2 border-t border-line-soft pt-3 text-sm">
+                    <span class="text-fg-muted">
+                      @if (order.tracking_number) { Товарителница: <b class="text-fg">{{ order.tracking_number }}</b> }
                     </span>
                     <b>
                       Общо {{ order.total | currency }}
                       @if (order.shipping_price == null && order.delivery_type !== 'pickup') {
-                        <span class="font-normal text-zinc-500">+ доставка (уточнява се)</span>
+                        <span class="font-normal text-fg-muted">+ доставка (уточнява се)</span>
                       }
                     </b>
                   </div>
                 </li>
               } @empty {
-                <li class="rounded-2xl bg-zinc-50 p-8 text-center text-sm text-zinc-500">Все още нямате поръчки.</li>
+                <li class="rounded-2xl bg-surface-2 p-8 text-center text-sm text-fg-muted">Все още нямате поръчки.</li>
               }
             </ul>
           }
         </section>
 
-        <section class="h-fit rounded-3xl bg-zinc-50 p-6">
+        <section class="h-fit rounded-3xl bg-surface-2 p-6">
           <h2 class="text-lg font-bold">Лични данни</h2>
           <form [formGroup]="form" (ngSubmit)="save()" class="mt-4 space-y-4">
             <div>
@@ -90,9 +90,9 @@ const MyOrdersStore = signalStore(
             </div>
             <button type="submit" class="btn-dark w-full" [disabled]="form.pristine">Запази</button>
           </form>
-          <div class="mt-6 border-t border-zinc-200 pt-5">
+          <div class="mt-6 border-t border-line pt-5">
             @if (passwordChanged) {
-              <p class="mb-3 text-sm text-emerald-700">Паролата е сменена успешно.</p>
+              <p class="mb-3 text-sm text-emerald-700 dark:text-emerald-400">Паролата е сменена успешно.</p>
             }
             <a routerLink="/reset-password" class="btn-outline w-full">Смени паролата</a>
           </div>

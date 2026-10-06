@@ -2,14 +2,14 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { ORDER_STATUS_LABEL, OrderStatus } from '../core/models';
 
 const STATUS_CLASS: Record<OrderStatus, string> = {
-  new: 'bg-sky-100 text-sky-800',
-  confirmed: 'bg-indigo-100 text-indigo-800',
-  shipped: 'bg-amber-100 text-amber-800',
-  delivered: 'bg-teal-100 text-teal-800',
-  paid: 'bg-emerald-100 text-emerald-800',
-  cancelled: 'bg-zinc-200 text-zinc-700',
-  refused: 'bg-brick-100 text-brick-800',
-  returned: 'bg-zinc-200 text-zinc-700',
+  new: 'bg-sky-100 text-sky-800 dark:bg-sky-400/15 dark:text-sky-300',
+  confirmed: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-400/15 dark:text-indigo-300',
+  shipped: 'bg-amber-100 dark:bg-amber-400/15 text-amber-800 dark:text-amber-200',
+  delivered: 'bg-teal-100 text-teal-800 dark:bg-teal-400/15 dark:text-teal-300',
+  paid: 'bg-emerald-100 dark:bg-emerald-400/15 text-emerald-800 dark:text-emerald-300',
+  cancelled: 'bg-surface-4 text-fg-2',
+  refused: 'bg-brick-100 text-accent-ink',
+  returned: 'bg-surface-4 text-fg-2',
 };
 
 @Component({

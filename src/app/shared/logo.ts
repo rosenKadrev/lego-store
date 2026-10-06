@@ -19,7 +19,7 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
       [class.max-[359px]:sr-only]="collapsible()"
     >
       <span class="mr-1 rounded-md bg-stud-400 px-1.5 py-1.5 text-[0.85em] leading-none text-ink-900">MBR</span>Brick<span
-        class="text-brick-600"
+        class="text-accent"
         >Store</span
       >
     </span>

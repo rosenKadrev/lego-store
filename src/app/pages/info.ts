@@ -42,7 +42,7 @@ const PAGES: Record<string, InfoPage> = {
     <article class="container-page max-w-3xl pt-10">
       @if (page(); as p) {
         <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{{ p.title }}</h1>
-        <div class="mt-6 space-y-4 leading-relaxed text-zinc-700">
+        <div class="mt-6 space-y-4 leading-relaxed text-fg-2">
           @for (text of p.paragraphs; track $index) {
             <p>{{ text }}</p>
           }

@@ -14,7 +14,7 @@ import { ProductCard } from './product-card';
       <div>
         <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">{{ title() }}</h2>
         @if (subtitle()) {
-          <p class="mt-1 text-sm text-zinc-500">{{ subtitle() }}</p>
+          <p class="mt-1 text-sm text-fg-muted">{{ subtitle() }}</p>
         }
       </div>
       <div class="flex items-center gap-2">
@@ -33,7 +33,7 @@ import { ProductCard } from './product-card';
     @if (loading()) {
       <div class="flex gap-4 overflow-hidden">
         @for (i of [1, 2, 3, 4, 5]; track i) {
-          <div class="aspect-[3/4] w-[80%] shrink-0 min-[360px]:w-[46%] animate-pulse rounded-2xl bg-zinc-100 sm:w-[31%] lg:w-[23%] xl:w-[19%]"></div>
+          <div class="aspect-[3/4] w-[80%] shrink-0 min-[360px]:w-[46%] animate-pulse rounded-2xl bg-surface-3 sm:w-[31%] lg:w-[23%] xl:w-[19%]"></div>
         }
       </div>
     } @else {
@@ -44,7 +44,7 @@ import { ProductCard } from './product-card';
         @for (item of items(); track item.id) {
           <app-product-card [listing]="item" class="w-[80%] shrink-0 min-[360px]:w-[46%] snap-start sm:w-[31%] lg:w-[23%] xl:w-[19%]" />
         } @empty {
-          <p class="py-10 text-sm text-zinc-500">Скоро ще има продукти тук.</p>
+          <p class="py-10 text-sm text-fg-muted">Скоро ще има продукти тук.</p>
         }
       </div>
     }

@@ -1,5 +1,8 @@
 @import 'tailwindcss';
 
+/* Dark mode follows a `.dark` class on <html> (set by ThemeService and the inline script in index.html) */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   --font-sans: 'Inter', ui-sans-serif, system-ui, sans-serif;
   --font-display: 'Rubik', 'Inter', ui-sans-serif, system-ui, sans-serif;
@@ -20,11 +23,72 @@
   --color-ink-900: #16161d;
   --color-ink-800: #23232d;
   --color-ink-700: #33333f;
+
+  /* Semantic colors — use these instead of white/zinc/ink so dark mode works.
+     Light values equal the original palette; `.dark` below overrides them. */
+  --color-page: #ffffff;
+  --color-surface: #ffffff;
+  --color-surface-2: #fafafa; /* zinc-50 */
+  --color-surface-3: #f4f4f5; /* zinc-100 */
+  --color-surface-4: #e4e4e7; /* zinc-200 */
+  --color-well: #fafafa; /* behind product photos (white backgrounds, mix-blend-multiply) — stays light */
+
+  --color-fg: #16161d; /* ink-900 */
+  --color-fg-2: #3f3f46; /* zinc-700 */
+  --color-fg-3: #52525c; /* zinc-600 */
+  --color-fg-muted: #71717b; /* zinc-500 */
+  --color-fg-faint: #9f9fa9; /* zinc-400 */
+  --color-fg-ghost: #d4d4d8; /* zinc-300 */
+
+  --color-line: #e4e4e7; /* zinc-200 */
+  --color-line-soft: #f4f4f5; /* zinc-100 */
+  --color-line-strong: #d4d4d8; /* zinc-300 */
+
+  --color-accent: #d01012; /* brick-600, as text */
+  --color-accent-strong: #b00d0f; /* brick-700 */
+  --color-accent-ink: #8f1012; /* brick-800, text on accent-soft */
+  --color-accent-soft: #fff1f1; /* brick-50 */
+
+  /* Dark chip / button on a light page; flips to light on a dark page */
+  --color-inverse: #16161d;
+  --color-inverse-hover: #33333f;
+  --color-on-inverse: #ffffff;
+}
+
+.dark {
+  color-scheme: dark;
+
+  --color-page: #0f0f12;
+  --color-surface: #18181c;
+  --color-surface-2: #1e1e23;
+  --color-surface-3: #27272d;
+  --color-surface-4: #33333a;
+  --color-well: #e9e9ec;
+
+  --color-fg: #f1f1f3;
+  --color-fg-2: #d4d4d8;
+  --color-fg-3: #b4b4bc;
+  --color-fg-muted: #9a9aa4;
+  --color-fg-faint: #75757f;
+  --color-fg-ghost: #4b4b54;
+
+  --color-line: #2c2c33;
+  --color-line-soft: #232329;
+  --color-line-strong: #41414a;
+
+  --color-accent: #ff5c5c;
+  --color-accent-strong: #ff7b7b;
+  --color-accent-ink: #ffc9c9;
+  --color-accent-soft: #3a1416;
+
+  --color-inverse: #f1f1f3;
+  --color-inverse-hover: #d4d4d8;
+  --color-on-inverse: #16161d;
 }
 
 @layer base {
   html {
-    @apply bg-white text-ink-900 antialiased;
+    @apply bg-page text-fg antialiased;
     scroll-behavior: smooth;
     /* Updated by the header at runtime; fallback = desktop height */
     --header-h: 117px;
@@ -67,32 +131,32 @@
 }
 
 @utility btn-dark {
-  @apply btn bg-ink-900 text-white hover:bg-ink-700;
+  @apply btn bg-inverse text-on-inverse hover:bg-inverse-hover;
 }
 
 @utility btn-outline {
-  @apply btn border border-zinc-300 bg-white text-ink-900 hover:border-ink-900;
+  @apply btn border border-line-strong bg-surface text-fg hover:border-fg;
 }
 
 @utility btn-ghost {
-  @apply btn text-ink-900 hover:bg-zinc-100;
+  @apply btn text-fg hover:bg-surface-3;
 }
 
 @utility input {
-  @apply block w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm placeholder:text-zinc-400
-  focus:border-brick-600 focus:ring-2 focus:ring-brick-100 focus:outline-none;
+  @apply block w-full rounded-xl border border-line-strong bg-surface px-3.5 py-2.5 text-sm placeholder:text-fg-faint
+  focus:border-brick-600 focus:ring-2 focus:ring-brick-100 focus:outline-none dark:focus:ring-brick-600/30;
 }
 
 @utility label {
-  @apply mb-1.5 block text-sm font-medium text-zinc-700;
+  @apply mb-1.5 block text-sm font-medium text-fg-2;
 }
 
 @utility field-error {
-  @apply mt-1 text-xs text-brick-700;
+  @apply mt-1 text-xs text-accent-strong;
 }
 
 @utility card {
-  @apply rounded-2xl border border-zinc-200 bg-white;
+  @apply rounded-2xl border border-line bg-surface;
 }
 
 @utility chip {
@@ -108,6 +172,9 @@ select.input {
   background-repeat: no-repeat;
   background-position: right 1.1rem center;
   background-size: 1rem;
+}
+.dark select.input {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f1f1f3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 
 /* Toast entrance */

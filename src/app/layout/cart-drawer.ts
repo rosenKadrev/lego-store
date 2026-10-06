@@ -14,8 +14,8 @@ import { CartStore } from '../stores/cart.store';
     @if (cart.drawerOpen()) {
       <div class="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Количка">
         <div class="absolute inset-0 bg-ink-900/50 backdrop-blur-sm" (click)="cart.closeDrawer()"></div>
-        <aside class="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-white shadow-2xl">
-          <header class="flex h-16 items-center justify-between border-b border-zinc-100 px-5">
+        <aside class="absolute inset-y-0 right-0 flex w-full max-w-md flex-col bg-surface shadow-2xl">
+          <header class="flex h-16 items-center justify-between border-b border-line-soft px-5">
             <h2 class="text-lg font-bold">Количка ({{ cart.count() }})</h2>
             <button type="button" class="btn-ghost size-10 p-0" aria-label="Затвори" (click)="cart.closeDrawer()">
               <app-icon name="close" />
@@ -23,17 +23,17 @@ import { CartStore } from '../stores/cart.store';
           </header>
 
           @if (cart.items().length) {
-            <ul class="flex-1 divide-y divide-zinc-100 overflow-y-auto px-5">
+            <ul class="flex-1 divide-y divide-line-soft overflow-y-auto px-5">
               @for (item of cart.items(); track item.listingId) {
                 <li class="flex gap-4 py-4">
-                  <div class="size-20 shrink-0 overflow-hidden rounded-xl bg-zinc-50">
+                  <div class="size-20 shrink-0 overflow-hidden rounded-xl bg-well">
                     @if (item.imageUrl) {
                       <img [src]="item.imageUrl" [alt]="item.name" class="size-full object-contain p-1.5 mix-blend-multiply" />
                     }
                   </div>
                   <div class="flex min-w-0 flex-1 flex-col">
                     <p class="truncate text-sm font-semibold">{{ item.name }}</p>
-                    <p class="text-xs text-zinc-500">{{ itemNum(item.itemNum) }} · {{ conditionLabel[item.condition] }}</p>
+                    <p class="text-xs text-fg-muted">{{ itemNum(item.itemNum) }} · {{ conditionLabel[item.condition] }}</p>
                     <div class="mt-auto flex items-center justify-between pt-2">
                       <app-quantity-stepper
                         [value]="item.quantity"
@@ -45,7 +45,7 @@ import { CartStore } from '../stores/cart.store';
                   </div>
                   <button
                     type="button"
-                    class="self-start text-zinc-400 hover:text-brick-600"
+                    class="self-start text-fg-faint hover:text-accent"
                     aria-label="Премахни"
                     (click)="cart.remove(item.listingId)"
                   >
@@ -55,12 +55,12 @@ import { CartStore } from '../stores/cart.store';
               }
             </ul>
 
-            <footer class="space-y-3 border-t border-zinc-100 p-5">
+            <footer class="space-y-3 border-t border-line-soft p-5">
               <div class="flex justify-between text-base">
                 <span>Междинна сума</span>
                 <b>{{ cart.subtotal() | currency }}</b>
               </div>
-              <p class="flex items-center gap-1.5 text-xs text-zinc-500">
+              <p class="flex items-center gap-1.5 text-xs text-fg-muted">
                 <app-icon name="truck" [size]="14" />
                 Цената на доставката се уточнява от служител. Лично взимане — безплатно.
               </p>
@@ -71,10 +71,10 @@ import { CartStore } from '../stores/cart.store';
             </footer>
           } @else {
             <div class="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-              <div class="grid size-20 place-items-center rounded-full bg-zinc-100 text-zinc-400">
+              <div class="grid size-20 place-items-center rounded-full bg-surface-3 text-fg-faint">
                 <app-icon name="cart" [size]="36" />
               </div>
-              <p class="text-zinc-500">Количката е празна.</p>
+              <p class="text-fg-muted">Количката е празна.</p>
               <a routerLink="/catalog" class="btn-primary" (click)="cart.closeDrawer()">Разгледай продуктите</a>
             </div>
           }

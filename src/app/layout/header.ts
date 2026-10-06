@@ -3,6 +3,7 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
 import { SHOP_NAME } from '../core/models';
+import { ThemeService } from '../core/theme';
 import { Icon } from '../shared/icon';
 import { Logo } from '../shared/logo';
 import { SearchBox } from './search-box';
@@ -26,7 +27,7 @@ type NavLink = { label: string; params: Record<string, string> };
       </div>
     </div>
 
-    <div class="border-b border-zinc-200 bg-white/90 backdrop-blur-lg">
+    <div class="border-b border-line bg-page/90 backdrop-blur-lg">
       <div class="container-page flex h-16 items-center gap-1.5 sm:gap-3 lg:h-20 lg:gap-5 xl:gap-8">
         <button type="button" class="btn-ghost -ml-2 size-9 p-0 sm:size-10 lg:hidden" aria-label="Меню" (click)="menuOpen.set(true)">
           <app-icon name="menu" [size]="22" />
@@ -41,16 +42,16 @@ type NavLink = { label: string; params: Record<string, string> };
             <a
               routerLink="/catalog"
               [queryParams]="link.params"
-              routerLinkActive="!text-brick-600"
+              routerLinkActive="!text-accent"
               [routerLinkActiveOptions]="{ queryParams: 'subset', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
-              class="rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-ink-800 transition hover:bg-zinc-100 xl:px-3"
+              class="rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-fg transition hover:bg-surface-3 xl:px-3"
               >{{ link.label }}</a
             >
           }
           <div class="relative" (mouseenter)="themesOpen.set(true)" (mouseleave)="themesOpen.set(false)">
             <button
               type="button"
-              class="flex items-center gap-1 rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-ink-800 transition hover:bg-zinc-100 xl:px-3"
+              class="flex items-center gap-1 rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-fg transition hover:bg-surface-3 xl:px-3"
               [attr.aria-expanded]="themesOpen()"
               (click)="themesOpen.set(!themesOpen())"
             >
@@ -58,28 +59,28 @@ type NavLink = { label: string; params: Record<string, string> };
             </button>
             @if (themesOpen()) {
               <div class="absolute top-full left-0 w-[34rem] pt-2">
-                <div class="card grid grid-cols-2 gap-1 p-3 shadow-2xl shadow-zinc-300/50">
+                <div class="card grid grid-cols-2 gap-1 p-3 shadow-2xl shadow-zinc-300/50 dark:shadow-black/40">
                   @for (theme of themes.listed().slice(0, menuLimit); track theme.theme_id) {
                     <a
                       routerLink="/catalog"
                       [queryParams]="{ theme: theme.theme_id }"
-                      class="flex items-center gap-3 rounded-xl p-2 text-sm hover:bg-zinc-50"
+                      class="flex items-center gap-3 rounded-xl p-2 text-sm hover:bg-surface-2"
                     >
-                      <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-zinc-100">
+                      <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-well">
                         @if (theme.sample_img_url) {
                           <img [src]="theme.sample_img_url" alt="" class="size-full object-contain mix-blend-multiply" />
                         }
                       </span>
                       <span class="font-medium">{{ theme.name }}</span>
-                      <span class="ml-auto text-xs text-zinc-400">{{ theme.listing_count }}</span>
+                      <span class="ml-auto text-xs text-fg-faint">{{ theme.listing_count }}</span>
                     </a>
                   } @empty {
-                    <p class="col-span-2 p-3 text-sm text-zinc-500">Все още няма продукти.</p>
+                    <p class="col-span-2 p-3 text-sm text-fg-muted">Все още няма продукти.</p>
                   }
                   @if (themes.listed().length > menuLimit) {
                     <a
                       routerLink="/themes"
-                      class="col-span-2 mt-1 flex items-center justify-center gap-1 rounded-xl border-t border-zinc-100 p-3 text-sm font-semibold text-brick-600 hover:bg-brick-50"
+                      class="col-span-2 mt-1 flex items-center justify-center gap-1 rounded-xl border-t border-line-soft p-3 text-sm font-semibold text-accent hover:bg-accent-soft"
                     >
                       Виж всички теми ({{ themes.listed().length }}) <app-icon name="arrowRight" [size]="16" />
                     </a>
@@ -102,6 +103,16 @@ type NavLink = { label: string; params: Record<string, string> };
             <app-icon name="search" [size]="22" />
           </button>
 
+          <button
+            type="button"
+            class="btn-ghost size-9 p-0 sm:size-10"
+            [attr.aria-label]="theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема'"
+            [attr.title]="theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема'"
+            (click)="theme.toggle()"
+          >
+            <app-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" [size]="22" />
+          </button>
+
           @if (auth.isLoggedIn()) {
             <div class="relative">
               <button
@@ -116,18 +127,18 @@ type NavLink = { label: string; params: Record<string, string> };
               </button>
               @if (accountOpen()) {
                 <div class="fixed inset-0 z-10" (click)="accountOpen.set(false)"></div>
-                <div class="card absolute right-0 z-20 mt-2 w-56 p-2 shadow-2xl shadow-zinc-300/50">
-                  <a routerLink="/account" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-zinc-50">
+                <div class="card absolute right-0 z-20 mt-2 w-56 p-2 shadow-2xl shadow-zinc-300/50 dark:shadow-black/40">
+                  <a routerLink="/account" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-surface-2">
                     <app-icon name="user" [size]="18" /> Моят профил
                   </a>
                   @if (auth.isAdmin()) {
-                    <a routerLink="/admin" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-zinc-50">
+                    <a routerLink="/admin" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-surface-2">
                       <app-icon name="settings" [size]="18" /> Админ панел
                     </a>
                   }
                   <button
                     type="button"
-                    class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-brick-700 hover:bg-brick-50"
+                    class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-accent-strong hover:bg-accent-soft"
                     (click)="signOut()"
                   >
                     <app-icon name="logout" [size]="18" /> Изход
@@ -163,8 +174,8 @@ type NavLink = { label: string; params: Record<string, string> };
     @if (menuOpen()) {
       <div class="fixed inset-0 z-50 lg:hidden" role="dialog" aria-modal="true" aria-label="Меню">
         <div class="absolute inset-0 bg-ink-900/50 backdrop-blur-sm" (click)="menuOpen.set(false)"></div>
-        <div class="absolute inset-y-0 left-0 flex w-[85%] max-w-sm flex-col overflow-y-auto bg-white shadow-2xl">
-          <div class="flex h-16 items-center justify-between border-b border-zinc-100 px-4">
+        <div class="absolute inset-y-0 left-0 flex w-[85%] max-w-sm flex-col overflow-y-auto bg-surface shadow-2xl">
+          <div class="flex h-16 items-center justify-between border-b border-line-soft px-4">
             <app-logo />
             <button type="button" class="btn-ghost size-10 p-0" aria-label="Затвори" (click)="menuOpen.set(false)">
               <app-icon name="close" />
@@ -172,24 +183,24 @@ type NavLink = { label: string; params: Record<string, string> };
           </div>
           <nav class="flex flex-col p-3">
             @for (link of links; track link.label) {
-              <a routerLink="/catalog" [queryParams]="link.params" class="rounded-xl px-3 py-3 font-semibold hover:bg-zinc-50">{{
+              <a routerLink="/catalog" [queryParams]="link.params" class="rounded-xl px-3 py-3 font-semibold hover:bg-surface-2">{{
                 link.label
               }}</a>
             }
           </nav>
-          <p class="px-6 pt-2 text-xs font-semibold tracking-wider text-zinc-400 uppercase">Теми</p>
+          <p class="px-6 pt-2 text-xs font-semibold tracking-wider text-fg-faint uppercase">Теми</p>
           <nav class="flex flex-col p-3">
             @for (theme of themes.listed().slice(0, menuLimit); track theme.theme_id) {
               <a
                 routerLink="/catalog"
                 [queryParams]="{ theme: theme.theme_id }"
-                class="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:bg-zinc-50"
+                class="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:bg-surface-2"
               >
-                {{ theme.name }} <span class="text-xs text-zinc-400">{{ theme.listing_count }}</span>
+                {{ theme.name }} <span class="text-xs text-fg-faint">{{ theme.listing_count }}</span>
               </a>
             }
             @if (themes.listed().length > menuLimit) {
-              <a routerLink="/themes" class="flex items-center gap-1 rounded-xl px-3 py-2.5 text-sm font-semibold text-brick-600 hover:bg-brick-50">
+              <a routerLink="/themes" class="flex items-center gap-1 rounded-xl px-3 py-2.5 text-sm font-semibold text-accent hover:bg-accent-soft">
                 Виж всички теми ({{ themes.listed().length }}) <app-icon name="arrowRight" [size]="16" />
               </a>
             }
@@ -203,6 +214,7 @@ export class Header {
   protected readonly auth = inject(AuthStore);
   protected readonly cart = inject(CartStore);
   protected readonly themes = inject(ThemesStore);
+  protected readonly theme = inject(ThemeService);
   private readonly router = inject(Router);
 
   protected readonly shopName = SHOP_NAME;

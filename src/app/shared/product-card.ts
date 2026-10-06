@@ -15,9 +15,9 @@ import { Icon } from './icon';
   template: `
     @let l = listing();
     <article
-      class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-zinc-200/70"
+      class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-zinc-200/70 hover:dark:shadow-black/40"
     >
-      <a [routerLink]="link()" class="relative block aspect-square bg-zinc-50">
+      <a [routerLink]="link()" class="relative block aspect-square bg-well">
         @if (image(); as src) {
           <img
             [src]="src"
@@ -26,7 +26,7 @@ import { Icon } from './icon';
             class="absolute inset-0 h-full w-full object-contain p-5 mix-blend-multiply transition duration-300 group-hover:scale-105"
           />
         } @else {
-          <div class="absolute inset-0 grid place-items-center text-zinc-300"><app-icon name="image" [size]="48" /></div>
+          <div class="absolute inset-0 grid place-items-center text-fg-ghost"><app-icon name="image" [size]="48" /></div>
         }
         <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
           <span class="chip" [class]="l.condition === 'new' ? 'bg-emerald-600 text-white' : 'bg-stud-400 text-ink-900'">
@@ -42,38 +42,38 @@ import { Icon } from './icon';
       </a>
 
       <div class="flex flex-1 flex-col gap-1 p-4">
-        <p class="text-xs font-medium tracking-wide text-zinc-500 uppercase">
+        <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">
           {{ l.theme_name ?? l.part_category ?? (l.item_type === 'minifig' ? 'Минифигурка' : 'LEGO') }} · {{ itemNum() }}
         </p>
-        <h3 class="line-clamp-2 font-sans text-sm leading-snug font-semibold text-ink-900">
+        <h3 class="line-clamp-2 font-sans text-sm leading-snug font-semibold text-fg">
           <a [routerLink]="link()" class="after:absolute after:inset-0 after:content-['']">{{ l.name }}</a>
         </h3>
         @if (l.item_type === 'part') {
-          <p class="flex items-center gap-1.5 text-xs text-zinc-600">
+          <p class="flex items-center gap-1.5 text-xs text-fg-3">
             <app-color-swatch [rgb]="l.color_rgb" [trans]="!!l.color_name?.startsWith('Trans')" [size]="12" />
             {{ l.color_name }} · {{ l.stock }} бр.
           </p>
         }
         @if (l.condition === 'used' && l.item_type === 'set') {
-          <p class="text-xs text-zinc-500">
+          <p class="text-xs text-fg-muted">
             {{ l.has_box ? 'С кутия' : 'Без кутия' }} · {{ l.is_complete === false ? 'Непълен' : 'Пълен' }}
           </p>
         }
         <div class="mt-auto flex items-end justify-between gap-2 pt-3">
           <div>
             @if (l.compare_at_price) {
-              <p class="text-xs text-zinc-400 line-through">{{ l.compare_at_price | currency }}</p>
+              <p class="text-xs text-fg-faint line-through">{{ l.compare_at_price | currency }}</p>
             }
-            <p class="font-display text-lg font-bold" [class.text-brick-600]="l.compare_at_price">
+            <p class="font-display text-lg font-bold" [class.text-accent]="l.compare_at_price">
               {{ l.price | currency }}
               @if (l.item_type === 'part') {
-                <span class="font-sans text-xs font-medium text-zinc-500">/ бр.</span>
+                <span class="font-sans text-xs font-medium text-fg-muted">/ бр.</span>
               }
             </p>
           </div>
           <button
             type="button"
-            class="relative z-10 grid size-10 place-items-center rounded-full bg-ink-900 text-white transition hover:bg-brick-600 disabled:bg-zinc-200 disabled:text-zinc-400"
+            class="relative z-10 grid size-10 place-items-center rounded-full bg-inverse text-on-inverse transition hover:bg-brick-600 disabled:bg-surface-4 disabled:text-fg-faint"
             [disabled]="soldOut()"
             [attr.aria-label]="'Добави ' + l.name + ' в количката'"
             (click)="addToCart()"

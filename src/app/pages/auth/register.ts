@@ -14,9 +14,9 @@ import { safeRedirect } from './login';
     <app-auth-shell title="Регистрация" subtitle="Бърза поръчка и история на покупките.">
       @if (confirmationSent()) {
         <div class="flex flex-col items-center gap-3 py-4 text-center">
-          <app-icon name="check" [size]="40" class="text-emerald-600" />
+          <app-icon name="check" [size]="40" class="text-emerald-600 dark:text-emerald-400" />
           <p class="font-semibold">Изпратихме ви имейл за потвърждение.</p>
-          <p class="text-sm text-zinc-500">Отворете линка в него, за да активирате профила си.</p>
+          <p class="text-sm text-fg-muted">Отворете линка в него, за да активирате профила си.</p>
         </div>
       } @else {
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4" novalidate>
@@ -38,18 +38,18 @@ import { safeRedirect } from './login';
           <div>
             <label class="label" for="password">Парола</label>
             <input id="password" class="input" type="password" formControlName="password" autocomplete="new-password" />
-            <p class="mt-1 text-xs text-zinc-500">Поне 8 символа.</p>
+            <p class="mt-1 text-xs text-fg-muted">Поне 8 символа.</p>
           </div>
           @if (error()) {
-            <p class="rounded-xl bg-brick-50 p-3 text-sm text-brick-800">{{ error() }}</p>
+            <p class="rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ error() }}</p>
           }
           <button type="submit" class="btn-primary w-full py-3" [disabled]="form.invalid || loading()">
             {{ loading() ? 'Създаване…' : 'Създай профил' }}
           </button>
         </form>
-        <p class="mt-6 text-center text-sm text-zinc-600">
+        <p class="mt-6 text-center text-sm text-fg-3">
           Вече имате профил?
-          <a routerLink="/login" [queryParams]="{ redirect: redirect() }" class="font-semibold text-brick-600 hover:underline">Вход</a>
+          <a routerLink="/login" [queryParams]="{ redirect: redirect() }" class="font-semibold text-accent hover:underline">Вход</a>
         </p>
       }
     </app-auth-shell>

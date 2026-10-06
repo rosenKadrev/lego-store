@@ -10,7 +10,7 @@ import { SHOP_NAME } from '../core/models';
   imports: [RouterLink, Logo, Icon],
   host: { class: 'block' },
   template: `
-    <footer class="mt-20 bg-ink-900 text-zinc-300">
+    <footer class="mt-20 bg-ink-900 text-zinc-300 dark:border-t dark:border-white/10">
       <div class="container-page grid gap-10 py-14 md:grid-cols-2 lg:grid-cols-4">
         <div class="lg:col-span-2">
           <app-logo [inverted]="true" />

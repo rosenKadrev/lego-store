@@ -12,13 +12,13 @@ import { Icon, IconName } from '../shared/icon';
         <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Админ панел</h1>
         <a routerLink="/admin/listings/new" class="btn-primary"><app-icon name="plus" [size]="18" /> Нова обява</a>
       </div>
-      <nav class="mt-5 flex gap-1 overflow-x-auto border-b border-zinc-200" aria-label="Админ навигация">
+      <nav class="mt-5 flex gap-1 overflow-x-auto border-b border-line" aria-label="Админ навигация">
         @for (link of links; track link.path) {
           <a
             [routerLink]="link.path"
-            routerLinkActive="!border-brick-600 !text-ink-900"
+            routerLinkActive="!border-brick-600 !text-fg"
             [routerLinkActiveOptions]="{ exact: link.exact }"
-            class="-mb-px flex items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-semibold whitespace-nowrap text-zinc-500 hover:text-ink-900"
+            class="-mb-px flex items-center gap-2 border-b-2 border-transparent px-4 py-3 text-sm font-semibold whitespace-nowrap text-fg-muted hover:text-fg"
           >
             <app-icon [name]="link.icon" [size]="18" /> {{ link.label }}
           </a>

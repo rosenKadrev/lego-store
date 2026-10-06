@@ -6,10 +6,10 @@ import { Icon } from './icon';
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [Icon],
   template: `
-    <div class="inline-flex items-center rounded-full border border-zinc-300" [class.h-11]="large()" [class.h-9]="!large()">
+    <div class="inline-flex items-center rounded-full border border-line-strong" [class.h-11]="large()" [class.h-9]="!large()">
       <button
         type="button"
-        class="grid h-full w-9 place-items-center rounded-l-full hover:bg-zinc-100 disabled:opacity-30"
+        class="grid h-full w-9 place-items-center rounded-l-full hover:bg-surface-3 disabled:opacity-30"
         aria-label="Намали"
         [disabled]="value() <= min()"
         (click)="valueChange.emit(value() - 1)"
@@ -19,7 +19,7 @@ import { Icon } from './icon';
       <span class="w-8 text-center text-sm font-semibold tabular-nums" aria-live="polite">{{ value() }}</span>
       <button
         type="button"
-        class="grid h-full w-9 place-items-center rounded-r-full hover:bg-zinc-100 disabled:opacity-30"
+        class="grid h-full w-9 place-items-center rounded-r-full hover:bg-surface-3 disabled:opacity-30"
         aria-label="Увеличи"
         [disabled]="value() >= max()"
         (click)="valueChange.emit(value() + 1)"
