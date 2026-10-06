@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
@@ -18,7 +18,11 @@ type NavLink = { label: string; params: Record<string, string> };
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
   imports: [RouterLink, RouterLinkActive, Icon, Logo, SearchBox],
-  host: { class: 'sticky top-0 z-40 block' },
+  host: {
+    class: 'sticky top-0 z-40 block',
+    '(document:mousedown)': 'onDocumentMouseDown($event)',
+    '(document:keydown.escape)': 'accountOpen.set(false)',
+  },
   template: `
     <div class="bg-ink-900 text-xs text-white">
       <div class="container-page flex h-9 items-center justify-center gap-6 overflow-hidden whitespace-nowrap">
@@ -116,7 +120,7 @@ type NavLink = { label: string; params: Record<string, string> };
           </button>
 
           @if (auth.isLoggedIn()) {
-            <div class="relative">
+            <div #accountMenu class="relative">
               <button
                 type="button"
                 class="btn-ghost h-9 gap-2 px-1.5 sm:h-10 sm:px-3"
@@ -128,7 +132,6 @@ type NavLink = { label: string; params: Record<string, string> };
                 <app-icon name="chevronDown" [size]="16" class="max-2xl:hidden" />
               </button>
               @if (accountOpen()) {
-                <div class="fixed inset-0 z-10" (click)="accountOpen.set(false)"></div>
                 <div class="card absolute right-0 z-20 mt-2 w-56 p-2 shadow-2xl shadow-zinc-300/50 dark:shadow-black/40">
                   <a routerLink="/account" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-surface-2">
                     <app-icon name="user" [size]="18" /> Моят профил
@@ -257,6 +260,7 @@ export class Header {
   protected readonly themesOpen = signal(false);
   protected readonly accountOpen = signal(false);
   protected readonly mobileSearchOpen = signal(false);
+  private readonly accountMenu = viewChild<ElementRef<HTMLElement>>('accountMenu');
 
 
   constructor() {
@@ -283,6 +287,14 @@ export class Header {
     });
   }
 
+
+  /** Closes the account menu on a click anywhere else. (A fixed full-screen backdrop can't do it:
+   *  the header bar's backdrop-blur makes it the containing block, so the backdrop only covers the bar.) */
+  protected onDocumentMouseDown(event: MouseEvent): void {
+    if (this.accountOpen() && !this.accountMenu()?.nativeElement.contains(event.target as Node)) {
+      this.accountOpen.set(false);
+    }
+  }
 
   protected async signOut(): Promise<void> {
     this.accountOpen.set(false);
