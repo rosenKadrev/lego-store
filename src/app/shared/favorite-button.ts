@@ -35,7 +35,7 @@ export class FavoriteButton {
     // Hover previews the "favourited" red; press gives a small squeeze
     const base = this.large()
       ? 'size-11 border border-line-strong bg-surface hover:border-accent hover:text-accent'
-      : 'size-9 bg-white/90 shadow-sm backdrop-blur hover:scale-110 hover:bg-white hover:text-brick-600 hover:shadow-md';
+      : 'size-8 sm:size-9 bg-white/90 shadow-sm backdrop-blur hover:scale-110 hover:bg-white hover:text-brick-600 hover:shadow-md';
     const color = this.active() ? (this.large() ? 'text-accent' : 'text-brick-600') : this.large() ? 'text-fg' : 'text-ink-900';
     return `${base} ${color} active:scale-95`;
   });

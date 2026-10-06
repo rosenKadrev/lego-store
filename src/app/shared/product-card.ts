@@ -29,7 +29,7 @@ import { Icon } from './icon';
         } @else {
           <div class="absolute inset-0 grid place-items-center text-fg-ghost"><app-icon name="image" [size]="48" /></div>
         }
-        <div class="absolute top-3 left-3 flex flex-wrap gap-1.5">
+        <div class="absolute top-2 right-11 left-2 flex flex-wrap gap-1.5 sm:top-3 sm:right-14 sm:left-3">
           <span class="chip" [class]="l.condition === 'new' ? 'bg-emerald-600 text-white' : 'bg-stud-400 text-ink-900'">
             {{ conditionLabel() }}
           </span>
@@ -41,7 +41,7 @@ import { Icon } from './icon';
           }
         </div>
       </a>
-      <app-favorite-button class="absolute top-3 right-3 z-10" [listing]="l" />
+      <app-favorite-button class="absolute top-2 right-2 z-10 sm:top-3 sm:right-3" [listing]="l" />
 
       <div class="flex flex-1 flex-col gap-1 p-4">
         <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">
