@@ -108,16 +108,18 @@ type NavLink = { label: string; params: Record<string, string> };
             <app-icon name="search" [size]="22" />
           </button>
 
-          <!-- On phones the theme toggle lives in the side menu -->
-          <button
-            type="button"
-            class="btn-ghost hidden size-10 p-0 sm:inline-flex"
-            [attr.aria-label]="theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема'"
-            [attr.title]="theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема'"
-            (click)="theme.toggle()"
-          >
-            <app-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" [size]="22" />
-          </button>
+          <!-- Theme toggle: in the account menu when logged in, in the side menu on phones -->
+          @if (!auth.isLoggedIn()) {
+            <button
+              type="button"
+              class="btn-ghost hidden size-10 p-0 sm:inline-flex"
+              [attr.aria-label]="theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема'"
+              [attr.title]="theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема'"
+              (click)="theme.toggle()"
+            >
+              <app-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" [size]="22" />
+            </button>
+          }
 
           @if (auth.isLoggedIn()) {
             <div #accountMenu class="relative">
@@ -141,6 +143,10 @@ type NavLink = { label: string; params: Record<string, string> };
                       <app-icon name="settings" [size]="18" /> Админ панел
                     </a>
                   }
+                  <button type="button" class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-surface-2" (click)="theme.toggle()">
+                    <app-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" [size]="18" />
+                    {{ theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема' }}
+                  </button>
                   <button
                     type="button"
                     class="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-sm text-accent-strong hover:bg-accent-soft"
