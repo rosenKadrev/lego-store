@@ -29,6 +29,9 @@ export const SHOP_NAME = 'MBR BrickStore';
 /** Contact e-mail shown on the info pages (returns, complaints). TODO: set the real address before going live. */
 export const SHOP_EMAIL = '';
 
+/** The legal entity behind the shop (data controller in the privacy policy). TODO: fill in before going live. */
+export const SHOP_COMPANY = { name: '', eik: '', address: '' };
+
 export const CONDITION_LABEL: Record<ItemCondition, string> = {
   new: 'Ново',
   used: 'Употребявано',
