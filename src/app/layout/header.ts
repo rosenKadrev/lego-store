@@ -104,9 +104,10 @@ type NavLink = { label: string; params: Record<string, string> };
             <app-icon name="search" [size]="22" />
           </button>
 
+          <!-- On phones the theme toggle lives in the side menu -->
           <button
             type="button"
-            class="btn-ghost size-9 p-0 sm:size-10"
+            class="btn-ghost hidden size-10 p-0 sm:inline-flex"
             [attr.aria-label]="theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема'"
             [attr.title]="theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема'"
             (click)="theme.toggle()"
@@ -204,6 +205,14 @@ type NavLink = { label: string; params: Record<string, string> };
                 <span class="text-xs font-normal text-fg-faint">{{ favorites.count() }}</span>
               }
             </a>
+            <button
+              type="button"
+              class="flex items-center gap-2 rounded-xl px-3 py-3 text-left font-semibold hover:bg-surface-2"
+              (click)="theme.toggle()"
+            >
+              <app-icon [name]="theme.mode() === 'dark' ? 'sun' : 'moon'" [size]="18" />
+              {{ theme.mode() === 'dark' ? 'Светла тема' : 'Тъмна тема' }}
+            </button>
           </nav>
           <p class="px-6 pt-2 text-xs font-semibold tracking-wider text-fg-faint uppercase">Теми</p>
           <nav class="flex flex-col p-3">
