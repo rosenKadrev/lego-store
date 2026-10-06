@@ -93,6 +93,12 @@
     /* Updated by the header at runtime; fallback = desktop height */
     --header-h: 117px;
   }
+  /* Never let a stray few pixels make the page pan sideways on phones; `clip` (unlike `hidden`)
+     keeps position: sticky working. Both elements: body's value alone is moved to the viewport. */
+  html,
+  body {
+    overflow-x: clip;
+  }
   h1, h2, h3 {
     @apply font-display;
   }

@@ -125,7 +125,7 @@ type NavLink = { label: string; params: Record<string, string> };
               >
                 <app-icon name="user" [size]="22" />
                 <span class="hidden max-w-28 truncate text-sm 2xl:inline">Здравей, <b>{{ auth.displayName() }}</b></span>
-                <app-icon name="chevronDown" [size]="16" class="hidden 2xl:inline-flex" />
+                <app-icon name="chevronDown" [size]="16" class="max-2xl:hidden" />
               </button>
               @if (accountOpen()) {
                 <div class="fixed inset-0 z-10" (click)="accountOpen.set(false)"></div>
