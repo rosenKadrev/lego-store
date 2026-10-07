@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, output, signal } from '@angular/core';
+import { ColorSwatch } from './color-swatch';
 import { Icon } from './icon';
 
-export type ComboboxOption = { id: number; name: string };
+/** `rgb` shows a colour dot, `hint` a muted note on the right (e.g. a count) */
+export type ComboboxOption = { id: number; name: string; rgb?: string; trans?: boolean; hint?: string };
 
 /**
  * Searchable dropdown: type to filter, or open it and pick from the whole list.
@@ -10,7 +12,7 @@ export type ComboboxOption = { id: number; name: string };
 @Component({
   selector: 'app-combobox',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [Icon],
+  imports: [Icon, ColorSwatch],
   host: { class: 'relative block', '(document:mousedown)': 'onDocumentMouseDown($event)' },
   template: `
     <input
@@ -50,13 +52,19 @@ export type ComboboxOption = { id: number; name: string };
             [id]="inputId() + '-opt-' + i"
             role="option"
             [attr.aria-selected]="o.id === value()"
-            class="cursor-pointer rounded-lg px-3 py-2 text-sm"
+            class="flex cursor-pointer items-center gap-2 rounded-lg px-3 py-2 text-sm"
             [class.bg-surface-3]="i === active()"
             [class.font-semibold]="o.id === value()"
             (mousedown)="$event.preventDefault(); pick(o.id)"
             (mouseenter)="active.set(i)"
           >
-            {{ o.name }}
+            @if (o.rgb) {
+              <app-color-swatch [rgb]="o.rgb" [trans]="!!o.trans" [size]="12" />
+            }
+            <span class="min-w-0 flex-1 truncate">{{ o.name }}</span>
+            @if (o.hint) {
+              <span class="text-xs font-normal text-fg-muted">{{ o.hint }}</span>
+            }
           </li>
         } @empty {
           <li class="px-3 py-2 text-sm text-fg-muted">Няма „{{ query() }}“</li>

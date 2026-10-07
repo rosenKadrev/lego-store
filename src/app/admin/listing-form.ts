@@ -125,12 +125,13 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                     </div>
                   }
                   <label class="mt-3 block text-xs text-fg-muted" for="other-color">Друг цвят:</label>
-                  <select id="other-color" class="input mt-1 sm:w-72" (change)="chooseOtherColor($any($event.target).value)">
-                    <option value="">— избери —</option>
-                    @for (c of store.allColors(); track c.id) {
-                      <option [value]="c.id">{{ c.name }}</option>
-                    }
-                  </select>
+                  <app-combobox
+                    class="mt-1 sm:w-72"
+                    inputId="other-color"
+                    placeholder="Търси цвят…"
+                    [options]="colorOptions()"
+                    (valueChange)="chooseOtherColor($event)"
+                  />
                 </div>
               }
 
@@ -429,6 +430,9 @@ export class ListingForm {
   protected readonly boxDamaged = toSignal(this.form.controls.box_damaged.valueChanges, { initialValue: false });
   protected readonly hasNewOffer = computed(() => this.store.existingOffers().some((o) => o.condition === 'new' && !o.box_damaged));
   protected readonly slug = computed(() => slugify(this.store.item()?.name ?? ''));
+  protected readonly colorOptions = computed(() =>
+    this.store.allColors().map((c) => ({ id: c.id, name: c.name, rgb: c.rgb, trans: c.is_trans })),
+  );
   /** Used parts and magazines can have several copies; a used set/minifig is one physical piece */
   protected readonly multiCopy = computed(() => this.store.item()?.type === 'part' || this.store.item()?.type === 'magazine');
   private searchTimer?: ReturnType<typeof setTimeout>;
@@ -499,8 +503,8 @@ export class ListingForm {
     void this.store.chooseColor(color);
   }
 
-  protected chooseOtherColor(id: string): void {
-    const color = this.store.allColors().find((c) => c.id === Number(id));
+  protected chooseOtherColor(id: number | null): void {
+    const color = this.store.allColors().find((c) => c.id === id);
     if (color) void this.store.chooseColor(color);
   }
 

@@ -11,6 +11,7 @@ import { CatalogFilters, CatalogSort, CatalogStore, EMPTY_FILTERS } from '../sto
 import { PartFiltersStore } from '../stores/part-filters.store';
 import { SIDEBAR_THEME_LIMIT, ThemesStore } from '../stores/themes.store';
 import { ColorSwatch } from '../shared/color-swatch';
+import { Combobox } from '../shared/combobox';
 
 const SORTS: { value: CatalogSort; label: string }[] = [
   { value: 'newest', label: 'Най-нови' },
@@ -59,7 +60,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 @Component({
   selector: 'app-catalog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ProductCard, Icon, ColorSwatch],
+  imports: [FormsModule, ProductCard, Icon, ColorSwatch, Combobox],
   host: { '(window:scroll)': 'onScroll()', '(window:resize)': 'onScroll()' },
   template: `
     @let f = store.filters();
@@ -101,11 +102,13 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 
             <fieldset>
               <legend class="label">Състояние</legend>
-              <div class="grid grid-cols-3 gap-1 rounded-full bg-surface-3 p-1 text-sm lg:grid-cols-1 lg:rounded-2xl">
-                @for (opt of conditionOptions; track opt.label) {
+              <!-- Under 375px "Употребявани" doesn't fit a third of the panel: Всички | Нови, then Употребявани -->
+              <div class="grid grid-cols-3 gap-1 rounded-full bg-surface-3 p-1 text-sm max-[374px]:grid-cols-2 max-[374px]:rounded-3xl lg:grid-cols-1 lg:rounded-2xl">
+                @for (opt of conditionOptions; track opt.label; let last = $last) {
                   <button
                     type="button"
-                    class="rounded-full px-3 py-2 font-medium transition lg:rounded-xl lg:text-left"
+                    class="rounded-full px-1 py-2 text-[13px] font-medium whitespace-nowrap transition sm:px-3 sm:text-sm lg:rounded-xl lg:text-left"
+                    [class.max-[374px]:col-span-2]="last"
                     [class]="f.condition === opt.value ? 'bg-surface shadow-sm' : 'text-fg-3 hover:text-fg'"
                     (click)="update({ condition: opt.value })"
                   >
@@ -181,12 +184,13 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               @if (partFilters.categories().length) {
                 <fieldset>
                   <legend class="label">Категория</legend>
-                  <select class="input" [ngModel]="f.category" (ngModelChange)="update({ category: $event })">
-                    <option [ngValue]="null">Всички категории</option>
-                    @for (c of partFilters.categories(); track c.id) {
-                      <option [ngValue]="c.id">{{ c.name }} ({{ c.listing_count }})</option>
-                    }
-                  </select>
+                  <app-combobox
+                    inputId="part-category"
+                    placeholder="Всички категории"
+                    [options]="categoryOptions()"
+                    [value]="f.category"
+                    (valueChange)="update({ category: $event })"
+                  />
                 </fieldset>
               }
               @if (partFilters.colors().length) {
@@ -469,6 +473,10 @@ export class Catalog {
     const id = this.store.filters().color;
     return id != null ? (this.partFilters.colors().find((c) => c.id === id)?.name ?? null) : null;
   });
+
+  protected readonly categoryOptions = computed(() =>
+    this.partFilters.categories().map((c) => ({ id: c.id, name: c.name, hint: String(c.listing_count) })),
+  );
 
   protected readonly categoryName = computed(() => {
     const id = this.store.filters().category;
