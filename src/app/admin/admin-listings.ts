@@ -34,6 +34,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
           <option value="set">Сетове</option>
           <option value="minifig">Минифигурки</option>
           <option value="part">Части</option>
+          <option value="magazine">Списания</option>
         </select>
         <select class="input md:w-40" [ngModel]="f.status" (ngModelChange)="store.setFilters({ status: $event })">
           @for (s of statuses; track s.value) {
@@ -66,7 +67,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
               </p>
             </div>
             <p class="font-bold sm:w-24 sm:text-right">{{ l.price | currency }}</p>
-            @if (l.condition === 'new' || l.item_type === 'part') {
+            @if (l.condition === 'new' || l.item_type === 'part' || l.item_type === 'magazine') {
               <app-quantity-stepper [value]="l.stock ?? 0" [max]="999" (valueChange)="store.setStock(l.id!, $event)" />
             } @else {
               <span class="chip w-[6.5rem] justify-center" [class]="l.stock ? 'bg-emerald-100 dark:bg-emerald-400/15 text-emerald-800 dark:text-emerald-300' : 'bg-surface-4 text-fg-3'">

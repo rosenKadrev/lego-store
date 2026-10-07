@@ -37,9 +37,18 @@ import { ThemesStore } from '../stores/themes.store';
       } @else if (store.listing(); as l) {
         <nav class="mb-5 flex flex-wrap items-center gap-1 text-sm text-fg-muted" aria-label="Навигация">
           <a routerLink="/" class="hover:text-fg">Начало</a>
+          @if (l.item_type === 'magazine') {
+            <app-icon name="chevronRight" [size]="14" />
+            <a routerLink="/catalog" [queryParams]="{ type: 'magazine' }" class="hover:text-fg">Списания</a>
+          }
           @for (t of themePath(); track t.id) {
             <app-icon name="chevronRight" [size]="14" />
-            <a routerLink="/catalog" [queryParams]="{ theme: t.id }" class="hover:text-fg">{{ t.name }}</a>
+            <a
+              routerLink="/catalog"
+              [queryParams]="l.item_type === 'magazine' ? { type: 'magazine', theme: t.id } : { theme: t.id }"
+              class="hover:text-fg"
+              >{{ t.name }}</a
+            >
           }
           @if (l.item_type === 'minifig') {
             <app-icon name="chevronRight" [size]="14" />
@@ -61,6 +70,8 @@ import { ThemesStore } from '../stores/themes.store';
             <div class="relative aspect-square overflow-hidden rounded-3xl bg-well">
               @if (activeImage(); as src) {
                 <img [src]="src" [alt]="l.name" class="absolute inset-0 size-full object-contain p-6 mix-blend-multiply sm:p-10" />
+              } @else {
+                <div class="absolute inset-0 grid place-items-center text-fg-ghost"><app-icon name="image" [size]="64" /></div>
               }
               <div class="absolute top-4 left-4 flex flex-wrap gap-1.5">
                 <span class="chip text-sm" [class]="l.condition === 'new' ? 'bg-emerald-600 text-white' : 'bg-stud-400 text-ink-900'">{{
@@ -91,7 +102,7 @@ import { ThemesStore } from '../stores/themes.store';
           <!-- Details -->
           <div>
             <p class="text-sm font-semibold tracking-wide text-accent uppercase">
-              {{ l.theme_name ?? l.part_category ?? 'Минифигурка' }} · {{ itemNum() }}
+              {{ l.theme_name ?? l.part_category ?? (l.item_type === 'magazine' ? 'LEGO' : 'Минифигурка') }} · {{ itemNum() }}
             </p>
             <h1 class="mt-2 text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">{{ l.name }}</h1>
             @if (l.item_type === 'part') {
@@ -183,7 +194,11 @@ import { ThemesStore } from '../stores/themes.store';
             <section class="mt-8">
               <h2 class="text-lg font-bold">Детайли</h2>
               <dl class="mt-3 divide-y divide-line-soft text-sm">
-                <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Номер</dt><dd class="min-w-0 text-right font-medium break-words">{{ itemNum() }}</dd></div>
+                @if (l.item_type !== 'magazine') {
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Номер</dt><dd class="min-w-0 text-right font-medium break-words">{{ itemNum() }}</dd></div>
+                } @else {
+                  <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Вид</dt><dd class="min-w-0 text-right font-medium break-words">Списание</dd></div>
+                }
                 @if (l.element_ids?.length) {
                   <div class="flex justify-between gap-4 py-2.5">
                     <dt class="shrink-0 text-fg-muted">Номер на елемент</dt>
@@ -319,10 +334,11 @@ export class Product {
       const l = this.store.listing();
       if (!l) return;
       const color = l.color_name ? `, ${l.color_name}` : l.box_damaged ? `, ${BOX_DAMAGED_LABEL.toLowerCase()}` : '';
-      this.title.setTitle(`${l.name}${color} (${displayItemNum(l.item_num)}) — ${CONDITION_LABEL[l.condition!]} | ${SHOP_NAME}`);
+      const num = l.item_type === 'magazine' ? '' : displayItemNum(l.item_num);
+      this.title.setTitle(`${l.name}${color}${num ? ` (${num})` : ''} — ${CONDITION_LABEL[l.condition!]} | ${SHOP_NAME}`);
       this.meta.updateTag({
         name: 'description',
-        content: `${l.name} ${displayItemNum(l.item_num)} — ${CONDITION_LABEL[l.condition!].toLowerCase()}, ${l.price} €. Наложен платеж.`,
+        content: `${l.name}${num ? ` ${num}` : ''} — ${CONDITION_LABEL[l.condition!].toLowerCase()}, ${l.price} €. Наложен платеж.`,
       });
     });
   }

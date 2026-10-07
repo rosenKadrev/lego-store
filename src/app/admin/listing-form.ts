@@ -28,9 +28,41 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
         <div class="space-y-6">
           <!-- Step 1: catalog item -->
           <section class="card p-5 sm:p-6">
-            <h2 class="text-lg font-bold">{{ isEdit() ? 'Продукт' : '1. Избери продукт от каталога' }}</h2>
+            <h2 class="text-lg font-bold">
+              {{ store.item()?.type === 'magazine' ? (isEdit() ? 'Списание' : '1. Списание') : isEdit() ? 'Продукт' : '1. Избери продукт от каталога' }}
+            </h2>
 
-            @if (store.item(); as item) {
+            @if (store.item()?.type === 'magazine') {
+              @let mag = store.item()!;
+              <div class="mt-4 grid gap-4 sm:grid-cols-[1fr_14rem]">
+                <div>
+                  <label class="label" for="mag-title">Заглавие</label>
+                  <input
+                    id="mag-title"
+                    class="input"
+                    [value]="mag.name"
+                    (input)="store.updateMagazine({ name: $any($event.target).value })"
+                    placeholder="Напр. LEGO Ninjago, бр. 5/2025 (с подарък Kai)"
+                    autofocus
+                  />
+                  <p class="mt-1 text-xs text-fg-muted">Ако има подарък, напишете го в заглавието.</p>
+                </div>
+                <div>
+                  <label class="label" for="mag-series">Поредица <span class="font-normal text-fg-faint">(по избор)</span></label>
+                  <select id="mag-series" class="input" (change)="store.updateMagazine({ theme_id: $any($event.target).value ? +$any($event.target).value : null })">
+                    <option value="" [selected]="mag.theme_id == null">— без поредица —</option>
+                    @for (s of store.series(); track s.id) {
+                      <option [value]="s.id" [selected]="s.id === mag.theme_id">{{ s.name }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+              @if (!isEdit()) {
+                <button type="button" class="btn-ghost mt-3 -ml-3 text-sm" (click)="setSearchType('set')">
+                  <app-icon name="chevronLeft" [size]="16" /> Друг вид продукт
+                </button>
+              }
+            } @else if (store.item(); as item) {
               <div class="mt-4 flex items-center gap-4 rounded-2xl bg-surface-2 p-3">
                 <div class="size-20 shrink-0 rounded-xl bg-well">
                   @if (item.img_url) {
@@ -118,11 +150,11 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 </div>
               }
             } @else {
-              <div class="mt-4 grid grid-cols-3 gap-1 rounded-full bg-surface-3 p-1 text-sm sm:w-96">
+              <div class="mt-4 grid grid-cols-4 gap-1 rounded-full bg-surface-3 p-1 text-sm sm:w-[32rem]">
                 @for (t of types; track t.value) {
                   <button
                     type="button"
-                    class="rounded-full px-3 py-2 font-medium"
+                    class="rounded-full px-1 py-2 text-[13px] font-medium sm:px-3 sm:text-sm"
                     [class]="searchType() === t.value ? 'bg-surface shadow-sm' : 'text-fg-3'"
                     (click)="setSearchType(t.value)"
                   >
@@ -179,7 +211,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
             }
           </section>
 
-          @if (store.item() && (store.item()!.type !== 'part' || store.item()!.color_id != null)) {
+          @if (store.item() && (store.item()!.type !== 'part' || store.item()!.color_id != null) && (store.item()!.type !== 'magazine' || store.item()!.name.trim())) {
             <!-- Step 2: offer -->
             <form [formGroup]="form" (ngSubmit)="save()" class="card space-y-5 p-5 sm:p-6" novalidate>
               <h2 class="text-lg font-bold">{{ isEdit() ? 'Обява' : '2. Детайли на обявата' }}</h2>
@@ -207,7 +239,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 </div>
                 <div>
                   <label class="label" for="stock">Наличност</label>
-                  @if (condition() === 'used' && store.item()?.type !== 'part') {
+                  @if (condition() === 'used' && !multiCopy()) {
                     <select id="stock" class="input" formControlName="stock">
                       <option [ngValue]="1">Налична (1)</option>
                       <option [ngValue]="0">Продадена (0)</option>
@@ -287,7 +319,8 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
           <aside class="card h-fit p-5 sm:p-6 lg:sticky lg:top-32">
             <h2 class="text-lg font-bold">Снимки</h2>
             <p class="mt-1 text-xs text-fg-muted">
-              Първата снимка е корица. Без собствени снимки се показва каталожната. За употребявани качвайте реални снимки.
+              Първата снимка е корица.
+              {{ store.item()?.type === 'magazine' ? 'Снимайте корицата и подаръка, ако има такъв.' : 'Без собствени снимки се показва каталожната. За употребявани качвайте реални снимки.' }}
             </p>
             @if (!store.listing()) {
               <p class="mt-4 rounded-xl bg-surface-2 p-4 text-sm text-fg-muted">Създайте обявата, за да добавите снимки.</p>
@@ -345,6 +378,7 @@ export class ListingForm {
     { value: 'set', label: 'Сет' },
     { value: 'minifig', label: 'Минифигурка' },
     { value: 'part', label: 'Част' },
+    { value: 'magazine', label: 'Списание' },
   ];
   protected readonly usedFlags = [
     { key: 'has_box', label: 'С оригинална кутия' },
@@ -393,6 +427,8 @@ export class ListingForm {
   protected readonly boxDamaged = toSignal(this.form.controls.box_damaged.valueChanges, { initialValue: false });
   protected readonly hasNewOffer = computed(() => this.store.existingOffers().some((o) => o.condition === 'new' && !o.box_damaged));
   protected readonly slug = computed(() => slugify(this.store.item()?.name ?? ''));
+  /** Used parts and magazines can have several copies; a used set/minifig is one physical piece */
+  protected readonly multiCopy = computed(() => this.store.item()?.type === 'part' || this.store.item()?.type === 'magazine');
   private searchTimer?: ReturnType<typeof setTimeout>;
 
   constructor() {
@@ -426,7 +462,7 @@ export class ListingForm {
 
     // A used set/minifig is a single physical piece (used parts are sold in any quantity)
     this.form.controls.condition.valueChanges.subscribe((c) => {
-      if (c === 'used' && this.store.item()?.type !== 'part' && this.form.controls.stock.value > 1) {
+      if (c === 'used' && !this.multiCopy() && this.form.controls.stock.value > 1) {
         this.form.controls.stock.setValue(1);
       }
     });
@@ -434,6 +470,12 @@ export class ListingForm {
 
   protected setSearchType(type: ItemType): void {
     this.searchType.set(type);
+    if (type === 'magazine') {
+      // Nothing to search: the magazine is typed in
+      void this.store.selectItem({ type, num: '', name: '', img_url: null, year: null, num_parts: 0, theme_name: null, theme_id: null });
+      return;
+    }
+    void this.store.selectItem(null);
     void this.store.search(type, '');
   }
 
@@ -472,6 +514,8 @@ export class ListingForm {
     const used = v.condition === 'used';
     const isSet = item.type === 'set';
     if (item.type === 'part' && item.color_id == null) return;
+    const magazine = item.type === 'magazine';
+    if (magazine && !item.name.trim()) return;
 
     const id = await this.store.save({
       item_type: item.type,
@@ -479,10 +523,12 @@ export class ListingForm {
       fig_num: item.type === 'minifig' ? item.num : null,
       part_num: item.type === 'part' ? item.num : null,
       color_id: item.type === 'part' ? (item.color_id ?? null) : null,
+      title: magazine ? item.name.trim() : null,
+      theme_id: magazine ? (item.theme_id ?? null) : null,
       condition: v.condition,
       price: v.price!,
       compare_at_price: v.compare_at_price || null,
-      stock: used && item.type !== 'part' ? Math.min(v.stock, 1) : v.stock,
+      stock: used && !this.multiCopy() ? Math.min(v.stock, 1) : v.stock,
       has_box: used && isSet ? v.has_box : null,
       has_instructions: used && isSet ? v.has_instructions : null,
       is_complete: used && isSet ? v.is_complete : null,

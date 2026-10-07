@@ -44,7 +44,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
   const page = Number(params.get('page'));
   return {
     condition: condition === 'new' || condition === 'used' ? condition : null,
-    type: type === 'set' || type === 'minifig' || type === 'part' ? type : null,
+    type: type === 'set' || type === 'minifig' || type === 'part' || type === 'magazine' ? type : null,
     theme: id('theme'),
     color: params.has('color') && Number.isInteger(Number(params.get('color'))) ? Number(params.get('color')) : null,
     category: id('category'),
@@ -117,11 +117,12 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 
             <fieldset>
               <legend class="label">Вид</legend>
-              <div class="grid grid-cols-4 gap-1 rounded-full bg-surface-3 p-1 text-sm lg:grid-cols-1 lg:rounded-2xl">
+              <!-- Five kinds don't fit one row in the phone filter panel: 3 + 2 below lg -->
+              <div class="grid grid-cols-3 gap-1 rounded-2xl bg-surface-3 p-1 text-sm lg:grid-cols-1">
                 @for (opt of typeOptions; track opt.label) {
                   <button
                     type="button"
-                    class="rounded-full px-3 py-2 font-medium transition lg:rounded-xl lg:text-left"
+                    class="rounded-xl px-2 py-2 font-medium transition lg:text-left"
                     [class]="f.type === opt.value ? 'bg-surface shadow-sm' : 'text-fg-3 hover:text-fg'"
                     (click)="update({ type: opt.value })"
                   >
@@ -420,8 +421,9 @@ export class Catalog {
     { value: 'set', label: 'Сетове' },
     { value: 'minifig', label: 'Фигурки' },
     { value: 'part', label: 'Части' },
+    { value: 'magazine', label: 'Списания' },
   ] as const;
-  protected readonly typeLabel = { set: 'Сетове', minifig: 'Минифигурки', part: 'Части' } as const;
+  protected readonly typeLabel = { set: 'Сетове', minifig: 'Минифигурки', part: 'Части', magazine: 'Списания' } as const;
 
   protected readonly filtersOpen = signal(false);
   private readonly toolbar = viewChild<ElementRef<HTMLElement>>('toolbar');
@@ -483,6 +485,7 @@ export class Catalog {
     if (f.q) return `Резултати за „${f.q}“`;
     if (f.type === 'minifig') return f.condition === 'used' ? 'Употребявани минифигурки' : 'Минифигурки';
     if (f.type === 'set') return f.condition === 'used' ? 'Употребявани сетове' : f.condition === 'new' ? 'Нови сетове' : 'Сетове';
+    if (f.type === 'magazine') return f.condition === 'used' ? 'Употребявани списания' : f.condition === 'new' ? 'Нови списания' : 'Списания';
     if (f.condition === 'new') return 'Нови продукти';
     if (f.condition === 'used') return 'Употребявани';
     return 'Всички продукти';

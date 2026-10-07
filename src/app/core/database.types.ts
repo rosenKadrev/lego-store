@@ -71,13 +71,13 @@ isOneToOne: false
                   ]
                 },"listings": {
                   Row: {
-                    "box_damaged": boolean,"color_id": number | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"],"condition_notes": string | null,"created_at": string,"description": string | null,"fig_num": string | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number,"is_complete": boolean | null,"is_published": boolean,"item_type": Database["public"]['Enums']["item_type"],"minifigs_complete": boolean | null,"part_num": string | null,"price": number,"set_num": string | null,"stock": number,"updated_at": string
+                    "box_damaged": boolean,"color_id": number | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"],"condition_notes": string | null,"created_at": string,"description": string | null,"fig_num": string | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number,"is_complete": boolean | null,"is_published": boolean,"item_type": Database["public"]['Enums']["item_type"],"minifigs_complete": boolean | null,"part_num": string | null,"price": number,"set_num": string | null,"stock": number,"theme_id": number | null,"title": string | null,"updated_at": string
                   }
                   Insert: {
-                    "box_damaged"?: boolean,"color_id"?: number | null,"compare_at_price"?: number | null,"condition": Database["public"]['Enums']["item_condition"],"condition_notes"?: string | null,"created_at"?: string,"description"?: string | null,"fig_num"?: string | null,"has_box"?: boolean | null,"has_instructions"?: boolean | null,"id"?: never,"is_complete"?: boolean | null,"is_published"?: boolean,"item_type": Database["public"]['Enums']["item_type"],"minifigs_complete"?: boolean | null,"part_num"?: string | null,"price": number,"set_num"?: string | null,"stock"?: number,"updated_at"?: string
+                    "box_damaged"?: boolean,"color_id"?: number | null,"compare_at_price"?: number | null,"condition": Database["public"]['Enums']["item_condition"],"condition_notes"?: string | null,"created_at"?: string,"description"?: string | null,"fig_num"?: string | null,"has_box"?: boolean | null,"has_instructions"?: boolean | null,"id"?: never,"is_complete"?: boolean | null,"is_published"?: boolean,"item_type": Database["public"]['Enums']["item_type"],"minifigs_complete"?: boolean | null,"part_num"?: string | null,"price": number,"set_num"?: string | null,"stock"?: number,"theme_id"?: number | null,"title"?: string | null,"updated_at"?: string
                   }
                   Update: {
-                    "box_damaged"?: boolean,"color_id"?: number | null,"compare_at_price"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"],"condition_notes"?: string | null,"created_at"?: string,"description"?: string | null,"fig_num"?: string | null,"has_box"?: boolean | null,"has_instructions"?: boolean | null,"id"?: never,"is_complete"?: boolean | null,"is_published"?: boolean,"item_type"?: Database["public"]['Enums']["item_type"],"minifigs_complete"?: boolean | null,"part_num"?: string | null,"price"?: number,"set_num"?: string | null,"stock"?: number,"updated_at"?: string
+                    "box_damaged"?: boolean,"color_id"?: number | null,"compare_at_price"?: number | null,"condition"?: Database["public"]['Enums']["item_condition"],"condition_notes"?: string | null,"created_at"?: string,"description"?: string | null,"fig_num"?: string | null,"has_box"?: boolean | null,"has_instructions"?: boolean | null,"id"?: never,"is_complete"?: boolean | null,"is_published"?: boolean,"item_type"?: Database["public"]['Enums']["item_type"],"minifigs_complete"?: boolean | null,"part_num"?: string | null,"price"?: number,"set_num"?: string | null,"stock"?: number,"theme_id"?: number | null,"title"?: string | null,"updated_at"?: string
                   }
                   Relationships: [
                     {
@@ -104,6 +104,12 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "sets"
       referencedColumns: ["set_num"]
+    },{
+      foreignKeyName: "listings_theme_id_fkey"
+      columns: ["theme_id"]
+isOneToOne: false
+      referencedRelation: "themes"
+      referencedColumns: ["id"]
     }
                   ]
                 },"minifigs": {
@@ -348,12 +354,6 @@ isOneToOne: false
 isOneToOne: false
       referencedRelation: "part_categories"
       referencedColumns: ["id"]
-    },{
-      foreignKeyName: "sets_theme_id_fkey"
-      columns: ["theme_id"]
-isOneToOne: false
-      referencedRelation: "themes"
-      referencedColumns: ["id"]
     }
                   ]
                 }
@@ -391,7 +391,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "courier": "econt"|"speedy","delivery_type": "office"|"address"|"pickup","item_condition": "new"|"used","item_type": "set"|"minifig"|"part","order_status": "new"|"confirmed"|"shipped"|"delivered"|"paid"|"cancelled"|"refused"|"returned","payment_method": "cod","user_role": "customer"|"admin"
+            "courier": "econt"|"speedy","delivery_type": "office"|"address"|"pickup","item_condition": "new"|"used","item_type": "set"|"minifig"|"part"|"magazine","order_status": "new"|"confirmed"|"shipped"|"delivered"|"paid"|"cancelled"|"refused"|"returned","payment_method": "cod","user_role": "customer"|"admin"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -507,7 +507,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "courier": ["econt", "speedy"],"delivery_type": ["office", "address", "pickup"],"item_condition": ["new", "used"],"item_type": ["set", "minifig", "part"],"order_status": ["new", "confirmed", "shipped", "delivered", "paid", "cancelled", "refused", "returned"],"payment_method": ["cod"],"user_role": ["customer", "admin"]
+            "courier": ["econt", "speedy"],"delivery_type": ["office", "address", "pickup"],"item_condition": ["new", "used"],"item_type": ["set", "minifig", "part", "magazine"],"order_status": ["new", "confirmed", "shipped", "delivered", "paid", "cancelled", "refused", "returned"],"payment_method": ["cod"],"user_role": ["customer", "admin"]
           }
         }
 } as const

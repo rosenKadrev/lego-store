@@ -37,6 +37,7 @@ import { SHOP_NAME } from '../core/models';
             <li><a routerLink="/catalog" [queryParams]="{ condition: 'used' }" class="hover:text-white">Употребявани</a></li>
             <li><a routerLink="/catalog" [queryParams]="{ type: 'minifig' }" class="hover:text-white">Минифигурки</a></li>
             <li><a routerLink="/catalog" [queryParams]="{ type: 'part' }" class="hover:text-white">Части</a></li>
+            <li><a routerLink="/catalog" [queryParams]="{ type: 'magazine' }" class="hover:text-white">Списания</a></li>
             <li><a routerLink="/account" class="hover:text-white">Моят профил</a></li>
           </ul>
         </div>

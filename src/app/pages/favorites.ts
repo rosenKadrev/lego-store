@@ -104,7 +104,7 @@ export class Favorites {
   }
 
   protected itemNum(fav: Favorite): string {
-    return displayItemNum(fav.key.split(':')[1]);
+    return displayItemNum(fav.key.slice(fav.key.indexOf(':') + 1).split(':')[0]);
   }
 
   private async load(keys: string[]): Promise<void> {

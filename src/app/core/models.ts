@@ -44,6 +44,7 @@ export const ITEM_TYPE_LABEL: Record<ItemType, string> = {
   set: 'Сет',
   minifig: 'Минифигурка',
   part: 'Част',
+  magazine: 'Списание',
 };
 
 export const ORDER_STATUS_LABEL: Record<OrderStatus, string> = {
@@ -88,7 +89,13 @@ export function searchFilter(term: string): string {
   return filters.join(',');
 }
 
-/** Rebrickable set numbers carry a '-1' variant suffix that buyers don't need to see. */
+/** Magazines have no catalog number; their item_num is an internal 'M-<listing id>'. */
+export function isMagazineNum(itemNum: string | null | undefined): boolean {
+  return /^M-\d+$/.test(itemNum ?? '');
+}
+
+/** Rebrickable set numbers carry a '-1' variant suffix that buyers don't need to see; magazines show their kind. */
 export function displayItemNum(itemNum: string | null | undefined): string {
+  if (isMagazineNum(itemNum)) return ITEM_TYPE_LABEL.magazine;
   return (itemNum ?? '').replace(/-1$/, '');
 }

@@ -3,7 +3,10 @@ import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { CatalogListing, ItemType, Listing, ListingImage } from '../core/models';
 import { LISTING_IMAGES_BUCKET, Supabase } from '../core/supabase';
 
-/** A set, minifig or part from the Rebrickable catalog. Parts also need a colour before saving. */
+/**
+ * A set, minifig or part from the Rebrickable catalog. Parts also need a colour before saving.
+ * Magazines aren't in any catalog: `name` is the title typed in, `theme_id` the optional series.
+ */
 export type CatalogItem = {
   type: ItemType;
   num: string;
@@ -16,7 +19,11 @@ export type CatalogItem = {
   color_id?: number | null;
   color_name?: string | null;
   color_rgb?: string | null;
+  /** magazines: series (a top-level theme) */
+  theme_id?: number | null;
 };
+
+export type SeriesOption = { id: number; name: string };
 
 /** A colour option for the chosen part; `known` = seen in a set inventory (has a photo). */
 export type PartColorOption = {
@@ -41,6 +48,7 @@ type State = {
   existingOffers: CatalogListing[];
   partColors: PartColorOption[];
   allColors: PartColorOption[];
+  series: SeriesOption[];
   loading: boolean;
   saving: boolean;
   uploading: boolean;
@@ -56,6 +64,7 @@ const initialState: State = {
   existingOffers: [],
   partColors: [],
   allColors: [],
+  series: [],
   loading: false,
   saving: false,
   uploading: false,
@@ -113,6 +122,16 @@ export const ListingFormStore = signalStore(
         const { data: listing } = await db.from('listings').select('*').eq('id', id).maybeSingle();
         if (!listing) {
           patchState(store, { loading: false, error: 'Обявата не е намерена.' });
+          return;
+        }
+        if (listing.item_type === 'magazine') {
+          await this.loadSeries();
+          const item: CatalogItem = {
+            type: 'magazine', num: `M-${listing.id}`, name: listing.title ?? '', img_url: null, year: null, num_parts: 0,
+            theme_id: listing.theme_id, theme_name: store.series().find((s) => s.id === listing.theme_id)?.name ?? null,
+          };
+          patchState(store, { listing, item, loading: false });
+          await loadImages(id);
           return;
         }
         const num = (listing.set_num ?? listing.fig_num ?? listing.part_num)!;
@@ -192,11 +211,31 @@ export const ListingFormStore = signalStore(
       async selectItem(item: CatalogItem | null): Promise<void> {
         patchState(store, { item, results: [], existingOffers: [], partColors: [] });
         if (!item) return;
+        if (item.type === 'magazine') {
+          await this.loadSeries();
+          return;
+        }
         if (item.type === 'part' && item.color_id == null) {
           await this.loadPartColors(item.num);
           return;
         }
         await loadExistingOffers(item.num, undefined, item.color_id);
+      },
+
+      /** Top-level themes to pick a magazine's series from (Ninjago, City, Friends …). */
+      async loadSeries(): Promise<void> {
+        if (store.series().length) return;
+        const { data } = await db.from('themes').select('id, name').is('parent_id', null).order('name');
+        patchState(store, { series: data ?? [] });
+      },
+
+      /** Magazine title / series typed in the form. */
+      updateMagazine(changes: { name?: string; theme_id?: number | null }): void {
+        const item = store.item();
+        if (item?.type !== 'magazine') return;
+        const next = { ...item, ...changes };
+        next.theme_name = store.series().find((s) => s.id === next.theme_id)?.name ?? null;
+        patchState(store, { item: next });
       },
 
       /** Colours for a part: ones seen in sets first (with photos), then every other colour. */

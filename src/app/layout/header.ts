@@ -292,6 +292,7 @@ export class Header {
   protected readonly navLinks: NavLink[] = [
     { label: 'Минифигурки', params: { type: 'minifig' } },
     { label: 'Части', params: { type: 'part' } },
+    { label: 'Списания', params: { type: 'magazine' } },
   ];
   /** Phone side menu: a plain list, so no dropdown needed */
   protected readonly links: NavLink[] = [
