@@ -3,50 +3,50 @@ import { adminGuard, authGuard } from './core/guards';
 import { Home } from './pages/home';
 
 export const routes: Routes = [
-  { path: '', component: Home, title: 'MBR BrickStore — нови и употребявани LEGO® сетове' },
+  { path: '', component: Home, title: 'ТухленСвят — нови и употребявани LEGO® сетове' },
   { path: 'catalog', loadComponent: () => import('./pages/catalog').then((m) => m.Catalog) },
-  { path: 'themes', loadComponent: () => import('./pages/themes').then((m) => m.Themes), title: 'Всички теми | MBR BrickStore' },
+  { path: 'themes', loadComponent: () => import('./pages/themes').then((m) => m.Themes), title: 'Всички теми | ТухленСвят' },
   { path: 'p/:slug', loadComponent: () => import('./pages/product').then((m) => m.Product) },
   {
     path: 'favorites',
     loadComponent: () => import('./pages/favorites').then((m) => m.Favorites),
-    title: 'Любими | MBR BrickStore',
+    title: 'Любими | ТухленСвят',
   },
-  { path: 'cart', loadComponent: () => import('./pages/cart').then((m) => m.Cart), title: 'Количка | MBR BrickStore' },
-  { path: 'checkout', loadComponent: () => import('./pages/checkout').then((m) => m.Checkout), title: 'Поръчка | MBR BrickStore' },
+  { path: 'cart', loadComponent: () => import('./pages/cart').then((m) => m.Cart), title: 'Количка | ТухленСвят' },
+  { path: 'checkout', loadComponent: () => import('./pages/checkout').then((m) => m.Checkout), title: 'Поръчка | ТухленСвят' },
   {
     path: 'order/:number',
     loadComponent: () => import('./pages/order-success').then((m) => m.OrderSuccess),
-    title: 'Благодарим! | MBR BrickStore',
+    title: 'Благодарим! | ТухленСвят',
   },
-  { path: 'login', loadComponent: () => import('./pages/auth/login').then((m) => m.Login), title: 'Вход | MBR BrickStore' },
+  { path: 'login', loadComponent: () => import('./pages/auth/login').then((m) => m.Login), title: 'Вход | ТухленСвят' },
   {
     path: 'register',
     loadComponent: () => import('./pages/auth/register').then((m) => m.Register),
-    title: 'Регистрация | MBR BrickStore',
+    title: 'Регистрация | ТухленСвят',
   },
   {
     path: 'forgot-password',
     loadComponent: () => import('./pages/auth/forgot-password').then((m) => m.ForgotPassword),
-    title: 'Забравена парола | MBR BrickStore',
+    title: 'Забравена парола | ТухленСвят',
   },
   {
     path: 'reset-password',
     loadComponent: () => import('./pages/auth/reset-password').then((m) => m.ResetPassword),
-    title: 'Нова парола | MBR BrickStore',
+    title: 'Нова парола | ТухленСвят',
   },
   {
     path: 'account',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/account').then((m) => m.Account),
-    title: 'Моят профил | MBR BrickStore',
+    title: 'Моят профил | ТухленСвят',
   },
   { path: 'info/:page', loadComponent: () => import('./pages/info').then((m) => m.Info) },
   {
     path: 'admin',
     canActivate: [adminGuard],
     loadComponent: () => import('./admin/admin-layout').then((m) => m.AdminLayout),
-    title: 'Админ | MBR BrickStore',
+    title: 'Админ | ТухленСвят',
     children: [
       { path: '', pathMatch: 'full', redirectTo: 'orders' },
       { path: 'orders', loadComponent: () => import('./admin/admin-orders').then((m) => m.AdminOrders) },

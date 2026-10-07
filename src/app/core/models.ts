@@ -24,7 +24,7 @@ export type ShopSettings = Tables<'shop_settings'>;
 /** Row of the `catalog_listings` view; columns of a view are nullable in generated types. */
 export type CatalogListing = Tables<'catalog_listings'>;
 
-export const SHOP_NAME = 'MBR BrickStore';
+export const SHOP_NAME = 'ТухленСвят';
 
 /** Contact e-mail shown on the info pages (returns, complaints). TODO: set the real address before going live. */
 export const SHOP_EMAIL = '';
