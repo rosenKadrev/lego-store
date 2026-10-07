@@ -43,7 +43,34 @@ type NavLink = { label: string; params: Record<string, string> };
         </a>
 
         <nav class="hidden items-center gap-1 lg:flex" aria-label="Основна навигация">
-          @for (link of links; track link.label) {
+          <div class="relative" (mouseenter)="setsOpen.set(true)" (mouseleave)="setsOpen.set(false)">
+            <button
+              type="button"
+              class="flex items-center gap-1 rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-fg transition hover:bg-surface-3 xl:px-3"
+              [class.!text-accent]="setsActive()"
+              [attr.aria-expanded]="setsOpen()"
+              (click)="setsOpen.set(!setsOpen())"
+            >
+              Сетове <app-icon name="chevronDown" [size]="16" />
+            </button>
+            @if (setsOpen()) {
+              <div class="absolute top-full left-0 w-56 pt-2">
+                <div class="card flex flex-col gap-0.5 p-2 shadow-2xl shadow-zinc-300/50 dark:shadow-black/40">
+                  @for (link of setLinks; track link.label) {
+                    <a
+                      routerLink="/catalog"
+                      [queryParams]="link.params"
+                      routerLinkActive="!text-accent"
+                      [routerLinkActiveOptions]="{ queryParams: 'exact', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
+                      class="rounded-lg px-3 py-2 text-sm font-medium hover:bg-surface-2"
+                      >{{ link.label }}</a
+                    >
+                  }
+                </div>
+              </div>
+            }
+          </div>
+          @for (link of navLinks; track link.label) {
             <a
               routerLink="/catalog"
               [queryParams]="link.params"
@@ -255,15 +282,29 @@ export class Header {
 
   protected readonly shopName = SHOP_NAME;
   protected readonly menuLimit = MENU_THEME_LIMIT;
+  /** Desktop "Сетове ▾" dropdown */
+  protected readonly setLinks: NavLink[] = [
+    { label: 'Нови сетове', params: { condition: 'new', type: 'set' } },
+    { label: 'Употребявани сетове', params: { condition: 'used', type: 'set' } },
+    { label: 'Всички сетове', params: { type: 'set' } },
+  ];
+  /** Desktop links next to the dropdown */
+  protected readonly navLinks: NavLink[] = [
+    { label: 'Минифигурки', params: { type: 'minifig' } },
+    { label: 'Части', params: { type: 'part' } },
+  ];
+  /** Phone side menu: a plain list, so no dropdown needed */
   protected readonly links: NavLink[] = [
     { label: 'Нови сетове', params: { condition: 'new', type: 'set' } },
     { label: 'Употребявани', params: { condition: 'used' } },
-    { label: 'Минифигурки', params: { type: 'minifig' } },
-    { label: 'Части', params: { type: 'part' } },
+    ...this.navLinks,
   ];
 
   protected readonly menuOpen = signal(false);
   protected readonly themesOpen = signal(false);
+  protected readonly setsOpen = signal(false);
+  /** Highlights "Сетове" while the catalog shows sets */
+  protected readonly setsActive = signal(false);
   protected readonly accountOpen = signal(false);
   protected readonly mobileSearchOpen = signal(false);
   private readonly accountMenu = viewChild<ElementRef<HTMLElement>>('accountMenu');
@@ -276,8 +317,11 @@ export class Header {
         takeUntilDestroyed(),
       )
       .subscribe(() => {
+        const url = this.router.parseUrl(this.router.url);
+        this.setsActive.set(url.root.children['primary']?.segments[0]?.path === 'catalog' && url.queryParams['type'] === 'set');
         this.menuOpen.set(false);
         this.themesOpen.set(false);
+        this.setsOpen.set(false);
         this.accountOpen.set(false);
         this.mobileSearchOpen.set(false);
       });
