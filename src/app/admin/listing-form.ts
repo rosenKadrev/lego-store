@@ -6,6 +6,7 @@ import { Router, RouterLink } from '@angular/router';
 import { CONDITION_LABEL, displayItemNum, ItemCondition, ItemType, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { ColorSwatch } from '../shared/color-swatch';
+import { Combobox } from '../shared/combobox';
 import { Icon } from '../shared/icon';
 import { ShopLists } from '../stores/shop-lists';
 import { ToastStore } from '../stores/toast.store';
@@ -14,7 +15,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
 @Component({
   selector: 'app-listing-form',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, Icon, ColorSwatch],
+  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, Icon, ColorSwatch, Combobox],
   providers: [ListingFormStore],
   template: `
     <a routerLink="/admin/listings" class="mb-4 inline-flex items-center gap-1 text-sm text-fg-muted hover:text-fg">
@@ -49,12 +50,13 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 </div>
                 <div>
                   <label class="label" for="mag-series">Поредица <span class="font-normal text-fg-faint">(по избор)</span></label>
-                  <select id="mag-series" class="input" (change)="store.updateMagazine({ theme_id: $any($event.target).value ? +$any($event.target).value : null })">
-                    <option value="" [selected]="mag.theme_id == null">— без поредица —</option>
-                    @for (s of store.series(); track s.id) {
-                      <option [value]="s.id" [selected]="s.id === mag.theme_id">{{ s.name }}</option>
-                    }
-                  </select>
+                  <app-combobox
+                    inputId="mag-series"
+                    placeholder="Търси или избери…"
+                    [options]="store.series()"
+                    [value]="mag.theme_id ?? null"
+                    (valueChange)="store.updateMagazine({ theme_id: $event })"
+                  />
                 </div>
               </div>
               @if (!isEdit()) {
