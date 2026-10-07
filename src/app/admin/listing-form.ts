@@ -25,8 +25,8 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
     @if (store.loading()) {
       <div class="h-64 animate-pulse rounded-3xl bg-surface-3"></div>
     } @else {
-      <div class="grid gap-6 lg:grid-cols-[1fr_22rem]">
-        <div class="space-y-6">
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
+        <div class="min-w-0 space-y-6">
           <!-- Step 1: catalog item -->
           <section class="card p-5 sm:p-6">
             <h2 class="text-lg font-bold">
@@ -65,13 +65,13 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 </button>
               }
             } @else if (store.item(); as item) {
-              <div class="mt-4 flex items-center gap-4 rounded-2xl bg-surface-2 p-3">
-                <div class="size-20 shrink-0 rounded-xl bg-well">
+              <div class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-surface-2 p-3 sm:gap-4">
+                <div class="size-16 shrink-0 rounded-xl bg-well sm:size-20">
                   @if (item.img_url) {
                     <img [src]="item.img_url" alt="" class="size-full object-contain p-1" />
                   }
                 </div>
-                <div class="min-w-0 flex-1">
+                <div class="min-w-0 flex-1 basis-36">
                   <p class="font-semibold">{{ item.name }}</p>
                   <p class="text-sm text-fg-muted">
                     {{ itemNum(item.num) }}
@@ -80,10 +80,10 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                     @if (item.type !== 'part') { · {{ item.num_parts }} части }
                   </p>
                   @if (item.color_name) {
-                    <p class="mt-1 flex items-center gap-1.5 text-sm font-medium">
+                    <p class="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
                       <app-color-swatch [rgb]="item.color_rgb" [size]="16" /> {{ item.color_name }}
                       @if (!isEdit()) {
-                        <button type="button" class="ml-1 text-xs text-accent hover:underline" (click)="store.selectItem({ ...item, color_id: null, color_name: null, color_rgb: null })">
+                        <button type="button" class="ml-1 text-xs whitespace-nowrap text-accent hover:underline" (click)="store.selectItem({ ...item, color_id: null, color_name: null, color_rgb: null })">
                           смени цвета
                         </button>
                       }
@@ -91,7 +91,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                   }
                 </div>
                 @if (!isEdit()) {
-                  <button type="button" class="btn-ghost" (click)="store.selectItem(null)">Смени</button>
+                  <button type="button" class="btn-ghost ml-auto shrink-0" (click)="store.selectItem(null)">Смени</button>
                 }
               </div>
 
@@ -100,7 +100,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                   <p class="label">Изберете цвят</p>
                   @if (store.partColors().length) {
                     <p class="mb-2 text-xs text-fg-muted">Цветове, в които частта се среща в сетове:</p>
-                    <div class="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-6">
+                    <div class="grid grid-cols-2 gap-2 min-[400px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-6">
                       @for (c of store.partColors(); track c.id) {
                         <button
                           type="button"
@@ -114,7 +114,10 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                               <app-color-swatch [rgb]="c.rgb" [trans]="c.is_trans" [size]="28" />
                             }
                           </span>
-                          <span class="flex items-center gap-1"><app-color-swatch [rgb]="c.rgb" [trans]="c.is_trans" [size]="10" /> {{ c.name }}</span>
+                          <span class="flex items-baseline justify-center gap-1 leading-tight">
+                            <app-color-swatch class="shrink-0" [rgb]="c.rgb" [trans]="c.is_trans" [size]="10" />
+                            <span>{{ c.name }}</span>
+                          </span>
                           @if (c.element_ids.length) {
                             <span class="text-[10px] text-fg-muted" [title]="c.element_ids.join(', ')">
                               {{ c.element_ids[0] }}{{ c.element_ids.length > 1 ? ' +' + (c.element_ids.length - 1) : '' }}
@@ -153,11 +156,11 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 </div>
               }
             } @else {
-              <div class="mt-4 grid grid-cols-4 gap-1 rounded-full bg-surface-3 p-1 text-sm sm:w-[32rem]">
+              <div class="mt-4 grid grid-cols-2 gap-1 rounded-3xl bg-surface-3 p-1 text-sm sm:w-lg sm:grid-cols-4 sm:rounded-full">
                 @for (t of types; track t.value) {
                   <button
                     type="button"
-                    class="rounded-full px-1 py-2 text-[13px] font-medium sm:px-3 sm:text-sm"
+                    class="truncate rounded-full px-2 py-2 font-medium sm:px-3"
                     [class]="searchType() === t.value ? 'bg-surface shadow-sm' : 'text-fg-3'"
                     (click)="setSearchType(t.value)"
                   >
@@ -219,10 +222,10 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
             <form [formGroup]="form" (ngSubmit)="save()" class="card space-y-5 p-5 sm:p-6" novalidate>
               <h2 class="text-lg font-bold">{{ isEdit() ? 'Обява' : '2. Детайли на обявата' }}</h2>
 
-              <div class="grid grid-cols-2 gap-3">
+              <div class="flex flex-wrap gap-3">
                 @for (c of conditions; track c) {
                   <label
-                    class="flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4"
+                    class="flex flex-1 cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 whitespace-nowrap"
                     [class]="condition() === c ? 'border-brick-600 bg-accent-soft' : 'border-line'"
                   >
                     <input type="radio" formControlName="condition" [value]="c" class="accent-brick-600" />

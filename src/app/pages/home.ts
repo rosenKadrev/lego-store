@@ -47,12 +47,12 @@ import { ThemesStore } from '../stores/themes.store';
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
           <a
             routerLink="/catalog"
-            [queryParams]="{ condition: 'used' }"
+            [queryParams]="{ type: 'part' }"
             class="group relative flex min-h-52 flex-col justify-end overflow-hidden rounded-3xl bg-stud-400 p-6 text-ink-900"
           >
-            <app-icon name="refresh" [size]="120" [stroke]="1" class="absolute -top-6 -right-6 text-ink-900/10 transition group-hover:rotate-45" />
-            <h2 class="text-2xl font-extrabold">Употребявани</h2>
-            <p class="mt-1 text-sm text-ink-900/70">Проверени бройки с описано състояние и реални снимки при интерес.</p>
+            <app-icon name="brick" [size]="120" [stroke]="1" class="absolute -top-6 -right-6 text-ink-900/10 transition group-hover:-rotate-12" />
+            <h2 class="text-2xl font-extrabold">Части</h2>
+            <p class="mt-1 text-sm text-ink-900/70">Единични елементи във всякакви цветове — за подмяна, MOC или липсваща част.</p>
             <span class="mt-4 inline-flex items-center gap-1 text-sm font-bold">Виж всички <app-icon name="arrowRight" [size]="16" /></span>
           </a>
           <a

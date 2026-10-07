@@ -271,7 +271,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
             [class]="stuck() ? 'border-line bg-page/95 backdrop-blur-lg' : 'border-transparent bg-page'"
           >
             <div class="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-              <button type="button" class="btn-outline flex-1 sm:flex-none lg:hidden" (click)="filtersOpen.set(true)">
+              <button type="button" class="btn-outline flex-1 max-[400px]:basis-full sm:flex-none lg:hidden" (click)="filtersOpen.set(true)">
                 <app-icon name="filter" [size]="18" /> Филтри
                 @if (store.hasFilters()) {
                   <span class="size-2 rounded-full bg-brick-600"></span>
@@ -280,7 +280,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               <label class="sr-only" for="sort">Подреди</label>
               <select
                 id="sort"
-                class="input flex-1 rounded-full sm:ml-auto sm:w-56 sm:flex-none lg:order-last"
+                class="input flex-1 rounded-full max-[400px]:basis-full sm:ml-auto sm:w-56 sm:flex-none lg:order-last"
                 [ngModel]="f.sort"
                 (ngModelChange)="update({ sort: $event })"
               >

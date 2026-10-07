@@ -23,7 +23,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
         [ngModel]="f.q"
         (ngModelChange)="search($event)"
       />
-      <div class="grid grid-cols-3 gap-2 md:flex">
+      <div class="grid gap-2 sm:grid-cols-3 md:flex">
         <select class="input md:w-48" [ngModel]="f.condition" (ngModelChange)="store.setFilters({ condition: $event })">
           <option [ngValue]="null">Всички състояния</option>
           <option value="new">Нови</option>

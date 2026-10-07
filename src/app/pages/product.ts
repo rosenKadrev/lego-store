@@ -142,8 +142,8 @@ import { ThemesStore } from '../stores/themes.store';
               @if (stock() > 1) {
                 <app-quantity-stepper [large]="true" [value]="quantity()" [min]="1" [max]="available()" (valueChange)="quantity.set($event)" />
               }
-              <button type="button" class="btn-primary h-11 flex-1 text-base sm:flex-none sm:px-10" [disabled]="available() === 0" (click)="addToCart()">
-                <app-icon name="cart" [size]="20" />
+              <button type="button" class="btn-primary h-11 flex-1 text-base max-[350px]:text-sm sm:flex-none sm:px-10" [class.whitespace-nowrap]="available() > 0" [disabled]="available() === 0" (click)="addToCart()">
+                <app-icon name="cart" [size]="20" class="max-[350px]:hidden" />
                 {{ available() === 0 && inCart() ? 'Всички бройки са в количката' : 'Добави в количката' }}
               </button>
               <app-favorite-button [listing]="l" [large]="true" />
