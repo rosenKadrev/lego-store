@@ -183,6 +183,17 @@ import { ThemesStore } from '../stores/themes.store';
               <h2 class="text-lg font-bold">Детайли</h2>
               <dl class="mt-3 divide-y divide-line-soft text-sm">
                 <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Номер</dt><dd class="min-w-0 text-right font-medium break-words">{{ itemNum() }}</dd></div>
+                @if (l.element_ids?.length) {
+                  <div class="flex justify-between gap-4 py-2.5">
+                    <dt class="shrink-0 text-fg-muted">Номер на елемент</dt>
+                    <dd class="min-w-0 text-right font-medium break-words">
+                      {{ l.element_ids![0] }}
+                      @if (l.element_ids!.length > 1) {
+                        <span class="block text-xs font-normal text-fg-muted">също {{ l.element_ids!.slice(1).join(', ') }}</span>
+                      }
+                    </dd>
+                  </div>
+                }
                 @if (l.color_name) {
                   <div class="flex justify-between gap-4 py-2.5"><dt class="shrink-0 text-fg-muted">Цвят</dt><dd class="min-w-0 text-right font-medium break-words">{{ l.color_name }}</dd></div>
                 }

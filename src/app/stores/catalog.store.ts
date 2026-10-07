@@ -1,6 +1,6 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
-import { CatalogListing, ItemCondition, ItemType } from '../core/models';
+import { CatalogListing, ItemCondition, ItemType, searchFilter } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { ThemesStore } from './themes.store';
 
@@ -79,7 +79,7 @@ export const CatalogStore = signalStore(
         if (filters.maxPrice != null) query = query.lte('price', filters.maxPrice);
 
         const q = filters.q.trim().replace(/[,()*%]/g, ' ').trim();
-        if (q) query = query.or(`name.ilike.*${q}*,item_num.ilike.${q}*`);
+        if (q) query = query.or(searchFilter(q));
 
         switch (filters.sort) {
           case 'price_asc':

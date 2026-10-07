@@ -2,7 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, slugify } from '../core/models';
+import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, searchFilter, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { ColorSwatch } from '../shared/color-swatch';
 import { Icon } from '../shared/icon';
@@ -35,16 +35,16 @@ const SearchStore = signalStore(
           .select('*')
           .eq('is_published', true)
           .gt('stock', 0)
-          .or(`name.ilike.*${term}*,item_num.ilike.${term}*`)
+          .or(searchFilter(term))
           .limit(40);
         if (id !== requestId) return;
 
-        // Exact number first, then number/name prefix, then the rest
+        // Exact number or element ID first, then number/name prefix, then the rest
         const t = term.toLowerCase();
         const rank = (l: CatalogListing) => {
           const num = (l.item_num ?? '').toLowerCase();
           const name = (l.name ?? '').toLowerCase();
-          if (num === t || num === `${t}-1`) return 0;
+          if (num === t || num === `${t}-1` || l.element_ids?.includes(t)) return 0;
           if (num.startsWith(t)) return 1;
           if (name.startsWith(t)) return 2;
           return 3;

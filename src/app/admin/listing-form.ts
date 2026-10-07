@@ -81,6 +81,11 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                             }
                           </span>
                           <span class="flex items-center gap-1"><app-color-swatch [rgb]="c.rgb" [trans]="c.is_trans" [size]="10" /> {{ c.name }}</span>
+                          @if (c.element_ids.length) {
+                            <span class="text-[10px] text-fg-muted" [title]="c.element_ids.join(', ')">
+                              {{ c.element_ids[0] }}{{ c.element_ids.length > 1 ? ' +' + (c.element_ids.length - 1) : '' }}
+                            </span>
+                          }
                         </button>
                       }
                     </div>

@@ -77,6 +77,17 @@ export function slugify(text: string): string {
     .slice(0, 60);
 }
 
+/**
+ * PostgREST `or` filter for a storefront search term: name, item number and — for a number —
+ * the LEGO element ID printed in instructions (e.g. 6265148 → part 2569 in Black).
+ * `term` must already be stripped of , ( ) * %.
+ */
+export function searchFilter(term: string): string {
+  const filters = [`name.ilike.*${term}*`, `item_num.ilike.${term}*`];
+  if (/^\d{4,8}$/.test(term)) filters.push(`element_ids.cs.{${term}}`);
+  return filters.join(',');
+}
+
 /** Rebrickable set numbers carry a '-1' variant suffix that buyers don't need to see. */
 export function displayItemNum(itemNum: string | null | undefined): string {
   return (itemNum ?? '').replace(/-1$/, '');

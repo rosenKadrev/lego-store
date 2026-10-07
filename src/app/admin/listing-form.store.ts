@@ -19,7 +19,16 @@ export type CatalogItem = {
 };
 
 /** A colour option for the chosen part; `known` = seen in a set inventory (has a photo). */
-export type PartColorOption = { id: number; name: string; rgb: string; is_trans: boolean; img_url: string | null; known: boolean };
+export type PartColorOption = {
+  id: number;
+  name: string;
+  rgb: string;
+  is_trans: boolean;
+  img_url: string | null;
+  known: boolean;
+  /** LEGO element IDs for this part in this colour, newest first */
+  element_ids: string[];
+};
 
 export type ListingDraft = Omit<Listing, 'id' | 'created_at' | 'updated_at'>;
 
@@ -192,16 +201,23 @@ export const ListingFormStore = signalStore(
 
       /** Colours for a part: ones seen in sets first (with photos), then every other colour. */
       async loadPartColors(partNum: string): Promise<void> {
-        const [{ data: known }, all] = await Promise.all([
+        const [{ data: known }, { data: elements }, all] = await Promise.all([
           db.from('part_colors').select('img_url, colors(id, name, rgb, is_trans)').eq('part_num', partNum),
+          db.from('elements').select('element_id, color_id').eq('part_num', partNum),
           store.allColors().length
             ? Promise.resolve(store.allColors())
             : db.from('colors').select('*').gte('id', 0).order('name').then(({ data }) =>
-                (data ?? []).map((c) => ({ ...c, img_url: null, known: false })),
+                (data ?? []).map((c) => ({ ...c, img_url: null, known: false, element_ids: [] as string[] })),
               ),
         ]);
+        const idsByColor = new Map<number, string[]>();
+        for (const e of elements ?? []) idsByColor.set(e.color_id, [...(idsByColor.get(e.color_id) ?? []), e.element_id]);
+        // Newest first: longer IDs are newer, then higher
+        for (const ids of idsByColor.values()) ids.sort((a, b) => b.length - a.length || b.localeCompare(a));
         const partColors = (known ?? [])
-          .flatMap((row) => (row.colors ? [{ ...row.colors, img_url: row.img_url, known: true }] : []))
+          .flatMap((row) =>
+            row.colors ? [{ ...row.colors, img_url: row.img_url, known: true, element_ids: idsByColor.get(row.colors.id) ?? [] }] : [],
+          )
           .sort((a, b) => a.name.localeCompare(b.name));
         patchState(store, { partColors, allColors: all });
       },
