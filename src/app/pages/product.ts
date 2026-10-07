@@ -8,6 +8,7 @@ import { FavoriteButton } from '../shared/favorite-button';
 import { Icon } from '../shared/icon';
 import { QuantityStepper } from '../shared/quantity-stepper';
 import { CartStore } from '../stores/cart.store';
+import { LiveStockStore } from '../stores/live-stock.store';
 import { ProductStore } from '../stores/product.store';
 import { ThemesStore } from '../stores/themes.store';
 
@@ -113,21 +114,21 @@ import { ThemesStore } from '../stores/themes.store';
             </div>
             <p class="mt-2 flex items-center gap-1.5 text-sm" [class]="available() > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-accent-strong'">
               <span class="size-2 rounded-full" [class]="available() > 0 ? 'bg-emerald-500' : 'bg-brick-600'"></span>
-              @if ((l.stock ?? 0) === 0) {
+              @if (stock() === 0) {
                 Изчерпан
               } @else if (l.item_type === 'part') {
-                Налични {{ l.stock }} бр.
+                Налични {{ stock() }} бр.
               } @else if (l.condition === 'used') {
                 Единствена бройка
-              } @else if ((l.stock ?? 0) <= 3) {
-                Остават само {{ l.stock }} бр.
+              } @else if (stock() <= 3) {
+                Остават само {{ stock() }} бр.
               } @else {
                 В наличност
               }
             </p>
 
             <div class="mt-6 flex flex-wrap items-center gap-3">
-              @if ((l.stock ?? 0) > 1) {
+              @if (stock() > 1) {
                 <app-quantity-stepper [large]="true" [value]="quantity()" [min]="1" [max]="available()" (valueChange)="quantity.set($event)" />
               }
               <button type="button" class="btn-primary h-11 flex-1 text-base sm:flex-none sm:px-10" [disabled]="available() === 0" (click)="addToCart()">
@@ -264,6 +265,7 @@ import { ThemesStore } from '../stores/themes.store';
 export class Product {
   protected readonly store = inject(ProductStore);
   private readonly cart = inject(CartStore);
+  private readonly liveStock = inject(LiveStockStore);
   private readonly themes = inject(ThemesStore);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
@@ -283,9 +285,12 @@ export class Product {
   protected readonly themePath = computed(() => this.themes.path(this.store.listing()?.theme_id));
   protected readonly minifigCount = computed(() => this.store.minifigs().reduce((n, f) => n + f.quantity, 0));
   protected readonly inCart = computed(() => this.cart.quantityOf(this.id()) > 0);
-  protected readonly available = computed(
-    () => Math.max(0, (this.store.listing()?.stock ?? 0) - this.cart.quantityOf(this.id())),
-  );
+  /** Updates live when someone else orders (Realtime) */
+  protected readonly stock = computed(() => {
+    const l = this.store.listing();
+    return l ? this.liveStock.stockOf(l) : 0;
+  });
+  protected readonly available = computed(() => Math.max(0, this.stock() - this.cart.quantityOf(this.id())));
   protected readonly usedDetails = computed(() => {
     const l = this.store.listing();
     if (!l) return [];

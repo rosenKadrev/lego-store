@@ -1,4 +1,4 @@
-import { computed, inject } from '@angular/core';
+import { computed, effect, inject, untracked } from '@angular/core';
 import {
   patchState,
   signalStore,
@@ -11,6 +11,8 @@ import {
 import { LocalStorage } from '../core/local-storage';
 import { BOX_DAMAGED_LABEL, CatalogListing, DeliveryType, ItemCondition, ShopSettings } from '../core/models';
 import { Supabase } from '../core/supabase';
+import { LiveStockStore } from './live-stock.store';
+import { ToastStore } from './toast.store';
 
 export type CartItem = {
   listingId: number;
@@ -27,13 +29,15 @@ type CartState = {
   items: CartItem[];
   settings: ShopSettings | null;
   drawerOpen: boolean;
+  /** Set while this browser places its own order, so its own stock updates aren't reported as "sold" */
+  liveUpdatesPaused: boolean;
 };
 
 const STORAGE_KEY = 'brickstore.cart.v1';
 
 export const CartStore = signalStore(
   { providedIn: 'root' },
-  withState<CartState>({ items: [], settings: null, drawerOpen: false }),
+  withState<CartState>({ items: [], settings: null, drawerOpen: false, liveUpdatesPaused: false }),
   withComputed(({ items }) => ({
     count: computed(() => items().reduce((sum, item) => sum + item.quantity, 0)),
     subtotal: computed(() => round2(items().reduce((sum, item) => sum + item.price * item.quantity, 0))),
@@ -93,6 +97,10 @@ export const CartStore = signalStore(
       patchState(store, { items: [] });
     },
 
+    pauseLiveUpdates(paused: boolean): void {
+      patchState(store, { liveUpdatesPaused: paused });
+    },
+
     openDrawer(): void {
       patchState(store, { drawerOpen: true });
     },
@@ -139,6 +147,27 @@ export const CartStore = signalStore(
       if (Array.isArray(saved)) patchState(store, { items: saved });
       watchState(store, ({ items }) => storage.set(STORAGE_KEY, items));
       void store.loadSettings();
+
+      // Someone else bought what's in this cart: drop sold-out items, trim quantities, tell the buyer
+      const liveStock = inject(LiveStockStore);
+      const toast = inject(ToastStore);
+      effect(() => {
+        const live = liveStock.stock();
+        untracked(() => {
+          if (store.liveUpdatesPaused()) return;
+          const items = store.items().flatMap((item) => {
+            const stock = live[item.listingId];
+            if (stock === undefined || stock === item.maxStock) return [item];
+            if (stock === 0) {
+              toast.info(`„${item.name}“ току-що беше продаден и е премахнат от количката.`);
+              return [];
+            }
+            if (item.quantity > stock) toast.info(`„${item.name}“: останаха ${stock} бр. — количеството в количката е намалено.`);
+            return [{ ...item, maxStock: stock, quantity: Math.min(item.quantity, stock) }];
+          });
+          patchState(store, { items });
+        });
+      });
     },
   }),
 );

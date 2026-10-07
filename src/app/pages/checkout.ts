@@ -310,6 +310,7 @@ export class Checkout {
     }
 
     this.submitting.set(true);
+    this.cart.pauseLiveUpdates(true);
     try {
       const notes = await this.cart.refresh();
       this.notes.set(notes);
@@ -346,6 +347,7 @@ export class Checkout {
       });
     } finally {
       this.submitting.set(false);
+      this.cart.pauseLiveUpdates(false);
     }
   }
 }

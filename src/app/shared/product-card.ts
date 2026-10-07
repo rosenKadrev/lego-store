@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { CartStore } from '../stores/cart.store';
+import { LiveStockStore } from '../stores/live-stock.store';
 import { ColorSwatch } from './color-swatch';
 import { FavoriteButton } from './favorite-button';
 import { Icon } from './icon';
@@ -53,7 +54,7 @@ import { Icon } from './icon';
         @if (l.item_type === 'part') {
           <p class="flex items-center gap-1.5 text-xs text-fg-3">
             <app-color-swatch [rgb]="l.color_rgb" [trans]="!!l.color_name?.startsWith('Trans')" [size]="12" />
-            {{ l.color_name }} · {{ l.stock }} бр.
+            {{ l.color_name }} · {{ stock() }} бр.
           </p>
         }
         @if (l.condition === 'used' && l.item_type === 'set') {
@@ -90,6 +91,7 @@ import { Icon } from './icon';
 export class ProductCard {
   private readonly supabase = inject(Supabase);
   private readonly cart = inject(CartStore);
+  private readonly liveStock = inject(LiveStockStore);
 
   readonly listing = input.required<CatalogListing>();
   protected readonly boxDamagedLabel = BOX_DAMAGED_LABEL;
@@ -103,9 +105,8 @@ export class ProductCard {
     return price != null && compare_at_price ? Math.round((1 - price / compare_at_price) * 100) : null;
   });
   protected readonly inCart = computed(() => this.cart.quantityOf(this.listing().id ?? -1) > 0);
-  protected readonly soldOut = computed(
-    () => this.cart.quantityOf(this.listing().id ?? -1) >= (this.listing().stock ?? 0),
-  );
+  protected readonly stock = computed(() => this.liveStock.stockOf(this.listing()));
+  protected readonly soldOut = computed(() => this.cart.quantityOf(this.listing().id ?? -1) >= this.stock());
 
   protected addToCart(): void {
     this.cart.add(this.listing(), this.image());
