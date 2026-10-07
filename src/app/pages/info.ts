@@ -14,8 +14,16 @@ type InfoSection = {
 };
 type InfoPage = { title: string; sections: InfoSection[] };
 
-/** Filled in from the shop settings / constants when the page is shown; `address` reads after "на" */
-type Contacts = { email: string; address: string; company: string; eik: string; companyAddress: string; pickup: boolean };
+/**
+ * Filled in from the shop settings / constants when the page is shown; `address` reads after "на".
+ * `email` / `company` are null until SHOP_EMAIL / SHOP_COMPANY are filled in — the texts leave them out until then.
+ */
+type Contacts = {
+  email: string | null;
+  address: string;
+  company: { name: string; eik: string; address: string } | null;
+  pickup: boolean;
+};
 
 // Placeholder texts — replace with the final legal texts (check them with a lawyer/accountant).
 const PAGES: Record<string, (c: Contacts) => InfoPage> = {
@@ -48,7 +56,7 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
       {
         heading: 'Как да заявите отказ',
         paragraphs: [
-          `Преди да изтекат 14-те дни ни изпратете ясно заявление, че се отказвате — на имейл ${email} или писмено на ${address}. В него посочете:`,
+          `Преди да изтекат 14-те дни ни изпратете ясно заявление, че се отказвате — ${email ? `на имейл ${email} или ` : ''}писмено на ${address}. В него посочете:`,
         ],
         bullets: [
           'номер на поръчката (например LS-1010);',
@@ -86,7 +94,7 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
         heading: 'Рекламации',
         paragraphs: [
           'Можете да прегледате пратката при куриера, преди да платите. Ако е повредена или не е това, което сте поръчали, имате право да откажете да я получите.',
-          `Ако след получаване откриете, че продуктът не отговаря на описанието в обявата — липсват части, които сме посочили като налични, има неописана повреда или сте получили друг продукт — пишете ни възможно най-скоро на ${email} с номера на поръчката и снимки.`,
+          `Ако след получаване откриете, че продуктът не отговаря на описанието в обявата — липсват части, които сме посочили като налични, има неописана повреда или сте получили друг продукт — ${email ? `пишете ни възможно най-скоро на ${email}` : 'свържете се с нас възможно най-скоро'} с номера на поръчката и снимки.`,
           'При основателна рекламация поемаме разходите за връщането и по ваш избор ще доставим липсващото, ще заменим продукта (ако имаме такъв) или ще ви възстановим сумата. Правата ви по закона за несъответствие на стоката с договора се запазват.',
           'При употребявани продукти състоянието и комплектността са описани в обявата — за рекламация се приема отклонение от това описание.',
         ],
@@ -98,22 +106,22 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
       },
     ],
   }),
-  terms: ({ email, address, company, eik, companyAddress, pickup }) => ({
+  terms: ({ email, address, company, pickup }) => ({
     title: 'Общи условия',
     sections: [
       {
         paragraphs: [
-          `Тези общи условия уреждат отношенията между ${company} („Търговецът“, „ние“) и купувачите в онлайн магазина ${SHOP_NAME} („Купувачът“, „вие“). С изпращането на поръчка потвърждавате, че сте се запознали с тях и ги приемате.`,
+          `Тези общи условия уреждат отношенията между ${company ? `${company.name} („Търговецът“, „ние“) и купувачите в онлайн магазина ${SHOP_NAME}` : `търговеца, собственик на онлайн магазина ${SHOP_NAME} („Търговецът“, „ние“), и купувачите в него`} („Купувачът“, „вие“). С изпращането на поръчка потвърждавате, че сте се запознали с тях и ги приемате.`,
         ],
       },
       {
         heading: '1. Данни за търговеца',
         bullets: [
-          `Наименование: ${company}`,
-          `ЕИК: ${eik}`,
-          `Седалище и адрес на управление: ${companyAddress}`,
+          ...(company
+            ? [`Наименование: ${company.name}`, `ЕИК: ${company.eik}`, `Седалище и адрес на управление: ${company.address}`]
+            : []),
           `Връщане на стоки и рекламации: на ${address}`,
-          `Имейл: ${email}`,
+          ...(email ? [`Имейл: ${email}`] : []),
           'Надзорни органи: Комисия за защита на потребителите (kzp.bg) и Комисия за защита на личните данни (cpdp.bg).',
         ],
       },
@@ -167,7 +175,7 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
       {
         heading: '7. Рекламации',
         bullets: [
-          `Рекламация можете да предявите в рамките на 2 години от доставката — на ${email} или писмено на ${address}.`,
+          `Рекламация можете да предявите в рамките на 2 години от доставката — ${email ? `на ${email} или ` : ''}писмено на ${address}.`,
           'Посочете номера на поръчката, кой продукт рекламирате, какво е несъответствието и кога сте го открили, как предпочитате да бъде решен въпросът и как да се свържем с вас. Снимки много помагат.',
           'Вписваме всяка рекламация в регистър и ви съобщаваме номера ѝ. Решаваме я в срок до един месец от предявяването; при основателна рекламация разходите за връщане на продукта са за наша сметка.',
           'Предявяването на рекламация не ви лишава от правото да се обърнете към съда.',
@@ -197,7 +205,7 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
       },
     ],
   }),
-  privacy: ({ email, company, eik, companyAddress }) => ({
+  privacy: ({ email, company }) => ({
     title: 'Политика за поверителност',
     sections: [
       {
@@ -206,10 +214,18 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
           'Събираме само данните, без които не можем да изпълним поръчката ви. Не ги продаваме, не изпращаме рекламни имейли и не правим профилиране.',
         ],
       },
-      {
-        heading: 'Кой отговаря за данните',
-        bullets: [`Администратор: ${company}, ЕИК ${eik}`, `Адрес на управление: ${companyAddress}`, `Имейл за въпроси относно личните данни: ${email}`],
-      },
+      ...(company
+        ? [
+            {
+              heading: 'Кой отговаря за данните',
+              bullets: [
+                `Администратор: ${company.name}, ЕИК ${company.eik}`,
+                `Адрес на управление: ${company.address}`,
+                ...(email ? [`Имейл за въпроси относно личните данни: ${email}`] : []),
+              ],
+            },
+          ]
+        : []),
       {
         heading: 'Какви данни събираме',
         bullets: [
@@ -263,7 +279,7 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
           'данните ви в структуриран, машинно четим формат (преносимост).',
         ],
         after: [
-          `Пишете ни на ${email}. Отговаряме в срок до един месец; при сложни искания срокът може да бъде удължен с още два месеца, за което ще ви уведомим. Може да ви помолим за данни, с които да потвърдим, че искането е от вас.`,
+          `${email ? `Пишете ни на ${email}.` : 'Свържете се с нас.'} Отговаряме в срок до един месец; при сложни искания срокът може да бъде удължен с още два месеца, за което ще ви уведомим. Може да ви помолим за данни, с които да потвърдим, че искането е от вас.`,
           'Сайтът не е предназначен за деца под 16 години — не събираме съзнателно техни данни без съгласие на родител.',
         ],
       },
@@ -341,10 +357,8 @@ export class Info {
     if (!build) return null;
     const settings = this.cart.settings();
     const page = build({
-      email: SHOP_EMAIL || '[имейл за контакт]',
-      company: SHOP_COMPANY.name || '[име на фирмата]',
-      eik: SHOP_COMPANY.eik || '[ЕИК]',
-      companyAddress: SHOP_COMPANY.address || '[адрес на управление]',
+      email: SHOP_EMAIL || null,
+      company: SHOP_COMPANY.name ? SHOP_COMPANY : null,
       pickup: !!settings?.pickup_address && settings.pickup_enabled,
       // Returns go to the pickup place; without one we send the address when the return is requested
       address: settings?.pickup_address ? `адрес ${settings.pickup_address}` : 'адреса, който ще ви изпратим след заявяване на отказа',
