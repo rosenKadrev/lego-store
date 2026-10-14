@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { ConsentService } from '../core/consent';
-import { SHOP_COMPANY, SHOP_EMAIL, SHOP_NAME } from '../core/models';
+import { SHOP_COMPANY, SHOP_EMAIL, SHOP_NAME, SHOP_PHONE } from '../core/models';
 import { CartStore } from '../stores/cart.store';
 
 type InfoSection = {
@@ -23,6 +23,7 @@ type InfoPage = { title: string; sections: InfoSection[] };
  */
 type Contacts = {
   email: string | null;
+  phone: string;
   address: string;
   company: { name: string; eik: string; vat: string; address: string } | null;
   pickup: boolean;
@@ -32,7 +33,7 @@ type Contacts = {
 
 // Placeholder texts — replace with the final legal texts (check them with a lawyer/accountant).
 const PAGES: Record<string, (c: Contacts) => InfoPage> = {
-  delivery: () => ({
+  delivery: ({ phone }) => ({
     title: 'Доставка и плащане',
     sections: [
       {
@@ -40,11 +41,12 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
           'Доставяме с Еконт и Спиди до офис или до адрес в цялата страна. Обичайният срок е 2–5 работни дни след потвърждение на поръчката.',
           'Цената на доставката зависи от куриера и размера на пратката — наш служител ще ви я каже, когато потвърждаваме поръчката по телефона.',
           'Плащането е с наложен платеж — плащате на куриера при получаване. Можете да прегледате пратката преди да платите.',
+          `Въпроси за поръчка или доставка: на телефон ${phone}.`,
         ],
       },
     ],
   }),
-  returns: ({ email, address }) => ({
+  returns: ({ email, phone, address }) => ({
     title: 'Връщане и рекламации',
     sections: [
       {
@@ -99,7 +101,7 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
         heading: 'Рекламации',
         paragraphs: [
           'Можете да прегледате пратката при куриера, преди да платите. Ако е повредена или не е това, което сте поръчали, имате право да откажете да я получите.',
-          `Ако след получаване откриете, че продуктът не отговаря на описанието в обявата — липсват части, които сме посочили като налични, има неописана повреда или сте получили друг продукт — ${email ? `пишете ни възможно най-скоро на ${email}` : 'свържете се с нас възможно най-скоро'} с номера на поръчката и снимки.`,
+          `Ако след получаване откриете, че продуктът не отговаря на описанието в обявата — липсват части, които сме посочили като налични, има неописана повреда или сте получили друг продукт — ${email ? `пишете ни възможно най-скоро на ${email}` : 'свържете се с нас възможно най-скоро'} с номера на поръчката и снимки. Можете и да ни се обадите на ${phone}.`,
           'При основателна рекламация поемаме разходите за връщането и по ваш избор ще доставим липсващото, ще заменим продукта (ако имаме такъв) или ще ви възстановим сумата. Правата ви по закона за несъответствие на стоката с договора се запазват.',
           'При употребявани продукти състоянието и комплектността са описани в обявата — за рекламация се приема отклонение от това описание.',
         ],
@@ -111,7 +113,7 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
       },
     ],
   }),
-  terms: ({ email, address, company, pickup }) => ({
+  terms: ({ email, phone, address, company, pickup }) => ({
     title: 'Общи условия',
     sections: [
       {
@@ -131,6 +133,7 @@ const PAGES: Record<string, (c: Contacts) => InfoPage> = {
               ]
             : []),
           `Връщане на стоки и рекламации: на ${address}`,
+          `Телефон: ${phone}`,
           ...(email ? [`Имейл: ${email}`] : []),
           'Надзорни органи: Комисия за защита на потребителите (kzp.bg) и Комисия за защита на личните данни (cpdp.bg).',
         ],
@@ -394,6 +397,7 @@ export class Info {
     const settings = this.cart.settings();
     const page = build({
       email: SHOP_EMAIL || null,
+      phone: SHOP_PHONE.display,
       company: SHOP_COMPANY.name ? SHOP_COMPANY : null,
       pickup: !!settings?.pickup_address && settings.pickup_enabled,
       ads: this.consent.needed,

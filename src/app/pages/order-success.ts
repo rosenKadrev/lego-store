@@ -1,6 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, input } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
+import { SHOP_PHONE } from '../core/models';
 import { Icon } from '../shared/icon';
 import { AuthStore } from '../stores/auth.store';
 
@@ -46,6 +47,11 @@ type OrderState = { total?: number; email?: string; phone?: string; pickup?: boo
         </li>
       </ol>
 
+      <p class="mt-6 text-sm text-fg-muted">
+        Въпроси? Обадете ни се на
+        <a [href]="phone.href" class="font-semibold whitespace-nowrap text-fg hover:underline">{{ phone.display }}</a>
+      </p>
+
       <div class="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
         @if (auth.isLoggedIn()) {
           <a routerLink="/account" class="btn-outline">Моите поръчки</a>
@@ -57,6 +63,7 @@ type OrderState = { total?: number; email?: string; phone?: string; pickup?: boo
 })
 export class OrderSuccess {
   protected readonly auth = inject(AuthStore);
+  protected readonly phone = SHOP_PHONE;
   readonly number = input.required<string>();
   protected readonly state: OrderState = inject(Router).currentNavigation()?.extras.state ?? history.state ?? {};
 }

@@ -29,6 +29,9 @@ export const SHOP_NAME = 'ТухленСвят';
 /** Contact e-mail shown on the info pages (returns, complaints, privacy requests). */
 export const SHOP_EMAIL = 'tuhlensvyat@gmail.com';
 
+/** Contact phone shown in the footer, on the info pages and after an order. */
+export const SHOP_PHONE = { display: '0885 621 924', href: 'tel:+359885621924' };
+
 /** The legal entity behind the shop (seller in the terms, data controller in the privacy policy). `vat` is '' when not VAT-registered. */
 export const SHOP_COMPANY = {
   name: '„Чистач вредители“ ЕООД',

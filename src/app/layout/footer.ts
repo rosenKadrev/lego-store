@@ -3,7 +3,7 @@ import { RouterLink } from '@angular/router';
 import { ConsentService } from '../core/consent';
 import { Icon, IconName } from '../shared/icon';
 import { Logo } from '../shared/logo';
-import { SHOP_NAME } from '../core/models';
+import { SHOP_EMAIL, SHOP_NAME, SHOP_PHONE } from '../core/models';
 
 @Component({
   selector: 'app-footer',
@@ -19,6 +19,18 @@ import { SHOP_NAME } from '../core/models';
             Нови и внимателно проверени употребявани сетове и минифигурки. Доставка с Еконт и Спиди, плащане при
             получаване.
           </p>
+          <ul class="mt-5 space-y-2 text-sm">
+            <li>
+              <a [href]="phone.href" class="inline-flex items-center gap-2 font-semibold text-white hover:text-stud-400">
+                <app-icon name="phone" [size]="16" class="text-stud-400" /> {{ phone.display }}
+              </a>
+            </li>
+            <li>
+              <a [href]="'mailto:' + email" class="inline-flex items-center gap-2 hover:text-white">
+                <app-icon name="mail" [size]="16" class="text-stud-400" /> {{ email }}
+              </a>
+            </li>
+          </ul>
           <div class="mt-6 grid max-w-md grid-cols-3 gap-3 text-xs">
             @for (usp of usps; track usp.text) {
               <div class="flex flex-col items-start gap-2.5 rounded-xl bg-ink-800 p-3.5 leading-snug">
@@ -65,6 +77,8 @@ import { SHOP_NAME } from '../core/models';
 export class Footer {
   protected readonly consent = inject(ConsentService);
   protected readonly shopName = SHOP_NAME;
+  protected readonly phone = SHOP_PHONE;
+  protected readonly email = SHOP_EMAIL;
   protected readonly year = new Date().getFullYear();
   protected readonly usps: { icon: IconName; text: string }[] = [
     { icon: 'cash', text: 'Наложен платеж' },
