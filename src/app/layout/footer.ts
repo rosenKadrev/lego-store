@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { ConsentService } from '../core/consent';
 import { Icon, IconName } from '../shared/icon';
 import { Logo } from '../shared/logo';
 import { SHOP_NAME } from '../core/models';
@@ -49,6 +50,9 @@ import { SHOP_NAME } from '../core/models';
             <li><a routerLink="/info/returns" class="hover:text-white">Връщане и рекламации</a></li>
             <li><a routerLink="/info/terms" class="hover:text-white">Общи условия</a></li>
             <li><a routerLink="/info/privacy" class="hover:text-white">Политика за поверителност</a></li>
+            @if (consent.needed) {
+              <li><button type="button" class="cursor-pointer hover:text-white" (click)="consent.reopen()">Настройки за бисквитки</button></li>
+            }
           </ul>
         </div>
       </div>
@@ -59,6 +63,7 @@ import { SHOP_NAME } from '../core/models';
   `,
 })
 export class Footer {
+  protected readonly consent = inject(ConsentService);
   protected readonly shopName = SHOP_NAME;
   protected readonly year = new Date().getFullYear();
   protected readonly usps: { icon: IconName; text: string }[] = [

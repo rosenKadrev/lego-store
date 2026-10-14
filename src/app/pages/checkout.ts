@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } 
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
+import { Analytics, TrackedItem } from '../core/analytics';
 import { Courier, DeliveryType } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
@@ -220,6 +221,7 @@ export class Checkout {
   protected readonly auth = inject(AuthStore);
   private readonly supabase = inject(Supabase);
   private readonly router = inject(Router);
+  private readonly analytics = inject(Analytics);
   private readonly fb = inject(FormBuilder).nonNullable;
 
   protected readonly couriers: { value: Courier; label: string }[] = [
@@ -274,6 +276,8 @@ export class Checkout {
   protected readonly notes = signal<string[]>([]);
 
   constructor() {
+    if (this.cart.items().length) this.analytics.beginCheckout(this.trackedItems(), this.cart.subtotal());
+
     // Only the visible delivery fields are required (pickup needs none)
     this.form.controls.deliveryType.valueChanges.subscribe((type) => {
       const { officeCode, address, city } = this.form.controls;
@@ -294,6 +298,10 @@ export class Checkout {
       if (profile?.phone && !c.phone.value) c.phone.setValue(profile.phone);
       if (email && !c.email.value) c.email.setValue(email);
     });
+  }
+
+  private trackedItems(): TrackedItem[] {
+    return this.cart.items().map((i) => ({ id: i.listingId, name: i.name, price: i.price, quantity: i.quantity }));
   }
 
   protected showError(name: keyof typeof this.form.controls): boolean {
@@ -341,6 +349,7 @@ export class Checkout {
       }
 
       const order = data[0];
+      this.analytics.purchase(order.order_number, this.trackedItems(), order.total);
       this.cart.clear();
       void this.router.navigate(['/order', order.order_number], {
         state: { total: order.total, email: v.email, phone: v.phone, pickup: v.deliveryType === 'pickup' },

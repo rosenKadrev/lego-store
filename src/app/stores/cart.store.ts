@@ -8,6 +8,7 @@ import {
   withMethods,
   withState,
 } from '@ngrx/signals';
+import { Analytics } from '../core/analytics';
 import { LocalStorage } from '../core/local-storage';
 import { BOX_DAMAGED_LABEL, CatalogListing, DeliveryType, ItemCondition, ShopSettings } from '../core/models';
 import { Supabase } from '../core/supabase';
@@ -42,7 +43,7 @@ export const CartStore = signalStore(
     count: computed(() => items().reduce((sum, item) => sum + item.quantity, 0)),
     subtotal: computed(() => round2(items().reduce((sum, item) => sum + item.price * item.quantity, 0))),
   })),
-  withMethods((store, supabase = inject(Supabase)) => ({
+  withMethods((store, supabase = inject(Supabase), analytics = inject(Analytics)) => ({
     /** Pickup is free; courier delivery is priced by staff when confirming the order (`null`). */
     shippingFor(delivery: DeliveryType): number | null {
       return delivery === 'pickup' ? 0 : null;
@@ -56,6 +57,8 @@ export const CartStore = signalStore(
       if (listing.id == null) return;
       const maxStock = listing.stock ?? 0;
       const existing = store.items().find((i) => i.listingId === listing.id);
+      const added = Math.min(quantity, maxStock - (existing?.quantity ?? 0));
+      if (added > 0) analytics.addToCart({ id: listing.id, name: listing.name ?? '', price: listing.price ?? 0, quantity: added });
       if (existing) {
         patchState(store, {
           items: store.items().map((i) =>

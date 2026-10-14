@@ -2,6 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
+import { Analytics } from '../core/analytics';
 import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, SHOP_NAME, slugify } from '../core/models';
 import { ColorSwatch } from '../shared/color-swatch';
 import { FavoriteButton } from '../shared/favorite-button';
@@ -284,6 +285,9 @@ export class Product {
   private readonly themes = inject(ThemesStore);
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
+  private readonly analytics = inject(Analytics);
+  /** One view event per product, not per reload of its data */
+  private viewedId: number | null = null;
 
   /** Route param `/p/:slug`, e.g. "42-millennium-falcon" (bound via withComponentInputBinding). */
   readonly slugParam = input.required<string>({ alias: 'slug' });
@@ -340,6 +344,10 @@ export class Product {
         name: 'description',
         content: `${l.name}${num ? ` ${num}` : ''} — ${CONDITION_LABEL[l.condition!].toLowerCase()}, ${l.price} €. Наложен платеж.`,
       });
+      if (l.id !== this.viewedId) {
+        this.viewedId = l.id;
+        untracked(() => this.analytics.viewItem({ id: l.id!, name: l.name ?? '', price: l.price ?? 0 }));
+      }
     });
   }
 

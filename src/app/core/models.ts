@@ -26,11 +26,16 @@ export type CatalogListing = Tables<'catalog_listings'>;
 
 export const SHOP_NAME = 'ТухленСвят';
 
-/** Contact e-mail shown on the info pages (returns, complaints). TODO: set the real address before going live. */
-export const SHOP_EMAIL = '';
+/** Contact e-mail shown on the info pages (returns, complaints, privacy requests). */
+export const SHOP_EMAIL = 'tuhlensvyat@gmail.com';
 
-/** The legal entity behind the shop (data controller in the privacy policy). TODO: fill in before going live. */
-export const SHOP_COMPANY = { name: '', eik: '', address: '' };
+/** The legal entity behind the shop (seller in the terms, data controller in the privacy policy). `vat` is '' when not VAT-registered. */
+export const SHOP_COMPANY = {
+  name: '„Чистач вредители“ ЕООД',
+  eik: '203010585',
+  vat: 'BG203010585',
+  address: 'гр. София 1680, р-н Искър, жк. Дружба, бл. 410, вх. Б, ет. 1, ап. 33',
+};
 
 export const CONDITION_LABEL: Record<ItemCondition, string> = {
   new: 'Ново',
