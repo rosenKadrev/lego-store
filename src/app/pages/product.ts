@@ -129,11 +129,11 @@ import { ThemesStore } from '../stores/themes.store';
               @if (stock() === 0) {
                 Изчерпан
               } @else if (l.item_type === 'part') {
-                Налични {{ stock() }} бр.
+                {{ stock() === 1 ? 'Налична' : 'Налични' }} {{ stock() }} бр.
               } @else if (l.condition === 'used') {
                 Единствена бройка
               } @else if (stock() <= 3) {
-                Остават само {{ stock() }} бр.
+                {{ stock() === 1 ? 'Остава' : 'Остават' }} само {{ stock() }} бр.
               } @else {
                 В наличност
               }
