@@ -1,0 +1,27 @@
+# Render Blueprint: the shop as a static site, deployed on every push to main
+services:
+  - type: web
+    name: tuhlensvyat
+    runtime: static
+    branch: main
+    buildCommand: npm ci && npm run build
+    staticPublishPath: ./dist/lego-store/browser
+    pullRequestPreviewsEnabled: false
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+    # SPA: any path without a matching file (e.g. /product/123 on reload) gets index.html
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: DENY
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /*
+        name: Referrer-Policy
+        value: strict-origin-when-cross-origin
