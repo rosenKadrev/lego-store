@@ -1,5 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, input, linkedSignal, signal, untracked } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Analytics } from '../core/analytics';
@@ -69,8 +69,13 @@ import { ThemesStore } from '../stores/themes.store';
           <!-- Gallery -->
           <div class="lg:sticky lg:top-32 lg:self-start">
             <div class="relative aspect-square overflow-hidden rounded-3xl bg-well">
-              @if (activeImage(); as src) {
-                <img [src]="src" [alt]="l.name" class="absolute inset-0 size-full object-contain p-6 mix-blend-multiply sm:p-10" />
+              @if (!activeImageFailed() && activeImage(); as src) {
+                <img
+                  [src]="src"
+                  [alt]="l.name"
+                  class="absolute inset-0 size-full object-contain p-6 mix-blend-multiply sm:p-10"
+                  (error)="activeImageFailed.set(true)"
+                />
               } @else {
                 <div class="absolute inset-0 grid place-items-center text-fg-ghost"><app-icon name="image" [size]="64" /></div>
               }
@@ -261,8 +266,18 @@ import { ThemesStore } from '../stores/themes.store';
               @for (fig of store.minifigs(); track fig.fig_num) {
                 <div class="rounded-2xl border border-line p-2 text-center">
                   <div class="relative aspect-square rounded-xl dark:bg-well">
-                    @if (fig.img_url) {
-                      <img [src]="fig.img_url" [alt]="fig.name" loading="lazy" class="size-full object-contain" />
+                    @if (fig.img_url && !failedFigImages().has(fig.fig_num)) {
+                      <img
+                        [src]="fig.img_url"
+                        [alt]="fig.name"
+                        loading="lazy"
+                        class="size-full object-contain"
+                        (error)="figImageFailed(fig.fig_num)"
+                      />
+                    } @else {
+                      <div class="grid size-full place-items-center rounded-xl bg-well text-fg-ghost" title="Няма снимка">
+                        <app-icon name="image" [size]="32" />
+                      </div>
                     }
                     @if (fig.quantity > 1) {
                       <span class="chip absolute top-0 right-0 bg-ink-900 text-white">×{{ fig.quantity }}</span>
@@ -296,9 +311,12 @@ export class Product {
   protected readonly boxDamagedLabel = BOX_DAMAGED_LABEL;
   protected readonly activeIndex = signal(0);
   protected readonly quantity = signal(1);
+  /** Minifigs whose catalog image does not load — shown with a placeholder icon */
+  protected readonly failedFigImages = signal<ReadonlySet<string>>(new Set());
 
   private readonly id = computed(() => Number.parseInt(this.slugParam(), 10));
   protected readonly activeImage = computed(() => this.store.gallery()[this.activeIndex()] ?? null);
+  protected readonly activeImageFailed = linkedSignal({ source: this.activeImage, computation: () => false });
   protected readonly itemNum = computed(() => displayItemNum(this.store.listing()?.item_num));
   protected readonly slug = computed(() => slugify(this.store.listing()?.name ?? ''));
   protected readonly themePath = computed(() => this.themes.path(this.store.listing()?.theme_id));
@@ -349,6 +367,10 @@ export class Product {
         untracked(() => this.analytics.viewItem({ id: l.id!, name: l.name ?? '', price: l.price ?? 0 }));
       }
     });
+  }
+
+  protected figImageFailed(figNum: string): void {
+    this.failedFigImages.update((failed) => new Set(failed).add(figNum));
   }
 
   protected addToCart(): void {

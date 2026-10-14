@@ -1,5 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
@@ -20,11 +20,12 @@ import { Icon } from './icon';
       class="group relative flex h-full flex-col overflow-hidden rounded-2xl border border-line bg-surface transition hover:-translate-y-0.5 hover:shadow-xl hover:shadow-zinc-200/70 hover:dark:shadow-black/40"
     >
       <a [routerLink]="link()" class="relative block aspect-square bg-well">
-        @if (image(); as src) {
+        @if (!imageFailed() && image(); as src) {
           <img
             [src]="src"
             [alt]="l.name"
             loading="lazy"
+            (error)="imageFailed.set(true)"
             class="absolute inset-0 h-full w-full object-contain p-5 mix-blend-multiply transition duration-300 group-hover:scale-105"
           />
         } @else {
@@ -97,6 +98,8 @@ export class ProductCard {
   protected readonly boxDamagedLabel = BOX_DAMAGED_LABEL;
 
   protected readonly image = computed(() => this.supabase.coverUrl(this.listing()));
+  /** The URL exists but nothing loads (e.g. a Rebrickable image that was removed) → placeholder icon */
+  protected readonly imageFailed = linkedSignal({ source: this.image, computation: () => false });
   protected readonly itemNum = computed(() => displayItemNum(this.listing().item_num));
   protected readonly conditionLabel = computed(() => CONDITION_LABEL[this.listing().condition ?? 'new']);
   protected readonly link = computed(() => ['/p', `${this.listing().id}-${slugify(this.listing().name ?? '')}`]);
