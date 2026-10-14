@@ -1,6 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { CatalogListing, ItemCondition, ItemType, searchFilter } from '../core/models';
+import { PageLoading } from '../core/page-loading';
 import { Supabase } from '../core/supabase';
 import { ThemesStore } from './themes.store';
 
@@ -80,7 +81,7 @@ export const CatalogStore = signalStore(
       return !!(f.condition || f.type || f.theme || f.color || f.category || f.q || f.minPrice != null || f.maxPrice != null);
     }),
   })),
-  withMethods((store, supabase = inject(Supabase), themes = inject(ThemesStore)) => {
+  withMethods((store, supabase = inject(Supabase), themes = inject(ThemesStore), pageLoading = inject(PageLoading)) => {
     let requestId = 0;
 
     return {
@@ -88,7 +89,7 @@ export const CatalogStore = signalStore(
         const id = ++requestId;
         patchState(store, { filters, loading: true, error: null });
 
-        if (filters.theme != null) await themes.load();
+        if (filters.theme != null) await pageLoading.track(themes.load());
 
         let query = supabase.client
           .from('catalog_listings')
@@ -112,7 +113,7 @@ export const CatalogStore = signalStore(
         }
 
         const from = (filters.page - 1) * PAGE_SIZE;
-        const { data, count, error } = await query.order('id').range(from, from + PAGE_SIZE - 1);
+        const { data, count, error } = await pageLoading.track(query.order('id').range(from, from + PAGE_SIZE - 1));
 
         if (id !== requestId) return; // a newer request already started
         patchState(store, {

@@ -26,8 +26,121 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Rubik:wght@500;700;800&display=swap&subset=cyrillic"
       rel="stylesheet"
     />
+    <style>
+      /* Boot screen: shown while the JavaScript downloads; Angular replaces <app-root>'s content when it starts.
+         The brick logo is a copy of src/app/shared/logo.ts — change both together. */
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        background: #ffffff;
+        color: #16161d;
+        font-family: Rubik, system-ui, sans-serif;
+        /* Invisible for the first moment, so a fast load doesn't flash it */
+        animation: boot-in 0.3s ease 0.25s both;
+      }
+      .dark .boot {
+        background: #0f0f12;
+        color: #f1f1f3;
+      }
+      .boot-inner {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      }
+      .boot-logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+      .boot-logo b {
+        color: #d01012;
+      }
+      .dark .boot-logo b {
+        color: #ff5c5c;
+      }
+      .boot-brick {
+        width: 48px;
+        height: 48px;
+        animation: boot-hop 1s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+      }
+      .boot-dots {
+        display: flex;
+        gap: 8px;
+      }
+      .boot-dots i {
+        width: 10px;
+        height: 10px;
+        border-radius: 3px;
+        background: #d01012;
+        animation: boot-dot 1.2s ease-in-out infinite;
+      }
+      .boot-dots i:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      .boot-dots i:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+      @keyframes boot-in {
+        from {
+          opacity: 0;
+        }
+      }
+      @keyframes boot-hop {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-10px);
+        }
+        60% {
+          transform: translateY(0) scale(1.06, 0.94);
+        }
+      }
+      @keyframes boot-dot {
+        0%,
+        100% {
+          opacity: 0.25;
+          transform: scale(0.8);
+        }
+        50% {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .boot-brick,
+        .boot-dots i {
+          animation: none;
+        }
+      }
+    </style>
   </head>
   <body>
-    <app-root></app-root>
+    <app-root>
+      <div class="boot" role="status" aria-label="Зареждане">
+        <div class="boot-inner">
+          <div class="boot-logo">
+            <svg class="boot-brick" viewBox="0 0 40 40" aria-hidden="true">
+              <rect x="2" y="8" width="36" height="28" rx="6" fill="#d01012" />
+              <rect x="7" y="3" width="10" height="8" rx="3" fill="#d01012" />
+              <rect x="23" y="3" width="10" height="8" rx="3" fill="#d01012" />
+              <rect x="9" y="5" width="6" height="2" rx="1" fill="white" opacity=".35" />
+              <rect x="25" y="5" width="6" height="2" rx="1" fill="white" opacity=".35" />
+              <path d="M12 22h16" stroke="white" stroke-width="3.2" stroke-linecap="round" />
+            </svg>
+            <span>Тухлен<b>Свят</b></span>
+          </div>
+          <div class="boot-dots"><i></i><i></i><i></i></div>
+        </div>
+      </div>
+      <noscript>Сайтът има нужда от включен JavaScript.</noscript>
+    </app-root>
   </body>
 </html>

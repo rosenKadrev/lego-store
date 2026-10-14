@@ -5,14 +5,16 @@ import { CartDrawer } from './layout/cart-drawer';
 import { CookieBanner } from './layout/cookie-banner';
 import { Footer } from './layout/footer';
 import { Header } from './layout/header';
+import { RouteProgress } from './layout/route-progress';
 import { Toaster } from './layout/toaster';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, Header, Footer, CartDrawer, Toaster, CookieBanner],
+  imports: [RouterOutlet, RouteProgress, Header, Footer, CartDrawer, Toaster, CookieBanner],
   host: { class: 'flex min-h-dvh flex-col' },
   template: `
+    <app-route-progress />
     <app-header />
     <main class="flex-1">
       <router-outlet />

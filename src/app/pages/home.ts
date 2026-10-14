@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CatalogListing, ItemCondition, ItemType } from '../core/models';
+import { PageLoading } from '../core/page-loading';
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
 import { ProductRail } from '../shared/product-rail';
@@ -155,6 +156,7 @@ import { ThemesStore } from '../stores/themes.store';
 })
 export class Home implements OnInit {
   private readonly supabase = inject(Supabase);
+  private readonly pageLoading = inject(PageLoading);
   protected readonly themes = inject(ThemesStore);
 
   protected readonly loading = signal(true);
@@ -173,12 +175,9 @@ export class Home implements OnInit {
 
   async ngOnInit(): Promise<void> {
     void this.themes.refreshListed();
-    const [newSets, usedSets, minifigs, parts] = await Promise.all([
-      this.fetch('new', 'set'),
-      this.fetch('used', 'set'),
-      this.fetch(null, 'minifig'),
-      this.fetch(null, 'part'),
-    ]);
+    const [newSets, usedSets, minifigs, parts] = await this.pageLoading.track(
+      Promise.all([this.fetch('new', 'set'), this.fetch('used', 'set'), this.fetch(null, 'minifig'), this.fetch(null, 'part')]),
+    );
     this.parts.set(parts);
     this.newSets.set(newSets);
     this.usedSets.set(usedSets);

@@ -1,6 +1,7 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
 import { CatalogListing, ListingImage } from '../core/models';
+import { PageLoading } from '../core/page-loading';
 import { Supabase } from '../core/supabase';
 
 export type RelatedFig = { fig_num: string; name: string; img_url: string | null; quantity: number };
@@ -32,12 +33,12 @@ export const ProductStore = signalStore(
       return own;
     }),
   })),
-  withMethods((store, supabase = inject(Supabase)) => ({
+  withMethods((store, supabase = inject(Supabase), pageLoading = inject(PageLoading)) => ({
     async load(id: number): Promise<void> {
       patchState(store, { loading: true, notFound: false, images: [], minifigs: [], otherOffers: [] });
       const db = supabase.client;
 
-      const { data: listing } = await db.from('catalog_listings').select('*').eq('id', id).maybeSingle();
+      const { data: listing } = await pageLoading.track(db.from('catalog_listings').select('*').eq('id', id).maybeSingle());
       if (!listing) {
         patchState(store, { listing: null, loading: false, notFound: true });
         return;
@@ -45,7 +46,7 @@ export const ProductStore = signalStore(
 
       const itemNum = listing.item_num!;
       const isSet = listing.item_type === 'set';
-      const [images, figs, offers] = await Promise.all([
+      const [images, figs, offers] = await pageLoading.track(Promise.all([
         db.from('listing_images').select('*').eq('listing_id', id).order('sort_order'),
         isSet
           ? db.from('set_minifigs').select('quantity, minifigs(fig_num, name, img_url)').eq('set_num', itemNum)
@@ -58,7 +59,7 @@ export const ProductStore = signalStore(
           .gt('stock', 0)
           .neq('id', id)
           .order('price'),
-      ]);
+      ]));
 
       patchState(store, {
         listing,

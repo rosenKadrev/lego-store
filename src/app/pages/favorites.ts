@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { CatalogListing, displayItemNum } from '../core/models';
+import { PageLoading } from '../core/page-loading';
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
 import { ProductCard } from '../shared/product-card';
@@ -78,6 +79,7 @@ import { Favorite, favoriteKey, FavoritesStore } from '../stores/favorites.store
 })
 export class Favorites {
   private readonly supabase = inject(Supabase);
+  private readonly pageLoading = inject(PageLoading);
   protected readonly favorites = inject(FavoritesStore);
 
   private readonly listings = signal<CatalogListing[]>([]);
@@ -113,12 +115,9 @@ export class Favorites {
     if (nums.every((n) => this.fetched.has(n))) return;
     this.fetched = new Set(nums);
     this.loading.set(true);
-    const { data } = await this.supabase.client
-      .from('catalog_listings')
-      .select('*')
-      .in('item_num', nums)
-      .eq('is_published', true)
-      .gt('stock', 0);
+    const { data } = await this.pageLoading.track(
+      this.supabase.client.from('catalog_listings').select('*').in('item_num', nums).eq('is_published', true).gt('stock', 0),
+    );
     this.listings.set(data ?? []);
     this.loading.set(false);
   }

@@ -198,3 +198,26 @@ select.input {
     animation: none;
   }
 }
+
+/* Logo: the brick hops while the logo is hovered — same motion as the boot screen in index.html */
+@keyframes logo-hop {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  40% {
+    transform: translateY(-6px);
+  }
+  60% {
+    transform: translateY(0) scale(1.06, 0.94);
+  }
+}
+app-logo:hover .logo-brick {
+  transform-origin: 50% 100%;
+  animation: logo-hop 1s cubic-bezier(0.3, 0, 0.3, 1) infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  app-logo:hover .logo-brick {
+    animation: none;
+  }
+}

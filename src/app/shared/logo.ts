@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
+/** The boot screen in src/index.html has a copy of this logo — change both together. */
 @Component({
   selector: 'app-logo',
   changeDetection: ChangeDetectionStrategy.OnPush,
   host: { class: 'flex items-center gap-2.5' },
   template: `
-    <svg viewBox="0 0 40 40" class="size-9 lg:size-10" [class.max-[399px]:size-8]="collapsible()" aria-hidden="true">
+    <svg viewBox="0 0 40 40" class="logo-brick size-9 lg:size-10" [class.max-[399px]:size-8]="collapsible()" aria-hidden="true">
       <rect x="2" y="8" width="36" height="28" rx="6" class="fill-brick-600" />
       <rect x="7" y="3" width="10" height="8" rx="3" class="fill-brick-600" />
       <rect x="23" y="3" width="10" height="8" rx="3" class="fill-brick-600" />
