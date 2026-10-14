@@ -153,7 +153,7 @@ import { ThemesStore } from '../stores/themes.store';
             <ul class="mt-6 grid gap-2 rounded-2xl bg-surface-2 p-4 text-sm sm:grid-cols-2">
               <li class="flex items-center gap-2"><app-icon name="cash" [size]="18" class="text-accent" /> Плащане с наложен платеж</li>
               <li class="flex items-center gap-2"><app-icon name="eye" [size]="18" class="text-accent" /> Преглед преди плащане</li>
-              <li class="flex items-center gap-2"><app-icon name="truck" [size]="18" class="text-accent" /> Еконт или Спиди, 1–2 дни</li>
+              <li class="flex items-center gap-2"><app-icon name="truck" [size]="18" class="text-accent" /> Еконт или Спиди, 2–5 дни</li>
               <li class="flex items-center gap-2"><app-icon name="refresh" [size]="18" class="text-accent" /> 14 дни право на връщане</li>
             </ul>
 
