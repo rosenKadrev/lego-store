@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { map } from 'rxjs';
-import { SHOP_NAME } from '../core/models';
+import { ItemType, SHOP_NAME } from '../core/models';
 import { Icon } from '../shared/icon';
 import { ProductCard } from '../shared/product-card';
 import { CatalogFilters, CatalogSort, CatalogStore, EMPTY_FILTERS } from '../stores/catalog.store';
@@ -13,12 +13,24 @@ import { SIDEBAR_THEME_LIMIT, ThemesStore } from '../stores/themes.store';
 import { ColorSwatch } from '../shared/color-swatch';
 import { Combobox } from '../shared/combobox';
 
-const SORTS: { value: CatalogSort; label: string }[] = [
+/** `types`: offered only when the catalog is narrowed to one of these kinds */
+const SORTS: { value: CatalogSort; label: string; types?: ItemType[] }[] = [
   { value: 'newest', label: 'Най-нови' },
   { value: 'price_asc', label: 'Цена: ниска към висока' },
   { value: 'price_desc', label: 'Цена: висока към ниска' },
-  { value: 'name', label: 'Име' },
+  { value: 'theme', label: 'По тема', types: ['set'] },
+  { value: 'year_desc', label: 'Година: най-новите сетове', types: ['set'] },
+  { value: 'year_asc', label: 'Година: най-старите сетове', types: ['set'] },
+  { value: 'parts_desc', label: 'Брой части: най-много', types: ['set'] },
+  { value: 'parts_asc', label: 'Брой части: най-малко', types: ['set'] },
+  { value: 'color', label: 'По цвят', types: ['part'] },
+  { value: 'category', label: 'По категория', types: ['part'] },
+  { value: 'name', label: 'Име: A–Z' },
 ];
+
+function sortsFor(type: ItemType | null) {
+  return SORTS.filter((s) => !s.types || (type != null && s.types.includes(type)));
+}
 
 function price(value: string | null): number | null {
   if (value == null || value === '') return null;
@@ -43,16 +55,17 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
     return Number.isInteger(n) && n > 0 ? n : null;
   };
   const page = Number(params.get('page'));
+  const itemType = type === 'set' || type === 'minifig' || type === 'part' || type === 'magazine' ? type : null;
   return {
     condition: condition === 'new' || condition === 'used' ? condition : null,
-    type: type === 'set' || type === 'minifig' || type === 'part' || type === 'magazine' ? type : null,
+    type: itemType,
     theme: id('theme'),
     color: params.has('color') && Number.isInteger(Number(params.get('color'))) ? Number(params.get('color')) : null,
     category: id('category'),
     minPrice: price(params.get('min')),
     maxPrice: price(params.get('max')),
     q: params.get('q') ?? '',
-    sort: SORTS.some((s) => s.value === sort) ? sort! : 'newest',
+    sort: sortsFor(itemType).some((s) => s.value === sort) ? sort! : 'newest',
     page: Number.isInteger(page) && page > 0 ? page : 1,
   };
 }
@@ -284,7 +297,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                 [ngModel]="f.sort"
                 (ngModelChange)="update({ sort: $event })"
               >
-                @for (s of sorts; track s.value) {
+                @for (s of sorts(); track s.value) {
                   <option [value]="s.value">{{ s.label }}</option>
                 }
               </select>
@@ -413,7 +426,7 @@ export class Catalog {
   private readonly route = inject(ActivatedRoute);
   private readonly title = inject(Title);
 
-  protected readonly sorts = SORTS;
+  protected readonly sorts = computed(() => sortsFor(this.store.filters().type));
   protected readonly skeleton = Array.from({ length: 8 }, (_, i) => i);
   protected readonly conditionOptions = [
     { value: null, label: 'Всички' },
@@ -538,6 +551,8 @@ export class Catalog {
       next.category = null;
     }
     if (next.type === 'part' || next.type === 'minifig') next.theme = null;
+    // e.g. "По тема" disappears when switching from sets to parts
+    if (!sortsFor(next.type).some((s) => s.value === next.sort)) next.sort = 'newest';
     void this.router.navigate([], {
       queryParams: {
         condition: next.condition,

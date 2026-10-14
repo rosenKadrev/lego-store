@@ -4,7 +4,33 @@ import { CatalogListing, ItemCondition, ItemType, searchFilter } from '../core/m
 import { Supabase } from '../core/supabase';
 import { ThemesStore } from './themes.store';
 
-export type CatalogSort = 'newest' | 'price_asc' | 'price_desc' | 'name';
+export type CatalogSort =
+  | 'newest'
+  | 'price_asc'
+  | 'price_desc'
+  | 'name'
+  | 'theme'
+  | 'year_desc'
+  | 'year_asc'
+  | 'parts_desc'
+  | 'parts_asc'
+  | 'color'
+  | 'category';
+
+/** Columns to order by for each sort; rows without a value (e.g. no year) go last */
+const SORT_ORDER: Record<CatalogSort, [column: keyof CatalogListing, ascending: boolean][]> = {
+  newest: [['created_at', false]],
+  price_asc: [['price', true]],
+  price_desc: [['price', false]],
+  name: [['name', true]],
+  theme: [['theme_name', true], ['name', true]],
+  year_desc: [['year', false], ['name', true]],
+  year_asc: [['year', true], ['name', true]],
+  parts_desc: [['num_parts', false]],
+  parts_asc: [['num_parts', true]],
+  color: [['color_name', true], ['name', true]],
+  category: [['part_category', true], ['name', true]],
+};
 
 export type CatalogFilters = {
   condition: ItemCondition | null;
@@ -81,18 +107,8 @@ export const CatalogStore = signalStore(
         const q = filters.q.trim().replace(/[,()*%]/g, ' ').trim();
         if (q) query = query.or(searchFilter(q));
 
-        switch (filters.sort) {
-          case 'price_asc':
-            query = query.order('price', { ascending: true });
-            break;
-          case 'price_desc':
-            query = query.order('price', { ascending: false });
-            break;
-          case 'name':
-            query = query.order('name', { ascending: true });
-            break;
-          default:
-            query = query.order('created_at', { ascending: false });
+        for (const [column, ascending] of SORT_ORDER[filters.sort]) {
+          query = query.order(column, { ascending, nullsFirst: false });
         }
 
         const from = (filters.page - 1) * PAGE_SIZE;
