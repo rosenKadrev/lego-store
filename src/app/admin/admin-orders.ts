@@ -219,6 +219,9 @@ export class AdminOrders implements OnInit {
     if (status === 'shipped' && order.delivery_type !== 'pickup' && order.shipping_price == null) {
       if (!confirm('Цената на доставката още не е въведена. Да маркирам ли поръчката като изпратена въпреки това?')) return;
     }
+    if (status === 'shipped' && order.delivery_type !== 'pickup' && !this.tracking[order.id]?.trim()) {
+      if (!confirm('Няма товарителница — клиентът ще получи имейл, че пратката е изпратена, но без номер за проследяване. Продължаване?')) return;
+    }
     if (this.isNegative(status) && !confirm(`${this.actionLabel(status, order)}? Наличността ще бъде върната.`)) return;
     const tracking = status === 'shipped' && order.delivery_type !== 'pickup' ? this.tracking[order.id] : undefined;
     void this.store.setStatus(order, status, tracking);

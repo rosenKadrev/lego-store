@@ -97,6 +97,8 @@ export const AdminOrdersStore = signalStore(
           toast.error('Статусът не беше променен.');
           return;
         }
+        // Marking an order shipped queues the tracking e-mail; this sends it
+        if (status === 'shipped') void db.functions.invoke('order-emails');
         toast.success(`${order.number}: ${ORDER_STATUS_LABEL[status].toLowerCase()}.`);
         patchState(store, {
           orders: store.orders().map((o) =>

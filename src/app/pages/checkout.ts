@@ -349,6 +349,8 @@ export class Checkout {
       }
 
       const order = data[0];
+      // The DB queued the confirmation e-mails; this sends them (and retries any earlier failures)
+      void this.supabase.client.functions.invoke('order-emails');
       this.analytics.purchase(order.order_number, this.trackedItems(), order.total);
       this.cart.clear();
       void this.router.navigate(['/order', order.order_number], {

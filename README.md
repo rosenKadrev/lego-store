@@ -52,15 +52,26 @@ SUPABASE_URL=https://wagtffhpvowbybhqpwfj.supabase.co SUPABASE_SECRET_KEY=... \
   node scripts/import-rebrickable.mjs
 ```
 
-Попълнете publishable ключа в `src/environments/environment.ts`, `npm run build` и качете
-`dist/lego-store/browser` на статичен хостинг със SPA fallback (всички пътища → `index.html`).
+Сайтът е на Render (Static Site от `render.yaml`) и се качва при всеки push към `main`.
 В Supabase → Authentication:
 
-- **URL Configuration:** Site URL = домейнът; в Redirect URLs добавете `https://вашия-домейн/**`
+- **URL Configuration:** Site URL = `https://tuhlensvyat.com`; в Redirect URLs `https://tuhlensvyat.com/**`
   (без това линковете от имейлите за потвърждение и нова парола водят към грешен адрес).
-- **Email Templates → Reset password:** subject и HTML от `supabase/templates/recovery.html`.
-- **SMTP Settings:** вграденият имейл на Supabase праща само няколко имейла на час — за реален
-  магазин свържете собствен SMTP (напр. Resend, Brevo).
+- **Email Templates:** subject и HTML от `supabase/templates/` (`confirmation`, `recovery`, `email_change`;
+  subject-ите са в `config.toml`).
+- **SMTP Settings:** Brevo (`smtp-relay.brevo.com:587`, подател `noreply@tuhlensvyat.com`).
+
+### Имейли за поръчки
+
+Базата слага имейлите в опашка (`order_emails`), а Edge Function `order-emails` ги праща през Brevo API:
+потвърждение до клиента + известие до админа при нова поръчка и товарителница при „Изпратена“
+(„Готова за взимане“ при взимане на място). Сайтът извиква функцията веднага след поръчката/смяната на статуса;
+неуспелите се пробват пак при следващото извикване (до 5 пъти — грешката е в `order_emails.last_error`).
+
+```bash
+npx supabase secrets set BREVO_API_KEY=...       # Brevo → SMTP & API → API Keys
+npx supabase functions deploy order-emails       # verify_jwt = false идва от config.toml
+```
 - **Providers → Email:** минимална дължина на паролата 8 (както в `config.toml`).
 
 Локално всички имейли се виждат в Mailpit: http://127.0.0.1:54324
