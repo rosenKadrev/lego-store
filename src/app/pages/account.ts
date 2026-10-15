@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } fr
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { Order, OrderItem } from '../core/models';
+import { displayItemNum, isMagazineNum, Order, OrderItem } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { OrderStatusBadge } from '../shared/order-status-badge';
 import { AuthStore } from '../stores/auth.store';
@@ -53,7 +53,10 @@ const MyOrdersStore = signalStore(
                   <ul class="mt-3 space-y-1 text-sm text-fg-2">
                     @for (item of order.order_items; track item.id) {
                       <li class="flex justify-between gap-4">
-                        <span class="truncate">{{ item.quantity }} × {{ item.name }}</span>
+                        <span class="truncate"
+                          >{{ item.quantity }} × <span class="text-fg-muted">LEGO{{ isMagazineNum(item.item_num) ? '' : ' ' + itemNum(item.item_num) }}</span>
+                          {{ item.name }}</span
+                        >
                         <span>{{ item.unit_price * item.quantity | currency }}</span>
                       </li>
                     }
@@ -104,6 +107,8 @@ const MyOrdersStore = signalStore(
 export class Account implements OnInit {
   protected readonly auth = inject(AuthStore);
   protected readonly orders = inject(MyOrdersStore);
+  protected readonly itemNum = displayItemNum;
+  protected readonly isMagazineNum = isMagazineNum;
 
   protected readonly form = inject(FormBuilder).nonNullable.group({ full_name: [''], phone: [''] });
   private readonly toast = inject(ToastStore);

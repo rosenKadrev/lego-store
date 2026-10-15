@@ -44,6 +44,8 @@ type Mail = { to: string; toName?: string; replyTo?: string; subject: string; ht
 
 const COURIER = { econt: 'Еконт', speedy: 'Спиди' } as const;
 const CONDITION = { new: 'Ново', used: 'Употребявано' } as const;
+// 77262-1 → LEGO 77262; magazines have no catalog number
+const itemNum = (num: string) => (/^M-\d+$/.test(num) ? 'LEGO списание' : `LEGO ${num.replace(/-1$/, '')}`);
 const money = new Intl.NumberFormat('bg-BG', { style: 'currency', currency: 'EUR' });
 
 function json(body: unknown, status = 200): Response {
@@ -90,7 +92,7 @@ function layout(body: string): string {
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;margin:0 auto;background:#ffffff;border-radius:16px;border-top:6px solid #d01012">
       <tr>
         <td style="padding:32px 32px 8px">
-          <p style="margin:0 0 28px;font-size:24px;font-weight:800;letter-spacing:-0.5px">Тухлен<span style="color:#d01012">Свят</span></p>
+          <table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 28px"><tr><td style="padding-right:10px;vertical-align:middle"><img src="${SITE_URL}/favicon-192.png" width="34" height="34" alt="" style="display:block;border:0" /></td><td style="vertical-align:middle;font-size:24px;font-weight:800;letter-spacing:-0.5px;line-height:1">Тухлен<span style="color:#d01012">Свят</span></td></tr></table>
           ${body}
         </td>
       </tr>
@@ -130,7 +132,7 @@ function itemsTable(order: Order, items: OrderItem[]): string {
       (i) => `<tr>
         <td style="padding:10px 8px 10px 0;border-bottom:1px solid #f4f4f5;font-size:14px;line-height:1.4">
           <b>${esc(i.name)}</b><br />
-          <span style="font-size:12px;color:#71717a">${esc(i.item_num)} · ${CONDITION[i.condition]}</span>
+          <span style="font-size:12px;color:#71717a">${esc(itemNum(i.item_num))} · ${CONDITION[i.condition]}</span>
         </td>
         <td style="padding:10px 8px;border-bottom:1px solid #f4f4f5;font-size:14px;text-align:center;white-space:nowrap">× ${i.quantity}</td>
         <td style="padding:10px 0 10px 8px;border-bottom:1px solid #f4f4f5;font-size:14px;text-align:right;white-space:nowrap">${money.format(i.unit_price * i.quantity)}</td>
@@ -220,7 +222,7 @@ function customerReadyForPickup(order: Order, items: OrderItem[], settings: Sett
     ]),
     p('Можете да прегледате поръчката, преди да платите.'),
     `<ul style="margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.6;color:#3f3f46">${items
-      .map((i) => `<li>${esc(i.name)} (${esc(i.item_num)})${i.quantity > 1 ? ` × ${i.quantity}` : ''}</li>`)
+      .map((i) => `<li>${esc(i.name)} (${esc(itemNum(i.item_num))})${i.quantity > 1 ? ` × ${i.quantity}` : ''}</li>`)
       .join('')}</ul>`,
     small(`Имате въпрос? Отговорете на този имейл или пишете на <a href="mailto:${esc(shopEmail)}" style="color:#71717a">${esc(shopEmail)}</a>.`),
   ];
@@ -258,7 +260,7 @@ function customerShipped(order: Order, items: OrderItem[], settings: Settings, s
     ),
     `<p style="margin:0 0 8px;font-size:15px;font-weight:700">В пратката</p>`,
     `<ul style="margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.6;color:#3f3f46">${items
-      .map((i) => `<li>${esc(i.name)} (${esc(i.item_num)})${i.quantity > 1 ? ` × ${i.quantity}` : ''}</li>`)
+      .map((i) => `<li>${esc(i.name)} (${esc(itemNum(i.item_num))})${i.quantity > 1 ? ` × ${i.quantity}` : ''}</li>`)
       .join('')}</ul>`,
     small(`Имате въпрос? Отговорете на този имейл или пишете на <a href="mailto:${esc(shopEmail)}" style="color:#71717a">${esc(shopEmail)}</a>.`),
   ];
