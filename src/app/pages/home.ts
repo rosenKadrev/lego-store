@@ -126,7 +126,7 @@ import { ThemesStore } from '../stores/themes.store';
       <div class="container-page">
         <app-product-rail
           title="Списания"
-          subtitle="LEGO списания с подарък минифигурка или модел"
+          subtitle="LEGO списания с минифигурка или модел"
           [items]="magazines()"
           [loading]="loading()"
           [moreParams]="{ type: 'magazine' }"
