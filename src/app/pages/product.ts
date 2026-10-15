@@ -1,8 +1,9 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, input, linkedSignal, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, linkedSignal, signal, untracked } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Analytics } from '../core/analytics';
+import { Seo } from '../core/seo';
 import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, SHOP_NAME, slugify } from '../core/models';
 import { ColorSwatch } from '../shared/color-swatch';
 import { FavoriteButton } from '../shared/favorite-button';
@@ -301,6 +302,7 @@ export class Product {
   private readonly title = inject(Title);
   private readonly meta = inject(Meta);
   private readonly analytics = inject(Analytics);
+  private readonly seo = inject(Seo);
   /** One view event per product, not per reload of its data */
   private viewedId: number | null = null;
 
@@ -366,6 +368,36 @@ export class Product {
         this.viewedId = l.id;
         untracked(() => this.analytics.viewItem({ id: l.id!, name: l.name ?? '', price: l.price ?? 0 }));
       }
+    });
+    // Google: one URL per product (the slug may be anything) and price/stock/condition for rich results
+    effect(() => {
+      const l = this.store.listing();
+      if (!l) return;
+      const url = `${location.origin}/p/${l.id}-${slugify(l.name ?? '')}`;
+      const num = l.item_type === 'magazine' ? '' : displayItemNum(l.item_num);
+      this.seo.setCanonical(url);
+      this.seo.setJsonLd('product-jsonld', {
+        '@context': 'https://schema.org',
+        '@type': 'Product',
+        name: l.name,
+        ...(num ? { sku: num, mpn: num } : {}),
+        ...(l.item_type !== 'magazine' ? { brand: { '@type': 'Brand', name: 'LEGO' } } : {}),
+        image: this.store.gallery().map((src) => new URL(src, location.origin).href),
+        description: l.description || `${l.name}${num ? ` ${num}` : ''} — ${CONDITION_LABEL[l.condition!].toLowerCase()}.`,
+        offers: {
+          '@type': 'Offer',
+          url,
+          price: l.price,
+          priceCurrency: 'EUR',
+          availability: this.stock() > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+          itemCondition: l.condition === 'used' ? 'https://schema.org/UsedCondition' : 'https://schema.org/NewCondition',
+          seller: { '@type': 'Organization', name: SHOP_NAME },
+        },
+      });
+    });
+    inject(DestroyRef).onDestroy(() => {
+      this.seo.setCanonical(null);
+      this.seo.setJsonLd('product-jsonld', null);
     });
   }
 

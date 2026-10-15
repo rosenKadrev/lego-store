@@ -12,6 +12,10 @@ services:
         value: "24"
     # SPA: any path without a matching file (e.g. /product/123 on reload) gets index.html
     routes:
+      # Generated from the database by the `sitemap` Edge Function (rules apply in order)
+      - type: rewrite
+        source: /sitemap.xml
+        destination: https://wagtffhpvowbybhqpwfj.supabase.co/functions/v1/sitemap
       - type: rewrite
         source: /*
         destination: /index.html

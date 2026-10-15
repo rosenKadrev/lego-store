@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+# Personal and checkout pages: nothing to find there
+Disallow: /admin
+Disallow: /account
+Disallow: /cart
+Disallow: /checkout
+Disallow: /order/
+Disallow: /favorites
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /reset-password
+
+Sitemap: https://tuhlensvyat.com/sitemap.xml

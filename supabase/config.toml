@@ -402,6 +402,10 @@ deno_version = 2
 [functions.order-emails]
 verify_jwt = false
 
+# Public sitemap.xml for search engines
+[functions.sitemap]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327
