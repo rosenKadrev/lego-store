@@ -12,7 +12,7 @@ import { Icon, IconName } from '../shared/icon';
         <h1 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Админ панел</h1>
         <a routerLink="/admin/listings/new" class="btn-primary"><app-icon name="plus" [size]="18" /> Нова обява</a>
       </div>
-      <nav class="mt-5 flex gap-1 border-b border-line" aria-label="Админ навигация">
+      <nav class="mt-5 flex gap-1 overflow-x-auto border-b border-line [scrollbar-width:none]" aria-label="Админ навигация">
         @for (link of links; track link.path) {
           <a
             [routerLink]="link.path"
@@ -34,5 +34,6 @@ export class AdminLayout {
   protected readonly links: { path: string; label: string; icon: IconName; exact: boolean }[] = [
     { path: '/admin/orders', label: 'Поръчки', icon: 'box', exact: false },
     { path: '/admin/listings', label: 'Обяви', icon: 'brick', exact: true },
+    { path: '/admin/parts-import', label: 'Части от сет', icon: 'upload', exact: true },
   ];
 }

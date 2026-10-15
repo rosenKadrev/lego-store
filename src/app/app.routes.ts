@@ -53,6 +53,7 @@ export const routes: Routes = [
       { path: 'listings', loadComponent: () => import('./admin/admin-listings').then((m) => m.AdminListings) },
       { path: 'listings/new', loadComponent: () => import('./admin/listing-form').then((m) => m.ListingForm) },
       { path: 'listings/:id', loadComponent: () => import('./admin/listing-form').then((m) => m.ListingForm) },
+      { path: 'parts-import', loadComponent: () => import('./admin/parts-import').then((m) => m.PartsImport) },
     ],
   },
   { path: '**', loadComponent: () => import('./pages/not-found').then((m) => m.NotFound), title: 'Няма такава страница' },

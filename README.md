@@ -71,6 +71,16 @@ SUPABASE_URL=https://wagtffhpvowbybhqpwfj.supabase.co SUPABASE_SECRET_KEY=... \
 npx supabase functions deploy bg-name
 ```
 
+### Части от сет
+
+Админ → „Части от сет“ внася целия инвентар на сет като нови части (и минифигурките му като минифигурки):
+Edge Function `set-parts` го взима от Rebrickable API (и добавя в каталога липсващи части/цветове/фигурки),
+`import_set_inventory()` създава обявите скрити или добавя наличност към съществуващите.
+
+```bash
+npx supabase functions deploy set-parts
+```
+
 ### Имейли за поръчки
 
 Базата слага имейлите в опашка (`order_emails`), а Edge Function `order-emails` ги праща през Brevo API:

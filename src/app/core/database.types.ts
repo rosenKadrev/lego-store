@@ -398,6 +398,11 @@ isOneToOne: false
         isOneToOne: false
         isSetofReturn: true
       } },
+"import_set_inventory":
+{ Args: { "p_condition": Database["public"]['Enums']["item_condition"],"p_minifigs": Json,"p_parts": Json }; Returns: {
+              "created": number,"updated": number
+            }[]
+                           },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
