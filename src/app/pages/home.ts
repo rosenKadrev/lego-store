@@ -122,16 +122,14 @@ import { ThemesStore } from '../stores/themes.store';
       </section>
     }
 
-    <section class="mt-16 bg-surface-2 py-14">
-      <div class="container-page">
-        <app-product-rail
-          title="Списания"
-          subtitle="LEGO списания с минифигурка или модел"
-          [items]="magazines()"
-          [loading]="loading()"
-          [moreParams]="{ type: 'magazine' }"
-        />
-      </div>
+    <section class="container-page mt-14">
+      <app-product-rail
+        title="Списания"
+        subtitle="LEGO списания с минифигурка или модел"
+        [items]="magazines()"
+        [loading]="loading()"
+        [moreParams]="{ type: 'magazine' }"
+      />
     </section>
 
     <section class="container-page mt-14">
