@@ -395,6 +395,15 @@ export class Product {
           availability: this.stock() > 0 ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
           itemCondition: l.condition === 'used' ? 'https://schema.org/UsedCondition' : 'https://schema.org/NewCondition',
           seller: { '@type': 'Organization', name: SHOP_NAME },
+          // As on /info/returns. No shippingDetails: the courier price is agreed by phone per order
+          hasMerchantReturnPolicy: {
+            '@type': 'MerchantReturnPolicy',
+            applicableCountry: 'BG',
+            returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow',
+            merchantReturnDays: 14,
+            returnMethod: ['https://schema.org/ReturnByMail', 'https://schema.org/ReturnInStore'],
+            returnFees: 'https://schema.org/ReturnFeesCustomerResponsibility',
+          },
         },
       });
     });
