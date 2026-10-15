@@ -92,7 +92,8 @@ export function slugify(text: string): string {
  * `term` must already be stripped of , ( ) * %.
  */
 export function searchFilter(term: string): string {
-  const filters = [`name.ilike.*${term}*`, `item_num.ilike.${term}*`];
+  // name is Bulgarian when the set has a Bulgarian name; name_en keeps the original English one searchable
+  const filters = [`name.ilike.*${term}*`, `name_en.ilike.*${term}*`, `item_num.ilike.${term}*`];
   if (/^\d{4,8}$/.test(term)) filters.push(`element_ids.cs.{${term}}`);
   return filters.join(',');
 }

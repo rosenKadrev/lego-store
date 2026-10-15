@@ -95,6 +95,23 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                 }
               </div>
 
+              @if (item.type === 'set') {
+                <div class="mt-4">
+                  <label class="label" for="name-bg">Име на български</label>
+                  <input
+                    id="name-bg"
+                    class="input"
+                    [value]="item.name_bg ?? ''"
+                    (input)="store.updateNameBg($any($event.target).value)"
+                    [placeholder]="store.lookingUpName() ? 'Търся българското име…' : item.name"
+                  />
+                  <p class="mt-1 text-xs text-fg-muted">
+                    Показва се в магазина вместо английското „{{ item.name }}“ — за всички обяви на този сет. Попълва се
+                    автоматично, ако го има в български магазини; празно = английското име.
+                  </p>
+                </div>
+              }
+
               @if (item.type === 'part' && item.color_id == null) {
                 <div class="mt-4">
                   <p class="label">Изберете цвят</p>
@@ -191,7 +208,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                         }
                       </span>
                       <span class="min-w-0">
-                        <span class="block truncate font-medium">{{ r.name }}</span>
+                        <span class="block truncate font-medium">{{ r.name_bg || r.name }}</span>
                         <span class="text-xs text-fg-muted">
                           {{ itemNum(r.num) }} @if (r.theme_name) { · {{ r.theme_name }} } @if (r.year) { · {{ r.year }} }
                         </span>
@@ -200,6 +217,12 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                   </li>
                 }
               </ul>
+              @if (looksLikeBricklink()) {
+                <p class="mt-3 rounded-2xl bg-surface-2 p-4 text-sm text-fg-3">
+                  „{{ term() }}“ прилича на номер от BrickLink — каталогът ни е от Rebrickable, където фигурките са с номера
+                  fig-…. Потърсете по <b>име</b> (напр. Schumacher) или по <b>номер на сета</b>, в който е фигурката.
+                </p>
+              }
               @if (canLookup()) {
                 <div class="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-surface-2 p-4 text-sm">
                   <span class="text-fg-3">
@@ -419,12 +442,20 @@ export class ListingForm {
     const exactLocal = this.store.results().some((r) => r.num === t || r.num === `${t}-1`);
     return looksLikeNumber && !exactLocal;
   });
+  /** BrickLink minifig numbers (twn542, sw0636, njo123) aren't in Rebrickable's data */
+  protected readonly looksLikeBricklink = computed(
+    () =>
+      this.searchType() === 'minifig' &&
+      !this.store.searching() &&
+      !this.store.results().length &&
+      /^[a-z]{2,4}\d{3,4}[a-z]?$/i.test(this.term()),
+  );
   protected readonly searchPlaceholder = computed(() => {
     switch (this.searchType()) {
       case 'set':
         return 'Номер (75192) или име на сет';
       case 'minifig':
-        return 'Номер (fig-0001) или име на фигурка';
+        return 'Име на фигурка, номер (fig-0001) или номер на сета, в който е';
       default:
         return 'Номер на част (3001), номер на елемент (300121) или име';
     }

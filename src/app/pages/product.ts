@@ -112,6 +112,9 @@ import { ThemesStore } from '../stores/themes.store';
               {{ l.theme_name ?? l.part_category ?? (l.item_type === 'magazine' ? 'LEGO' : 'Минифигурка') }} · {{ itemNum() }}
             </p>
             <h1 class="mt-2 text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">{{ l.name }}</h1>
+            @if (l.name_en) {
+              <p class="mt-1 text-sm text-fg-muted italic" lang="en">{{ l.name_en }}</p>
+            }
             @if (l.item_type === 'part') {
               <p class="mt-3 inline-flex items-center gap-2 rounded-full bg-surface-3 py-1.5 pr-4 pl-2 text-sm font-medium">
                 <app-color-swatch [rgb]="l.color_rgb" [trans]="!!l.color_name?.startsWith('Trans')" [size]="20" />

@@ -21,6 +21,9 @@ export type CatalogItem = {
   color_rgb?: string | null;
   /** magazines: series (a top-level theme) */
   theme_id?: number | null;
+  /** sets: Bulgarian name shown in the shop instead of `name`; `name_bg_saved` is what the catalog has */
+  name_bg?: string | null;
+  name_bg_saved?: string | null;
 };
 
 export type SeriesOption = { id: number; name: string };
@@ -52,6 +55,8 @@ type State = {
   loading: boolean;
   saving: boolean;
   uploading: boolean;
+  /** looking up a set's Bulgarian name (bg-name Edge Function) */
+  lookingUpName: boolean;
   error: string | null;
 };
 
@@ -68,6 +73,7 @@ const initialState: State = {
   loading: false,
   saving: false,
   uploading: false,
+  lookingUpName: false,
   error: null,
 };
 
@@ -76,6 +82,17 @@ export const ListingFormStore = signalStore(
   withMethods((store, supabase = inject(Supabase)) => {
     const db = supabase.client;
     let searchId = 0;
+
+    /** The Bulgarian name belongs to the set in the catalog, so every listing of it shows the same name. */
+    async function saveNameBg(): Promise<void> {
+      const item = store.item();
+      if (item?.type !== 'set') return;
+      const name = item.name_bg?.trim() || null;
+      if (name === (item.name_bg_saved ?? null)) return;
+      const { error } = await db.from('sets').update({ name_bg: name }).eq('set_num', item.num);
+      if (error) patchState(store, { error: `Обявата е записана, но българското име не беше: ${error.message}` });
+      else patchState(store, { item: { ...item, name_bg: name, name_bg_saved: name } });
+    }
 
     async function loadItem(type: ItemType, num: string, colorId?: number | null): Promise<CatalogItem | null> {
       if (type === 'part') {
@@ -93,7 +110,12 @@ export const ListingFormStore = signalStore(
       }
       if (type === 'set') {
         const { data } = await db.from('sets').select('*, themes(name)').eq('set_num', num).maybeSingle();
-        return data ? { type, num, name: data.name, img_url: data.img_url, year: data.year, num_parts: data.num_parts, theme_name: data.themes?.name ?? null } : null;
+        return data
+          ? {
+              type, num, name: data.name, img_url: data.img_url, year: data.year, num_parts: data.num_parts, theme_name: data.themes?.name ?? null,
+              name_bg: data.name_bg, name_bg_saved: data.name_bg,
+            }
+          : null;
       }
       const { data } = await db.from('minifigs').select('*').eq('fig_num', num).maybeSingle();
       return data ? { type, num, name: data.name, img_url: data.img_url, year: null, num_parts: data.num_parts, theme_name: null } : null;
@@ -153,11 +175,12 @@ export const ListingFormStore = signalStore(
           const { data } = await db
             .from('sets')
             .select('*, themes(name)')
-            .or(`set_num.ilike.${term}*,name.ilike.*${term}*`)
+            .or(`set_num.ilike.${term}*,name.ilike.*${term}*,name_bg.ilike.*${term}*`)
             .order('year', { ascending: false })
             .limit(15);
           results = (data ?? []).map((s) => ({
             type, num: s.set_num, name: s.name, img_url: s.img_url, year: s.year, num_parts: s.num_parts, theme_name: s.themes?.name ?? null,
+            name_bg: s.name_bg, name_bg_saved: s.name_bg,
           }));
         } else if (type === 'part') {
           // Element IDs (6–7 digits) identify part + colour directly
@@ -178,14 +201,31 @@ export const ListingFormStore = signalStore(
             if (item) results = [item, ...results.filter((r) => r.num !== item.num)];
           }
         } else {
-          const { data } = await db
-            .from('minifigs')
-            .select('*')
-            .or(`fig_num.ilike.*${term}*,name.ilike.*${term}*`)
-            .limit(15);
-          results = (data ?? []).map((m) => ({
+          // A set number (11375 or 11375-1) lists the minifigs in that set — handy when the figure's
+          // own number is only known on BrickLink (twn542), which Rebrickable's data doesn't carry
+          const setNum = /^\d{3,}(-\d+)?$/.test(term) ? term : null;
+          const [byName, bySet] = await Promise.all([
+            db.from('minifigs').select('*').or(`fig_num.ilike.*${term}*,name.ilike.*${term}*`).limit(15),
+            setNum
+              ? db
+                  .from('set_minifigs')
+                  .select('set_num, minifigs(*), sets(name)')
+                  .like('set_num', setNum.includes('-') ? setNum : `${setNum}-%`)
+                  .limit(30)
+              : Promise.resolve({ data: [] }),
+          ]);
+          const inSets: CatalogItem[] = (bySet.data ?? []).flatMap((row) =>
+            row.minifigs
+              ? [{
+                  type, num: row.minifigs.fig_num, name: row.minifigs.name, img_url: row.minifigs.img_url, year: null,
+                  num_parts: row.minifigs.num_parts, theme_name: `в ${row.set_num} ${row.sets?.name ?? ''}`.trim(),
+                }]
+              : [],
+          );
+          const named: CatalogItem[] = (byName.data ?? []).map((m) => ({
             type, num: m.fig_num, name: m.name, img_url: m.img_url, year: null, num_parts: m.num_parts, theme_name: null,
           }));
+          results = [...inSets, ...named].filter((r, i, all) => all.findIndex((x) => x.num === r.num) === i);
         }
         if (id !== searchId) return;
         patchState(store, { results, searching: false });
@@ -219,7 +259,24 @@ export const ListingFormStore = signalStore(
           await this.loadPartColors(item.num);
           return;
         }
-        await loadExistingOffers(item.num, undefined, item.color_id);
+        await Promise.all([loadExistingOffers(item.num, undefined, item.color_id), item.type === 'set' ? this.suggestNameBg() : null]);
+      },
+
+      /** Fills in a set's Bulgarian name from Bulgarian shops when the catalog has none yet. */
+      async suggestNameBg(): Promise<void> {
+        const item = store.item();
+        if (item?.type !== 'set' || item.name_bg) return;
+        patchState(store, { lookingUpName: true });
+        const { data } = await db.functions.invoke<{ name: string | null }>('bg-name', { body: { num: item.num } });
+        patchState(store, { lookingUpName: false });
+        const current = store.item();
+        // Still the same set, and the admin hasn't typed a name meanwhile
+        if (data?.name && current?.num === item.num && !current.name_bg) patchState(store, { item: { ...current, name_bg: data.name } });
+      },
+
+      updateNameBg(name: string): void {
+        const item = store.item();
+        if (item?.type === 'set') patchState(store, { item: { ...item, name_bg: name } });
       },
 
       /** Top-level themes to pick a magazine's series from (Ninjago, City, Friends …). */
@@ -283,6 +340,7 @@ export const ListingFormStore = signalStore(
           return null;
         }
         patchState(store, { listing: data });
+        await saveNameBg();
         return data.id;
       },
 

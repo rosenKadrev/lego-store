@@ -61,6 +61,16 @@ SUPABASE_URL=https://wagtffhpvowbybhqpwfj.supabase.co SUPABASE_SECRET_KEY=... \
   subject-ите са в `config.toml`).
 - **SMTP Settings:** Brevo (`smtp-relay.brevo.com:587`, подател `noreply@tuhlensvyat.com`).
 
+### Български имена на сетовете
+
+`sets.name_bg` се показва в магазина вместо английското име от Rebrickable (то остава като `name_en` —
+под заглавието и в търсенето). Седмичното обновяване не го пипа. В админа при избор на сет Edge Function
+`bg-name` го предлага от Comsed (comsed.net); ако там няма, се пише ръчно.
+
+```bash
+npx supabase functions deploy bg-name
+```
+
 ### Имейли за поръчки
 
 Базата слага имейлите в опашка (`order_emails`), а Edge Function `order-emails` ги праща през Brevo API:

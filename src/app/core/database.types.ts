@@ -125,6 +125,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"order_emails": {
+                  Row: {
+                    "attempts": number,"claimed_at": string | null,"created_at": string,"id": number,"kind": Database["public"]['Enums']["order_email_kind"],"last_error": string | null,"order_id": number,"sent_at": string | null
+                  }
+                  Insert: {
+                    "attempts"?: number,"claimed_at"?: string | null,"created_at"?: string,"id"?: never,"kind": Database["public"]['Enums']["order_email_kind"],"last_error"?: string | null,"order_id": number,"sent_at"?: string | null
+                  }
+                  Update: {
+                    "attempts"?: number,"claimed_at"?: string | null,"created_at"?: string,"id"?: never,"kind"?: Database["public"]['Enums']["order_email_kind"],"last_error"?: string | null,"order_id"?: number,"sent_at"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "order_emails_order_id_fkey"
+      columns: ["order_id"]
+isOneToOne: false
+      referencedRelation: "orders"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"order_items": {
                   Row: {
                     "condition": Database["public"]['Enums']["item_condition"],"id": number,"item_num": string,"listing_id": number,"name": string,"order_id": number,"quantity": number,"unit_price": number
@@ -285,13 +304,13 @@ isOneToOne: false
                   ]
                 },"sets": {
                   Row: {
-                    "img_url": string | null,"name": string,"num_parts": number,"set_num": string,"theme_id": number,"year": number
+                    "img_url": string | null,"name": string,"name_bg": string | null,"num_parts": number,"set_num": string,"theme_id": number,"year": number
                   }
                   Insert: {
-                    "img_url"?: string | null,"name": string,"num_parts"?: number,"set_num": string,"theme_id": number,"year": number
+                    "img_url"?: string | null,"name": string,"name_bg"?: string | null,"num_parts"?: number,"set_num": string,"theme_id": number,"year": number
                   }
                   Update: {
-                    "img_url"?: string | null,"name"?: string,"num_parts"?: number,"set_num"?: string,"theme_id"?: number,"year"?: number
+                    "img_url"?: string | null,"name"?: string,"name_bg"?: string | null,"num_parts"?: number,"set_num"?: string,"theme_id"?: number,"year"?: number
                   }
                   Relationships: [
                     {
@@ -339,7 +358,7 @@ isOneToOne: false
           Views: {
             "catalog_listings": {
                   Row: {
-                    "box_damaged": boolean | null,"catalog_img_url": string | null,"color_id": number | null,"color_name": string | null,"color_rgb": string | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"condition_notes": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"element_ids": (string)[] | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number | null,"is_complete": boolean | null,"is_published": boolean | null,"item_num": string | null,"item_type": Database["public"]['Enums']["item_type"] | null,"minifigs_complete": boolean | null,"name": string | null,"num_parts": number | null,"part_cat_id": number | null,"part_category": string | null,"price": number | null,"stock": number | null,"theme_id": number | null,"theme_name": string | null,"year": number | null
+                    "box_damaged": boolean | null,"catalog_img_url": string | null,"color_id": number | null,"color_name": string | null,"color_rgb": string | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"condition_notes": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"element_ids": (string)[] | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number | null,"is_complete": boolean | null,"is_published": boolean | null,"item_num": string | null,"item_type": Database["public"]['Enums']["item_type"] | null,"minifigs_complete": boolean | null,"name": string | null,"name_en": string | null,"num_parts": number | null,"part_cat_id": number | null,"part_category": string | null,"price": number | null,"stock": number | null,"theme_id": number | null,"theme_name": string | null,"year": number | null
                   }
                   Relationships: [
                     {
@@ -362,6 +381,23 @@ isOneToOne: false
             "admin_email":
 { Args: Record<PropertyKey, never>; Returns: string
                            },
+"claim_order_emails":
+{ Args: { "p_limit"?: number }; Returns: {
+              "attempts": number,
+"claimed_at": string | null,
+"created_at": string,
+"id": number,
+"kind": Database["public"]['Enums']["order_email_kind"],
+"last_error": string | null,
+"order_id": number,
+"sent_at": string | null
+            }[]
+                          SetofOptions: {
+        from: "*"
+        to: "order_emails"
+        isOneToOne: false
+        isSetofReturn: true
+      } },
 "is_admin":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
@@ -371,6 +407,11 @@ isOneToOne: false
 "listed_part_filters":
 { Args: Record<PropertyKey, never>; Returns: {
               "id": number,"kind": string,"listing_count": number,"name": string,"rgb": string
+            }[]
+                           },
+"listed_root_theme_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "condition": Database["public"]['Enums']["item_condition"],"item_type": Database["public"]['Enums']["item_type"],"listing_count": number,"theme_id": number
             }[]
                            },
 "listed_root_themes":
@@ -391,7 +432,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "courier": "econt"|"speedy","delivery_type": "office"|"address"|"pickup","item_condition": "new"|"used","item_type": "set"|"minifig"|"part"|"magazine","order_status": "new"|"confirmed"|"shipped"|"delivered"|"paid"|"cancelled"|"refused"|"returned","payment_method": "cod","user_role": "customer"|"admin"
+            "courier": "econt"|"speedy","delivery_type": "office"|"address"|"pickup","item_condition": "new"|"used","item_type": "set"|"minifig"|"part"|"magazine","order_email_kind": "placed"|"shipped","order_status": "new"|"confirmed"|"shipped"|"delivered"|"paid"|"cancelled"|"refused"|"returned","payment_method": "cod","user_role": "customer"|"admin"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -507,7 +548,7 @@ export type CompositeTypes<
 export const Constants = {
   "public": {
           Enums: {
-            "courier": ["econt", "speedy"],"delivery_type": ["office", "address", "pickup"],"item_condition": ["new", "used"],"item_type": ["set", "minifig", "part", "magazine"],"order_status": ["new", "confirmed", "shipped", "delivered", "paid", "cancelled", "refused", "returned"],"payment_method": ["cod"],"user_role": ["customer", "admin"]
+            "courier": ["econt", "speedy"],"delivery_type": ["office", "address", "pickup"],"item_condition": ["new", "used"],"item_type": ["set", "minifig", "part", "magazine"],"order_email_kind": ["placed", "shipped"],"order_status": ["new", "confirmed", "shipped", "delivered", "paid", "cancelled", "refused", "returned"],"payment_method": ["cod"],"user_role": ["customer", "admin"]
           }
         }
 } as const
