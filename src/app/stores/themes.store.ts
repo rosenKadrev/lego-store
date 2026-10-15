@@ -1,6 +1,6 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withHooks, withMethods, withState } from '@ngrx/signals';
-import { Theme } from '../core/models';
+import { ItemCondition, ItemType, Theme } from '../core/models';
 import { Supabase } from '../core/supabase';
 
 /** How many themes the header menu / catalog sidebar show before "Виж всички" */
@@ -14,15 +14,19 @@ export type ListedTheme = {
   sample_img_url: string | null;
 };
 
+/** Listings for sale per top-level theme, by kind and condition (catalog sidebar counts) */
+export type ThemeCount = { theme_id: number; item_type: ItemType; condition: ItemCondition; listing_count: number };
+
 type ThemesState = {
   themes: Theme[];
   listed: ListedTheme[];
+  counts: ThemeCount[];
   loaded: boolean;
 };
 
 export const ThemesStore = signalStore(
   { providedIn: 'root' },
-  withState<ThemesState>({ themes: [], listed: [], loaded: false }),
+  withState<ThemesState>({ themes: [], listed: [], counts: [], loaded: false }),
   withComputed(({ themes }) => {
     const byId = computed(() => new Map(themes().map((t) => [t.id, t])));
     const children = computed(() => {
@@ -50,8 +54,12 @@ export const ThemesStore = signalStore(
 
     /** Themes that currently have listings for sale — re-read whenever listings may have changed. */
     async refreshListed(): Promise<void> {
-      const { data } = await supabase.client.rpc('listed_root_themes');
-      if (data) patchState(store, { listed: data as ListedTheme[] });
+      const [listed, counts] = await Promise.all([
+        supabase.client.rpc('listed_root_themes'),
+        supabase.client.rpc('listed_root_theme_counts'),
+      ]);
+      if (listed.data) patchState(store, { listed: listed.data as ListedTheme[] });
+      if (counts.data) patchState(store, { counts: counts.data as ThemeCount[] });
     },
 
     /** The theme itself plus all nested sub-themes, for filtering. */

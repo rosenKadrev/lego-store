@@ -125,11 +125,11 @@ import { ThemesStore } from '../stores/themes.store';
     <section class="mt-16 bg-surface-2 py-14">
       <div class="container-page">
         <app-product-rail
-          title="Употребявани"
-          subtitle="Всяка бройка е уникална — с описано състояние"
-          [items]="usedSets()"
+          title="Списания"
+          subtitle="LEGO списания с подарък минифигурка или модел"
+          [items]="magazines()"
           [loading]="loading()"
-          [moreParams]="{ condition: 'used' }"
+          [moreParams]="{ type: 'magazine' }"
         />
       </div>
     </section>
@@ -161,7 +161,7 @@ export class Home implements OnInit {
 
   protected readonly loading = signal(true);
   protected readonly newSets = signal<CatalogListing[]>([]);
-  protected readonly usedSets = signal<CatalogListing[]>([]);
+  protected readonly magazines = signal<CatalogListing[]>([]);
   protected readonly minifigs = signal<CatalogListing[]>([]);
   protected readonly parts = signal<CatalogListing[]>([]);
   protected readonly heroImage = signal<string | null>(null);
@@ -175,12 +175,12 @@ export class Home implements OnInit {
 
   async ngOnInit(): Promise<void> {
     void this.themes.refreshListed();
-    const [newSets, usedSets, minifigs, parts] = await this.pageLoading.track(
-      Promise.all([this.fetch('new', 'set'), this.fetch('used', 'set'), this.fetch(null, 'minifig'), this.fetch(null, 'part')]),
+    const [newSets, magazines, minifigs, parts] = await this.pageLoading.track(
+      Promise.all([this.fetch('new', 'set'), this.fetch(null, 'magazine'), this.fetch(null, 'minifig'), this.fetch(null, 'part')]),
     );
     this.parts.set(parts);
     this.newSets.set(newSets);
-    this.usedSets.set(usedSets);
+    this.magazines.set(magazines);
     this.minifigs.set(minifigs);
     const featured = [...newSets].sort((a, b) => (b.num_parts ?? 0) - (a.num_parts ?? 0))[0];
     this.heroImage.set(featured?.catalog_img_url ?? null);

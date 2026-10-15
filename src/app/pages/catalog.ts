@@ -18,7 +18,7 @@ const SORTS: { value: CatalogSort; label: string; types?: ItemType[] }[] = [
   { value: 'newest', label: 'Най-нови' },
   { value: 'price_asc', label: 'Цена: ниска към висока' },
   { value: 'price_desc', label: 'Цена: висока към ниска' },
-  { value: 'theme', label: 'По тема', types: ['set'] },
+  { value: 'theme', label: 'По тема', types: ['set', 'minifig'] },
   { value: 'year_desc', label: 'Година: най-новите сетове', types: ['set'] },
   { value: 'year_asc', label: 'Година: най-старите сетове', types: ['set'] },
   { value: 'parts_desc', label: 'Брой части: най-много', types: ['set'] },
@@ -228,7 +228,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               }
             }
 
-            @if (themes.listed().length && f.type !== 'part' && f.type !== 'minifig') {
+            @if (sidebarThemes().length && f.type !== 'part') {
               <fieldset>
                 <legend class="label">Тема</legend>
                 <ul class="space-y-0.5 text-sm">
@@ -255,14 +255,14 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
                     </li>
                   }
                 </ul>
-                @if (themes.listed().length > sidebarLimit) {
+                @if (sidebarThemes().length > sidebarLimit) {
                   <button
                     type="button"
                     class="mt-1 flex w-full items-center gap-1 rounded-lg px-3 py-2 text-left text-sm font-semibold text-accent hover:bg-accent-soft"
                     [attr.aria-expanded]="showAllThemes()"
                     (click)="showAllThemes.set(!showAllThemes())"
                   >
-                    {{ showAllThemes() ? 'Покажи по-малко' : 'Покажи всички (' + themes.listed().length + ')' }}
+                    {{ showAllThemes() ? 'Покажи по-малко' : 'Покажи всички (' + sidebarThemes().length + ')' }}
                     <app-icon name="chevronDown" [size]="16" class="transition" [class.rotate-180]="showAllThemes()" />
                   </button>
                 }
@@ -463,9 +463,22 @@ export class Catalog {
   });
   protected readonly sidebarLimit = SIDEBAR_THEME_LIMIT;
   protected readonly showAllThemes = signal(false);
+  /** Themes with something matching the kind/condition filters, counted the same way, most first */
+  protected readonly sidebarThemes = computed(() => {
+    const { type, condition } = this.store.filters();
+    const counts = new Map<number, number>();
+    for (const c of this.themes.counts()) {
+      if ((type && c.item_type !== type) || (condition && c.condition !== condition)) continue;
+      counts.set(c.theme_id, (counts.get(c.theme_id) ?? 0) + c.listing_count);
+    }
+    return this.themes
+      .listed()
+      .flatMap((t) => (counts.get(t.theme_id) ? [{ ...t, listing_count: counts.get(t.theme_id)! }] : []))
+      .sort((a, b) => b.listing_count - a.listing_count || a.name.localeCompare(b.name));
+  });
   /** First N themes, plus the selected one if it's further down the list */
   protected readonly visibleThemes = computed(() => {
-    const all = this.themes.listed();
+    const all = this.sidebarThemes();
     if (this.showAllThemes() || all.length <= this.sidebarLimit) return all;
     const top = all.slice(0, this.sidebarLimit);
     const selected = all.find((t) => t.theme_id === this.store.filters().theme);
@@ -545,12 +558,12 @@ export class Catalog {
 
   protected update(changes: Partial<CatalogFilters>): void {
     const next = { ...this.store.filters(), page: 1, ...changes };
-    // Theme filters only apply to sets, colour/category only to parts
+    // Theme filters apply to everything but parts (minifigs take their sets' theme), colour/category only to parts
     if (next.type !== 'part') {
       next.color = null;
       next.category = null;
     }
-    if (next.type === 'part' || next.type === 'minifig') next.theme = null;
+    if (next.type === 'part') next.theme = null;
     // e.g. "По тема" disappears when switching from sets to parts
     if (!sortsFor(next.type).some((s) => s.value === next.sort)) next.sort = 'newest';
     void this.router.navigate([], {
