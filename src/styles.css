@@ -183,6 +183,56 @@ select.input {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f1f1f3' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
 }
 
+/* Our own look for the open list where the browser allows it (customizable select: Chrome/Edge, Android);
+   elsewhere the browser's native list stays. Same look as the combobox menus. */
+@supports (appearance: base-select) {
+  select.input,
+  select.input::picker(select) {
+    appearance: base-select;
+  }
+  select.input {
+    display: flex;
+    align-items: center;
+  }
+  /* the chevron is the background image above */
+  select.input::picker-icon {
+    display: none;
+  }
+  select.input::picker(select) {
+    margin-block: 0.375rem;
+    padding: 0.25rem;
+    border: 1px solid var(--color-line);
+    border-radius: 1rem;
+    background: var(--color-surface);
+    color: var(--color-fg);
+    box-shadow: 0 16px 40px -12px rgb(0 0 0 / 0.25);
+    max-height: 20rem;
+  }
+  select.input option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.65rem;
+    font-size: 0.875rem;
+    cursor: pointer;
+  }
+  select.input option:hover,
+  select.input option:focus-visible {
+    background: var(--color-surface-3);
+    outline: none;
+  }
+  select.input option:checked {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  select.input option::checkmark {
+    order: 1;
+    margin-left: auto;
+    color: var(--color-accent);
+  }
+}
+
 /* Toast entrance */
 @keyframes toast-in {
   from {
