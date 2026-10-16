@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { BackToTop } from '../shared/back-to-top';
 import { Icon, IconName } from '../shared/icon';
 
 @Component({
   selector: 'app-admin-layout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, Icon, BackToTop],
   template: `
     <div class="container-page pt-6">
       <div class="flex flex-wrap items-center justify-between gap-3">
@@ -27,6 +28,7 @@ import { Icon, IconName } from '../shared/icon';
       <div class="pt-6">
         <router-outlet />
       </div>
+      <app-back-to-top />
     </div>
   `,
 })
