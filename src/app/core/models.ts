@@ -80,7 +80,10 @@ export const COURIER_LABEL: Record<Courier, string> = {
 export function slugify(text: string): string {
   return text
     .toLowerCase()
+    // Drop accents from Latin letters (é → e) but keep Cyrillic й/ё whole
     .normalize('NFKD')
+    .replace(/(?<=[a-z])\p{M}+/gu, '')
+    .normalize('NFC')
     .replace(/[^\p{L}\p{N}]+/gu, '-')
     .replace(/^-+|-+$/g, '')
     .slice(0, 60);
