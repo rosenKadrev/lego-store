@@ -95,7 +95,7 @@ type Row = InventoryRow & {
               <input id="printed-factor" class="input" type="number" min="0" step="0.1" [value]="printedFactor()" (input)="printedFactor.set($any($event.target).value)" />
             </div>
           </div>
-          <ul class="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+          <ul class="mt-3 grid grid-cols-1 gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
             @for (cat of categories(); track cat.name) {
               <li class="flex items-center gap-3">
                 <span class="min-w-0 flex-1">
@@ -103,7 +103,7 @@ type Row = InventoryRow & {
                   <span class="text-xs text-fg-muted">{{ cat.lots }} вида · {{ cat.pieces }} бр.</span>
                 </span>
                 <input
-                  class="input w-24 py-1.5 text-sm"
+                  class="input w-24 shrink-0 py-1.5 text-sm"
                   type="number"
                   min="0"
                   step="0.01"
@@ -143,7 +143,7 @@ type Row = InventoryRow & {
                 </span>
                 <span class="w-20 text-right text-sm tabular-nums">{{ fig.quantity }} бр.</span>
                 <input
-                  class="input w-24 py-1.5 text-sm"
+                  class="input w-24 shrink-0 py-1.5 text-sm"
                   type="number"
                   min="0"
                   step="0.01"
@@ -184,7 +184,7 @@ type Row = InventoryRow & {
                 }
               </span>
               <input
-                class="input w-24 py-1.5 text-sm"
+                class="input w-24 shrink-0 py-1.5 text-sm"
                 type="number"
                 min="0"
                 step="0.01"
