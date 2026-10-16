@@ -67,7 +67,7 @@ type Row = InventoryRow & {
           <p class="font-semibold">{{ name }}</p>
           <div class="mt-3 flex flex-wrap items-end gap-x-6 gap-y-3 text-sm">
             <div class="w-40">
-              <label class="label" for="default-price">Цена на брой</label>
+              <label class="label" for="default-price">Цена без категория</label>
               <input id="default-price" class="input" type="number" min="0" step="0.01" [value]="defaultPrice()" (input)="defaultPrice.set($any($event.target).value)" />
             </div>
             <label class="flex items-center gap-2 pb-3">
@@ -79,7 +79,42 @@ type Row = InventoryRow & {
               <button type="button" class="text-accent hover:underline" (click)="setAll(false)">Махни всички</button>
             </div>
           </div>
-          <p class="mt-1 text-xs text-fg-muted">Различна цена за отделна част (минифигурка, принтирана, голяма плоча) — в колоната „Цена“.</p>
+        </div>
+
+        <div class="mt-4 rounded-2xl border border-line p-4">
+          <div class="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h3 class="font-bold">Цени по категория</h3>
+              <p class="text-xs text-fg-muted">
+                Цена на брой за всички части от категорията. Запазват се за следващите сетове при „Създай обявите“.
+                За отделна част — в колоната „Цена“ долу.
+              </p>
+            </div>
+            <div class="w-36 text-sm">
+              <label class="label" for="printed-factor">Принтирани ×</label>
+              <input id="printed-factor" class="input" type="number" min="0" step="0.1" [value]="printedFactor()" (input)="printedFactor.set($any($event.target).value)" />
+            </div>
+          </div>
+          <ul class="mt-3 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
+            @for (cat of categories(); track cat.name) {
+              <li class="flex items-center gap-3">
+                <span class="min-w-0 flex-1">
+                  <span class="block truncate font-medium" [title]="cat.name">{{ cat.name }}</span>
+                  <span class="text-xs text-fg-muted">{{ cat.lots }} вида · {{ cat.pieces }} бр.</span>
+                </span>
+                <input
+                  class="input w-24 py-1.5 text-sm"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  [value]="catPrices()[cat.name] ?? ''"
+                  [placeholder]="defaultPrice()"
+                  (input)="setCatPrice(cat.name, $any($event.target).value)"
+                  [attr.aria-label]="'Цена за ' + cat.name"
+                />
+              </li>
+            }
+          </ul>
         </div>
 
         @if (figs().length) {
@@ -139,6 +174,7 @@ type Row = InventoryRow & {
                   @if (row.element_id) { · елемент <span class="font-semibold text-fg-3">{{ row.element_id }}</span> }
                   · <app-color-swatch [rgb]="row.color_rgb" [trans]="row.color_trans" [size]="12" /> {{ row.color_name }}
                   @if (row.inStock) { · <span class="font-semibold text-fg-3">вече имате {{ row.inStock }} бр.</span> }
+                  @if (isPrinted(row)) { · <span class="font-semibold text-fg-3">принтирана</span> }
                 </span>
               </span>
               <span class="w-20 text-right text-sm tabular-nums">
@@ -152,7 +188,7 @@ type Row = InventoryRow & {
                 type="number"
                 min="0"
                 step="0.01"
-                [placeholder]="defaultPrice()"
+                [placeholder]="autoPrice(row).toFixed(2)"
                 [value]="row.price"
                 (input)="patch(i, { price: $any($event.target).value })"
                 [attr.aria-label]="'Цена за ' + row.name"
@@ -170,7 +206,7 @@ type Row = InventoryRow & {
           </button>
         </div>
         @if (invalidPrice()) {
-          <p class="text-sm text-accent">Въведете цена на брой (0 или повече).</p>
+          <p class="text-sm text-accent">Попълнете всички цени и множителя за принтирани (0 или повече).</p>
         }
       }
 
@@ -195,14 +231,33 @@ export class PartsImport {
   protected readonly defaultPrice = signal('0.10');
   protected readonly figPrice = signal('5.00');
   protected readonly withSpares = signal(true);
+  /** price per piece by category name, as typed ('' = the default price) */
+  protected readonly catPrices = signal<Record<string, string>>({});
+  protected readonly printedFactor = signal('3');
+  /** category name → id, to save the prices */
+  private categoryIds = new Map<string, number>();
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly done = signal<{ created: number; updated: number } | null>(null);
 
   protected readonly invalidPrice = computed(() =>
-    [this.defaultPrice(), this.figPrice()].some((p) => p.trim() === '' || !(Number(p) >= 0)),
+    [this.defaultPrice(), this.figPrice(), this.printedFactor()].some((p) => p.trim() === '' || !(Number(p) >= 0)) ||
+    Object.values(this.catPrices()).some((p) => p.trim() !== '' && !(Number(p) >= 0)),
   );
+
+  /** Categories in this set, the ones with most pieces first */
+  protected readonly categories = computed(() => {
+    const byName = new Map<string, { name: string; lots: number; pieces: number }>();
+    for (const row of this.rows()) {
+      if (!row.category) continue;
+      const cat = byName.get(row.category) ?? { name: row.category, lots: 0, pieces: 0 };
+      cat.lots++;
+      cat.pieces += this.qty(row);
+      byName.set(row.category, cat);
+    }
+    return [...byName.values()].sort((a, b) => b.pieces - a.pieces || a.name.localeCompare(b.name));
+  });
 
   protected readonly summary = computed(() => {
     let lots = 0;
@@ -228,9 +283,25 @@ export class PartsImport {
     return row.quantity + (this.withSpares() ? row.spare_quantity : 0);
   }
 
+  /** Rebrickable names printed parts "... with Print" / "Printed ..." */
+  protected isPrinted(row: Row): boolean {
+    return /print/i.test(row.name);
+  }
+
+  /** The row's price unless one is typed for it: its category's price, × the factor for printed parts */
+  protected autoPrice(row: Row): number {
+    const cat = (row.category && this.catPrices()[row.category]?.trim()) || this.defaultPrice();
+    const factor = this.isPrinted(row) ? Number(this.printedFactor()) || 1 : 1;
+    return Math.round((Number(cat) || 0) * factor * 100) / 100;
+  }
+
   private price(row: Row): number {
     const own = row.price.trim();
-    return Number(own === '' ? this.defaultPrice() : own) || 0;
+    return own === '' ? this.autoPrice(row) : Number(own) || 0;
+  }
+
+  protected setCatPrice(name: string, price: string): void {
+    this.catPrices.update((prices) => ({ ...prices, [name]: price }));
   }
 
   private figPriceOf(fig: FigRow): number {
@@ -277,6 +348,19 @@ export class PartsImport {
         .in('part_num', partNums);
       const stock = new Map<string, number>();
       for (const l of existing ?? []) stock.set(`${l.part_num}|${l.color_id}`, (stock.get(`${l.part_num}|${l.color_id}`) ?? 0) + l.stock);
+      const [{ data: categories }, { data: saved }] = await Promise.all([
+        this.db.from('part_categories').select('id, name'),
+        this.db.from('part_category_prices').select('part_cat_id, price'),
+      ]);
+      this.categoryIds = new Map((categories ?? []).map((c) => [c.name, c.id]));
+      const savedPrice = new Map((saved ?? []).map((p) => [p.part_cat_id, p.price]));
+      const catPrices: Record<string, string> = {};
+      for (const name of new Set(data.parts.map((p) => p.category).filter((c): c is string => !!c))) {
+        const price = savedPrice.get(this.categoryIds.get(name) ?? -1);
+        catPrices[name] = price != null ? price.toFixed(2) : '';
+      }
+      this.catPrices.set(catPrices);
+
       const figNums = (data.minifigs ?? []).map((f) => f.fig_num);
       const { data: existingFigs } = figNums.length
         ? await this.db.from('listings').select('fig_num, stock').eq('item_type', 'minifig').eq('condition', 'new').in('fig_num', figNums)
@@ -312,6 +396,11 @@ export class PartsImport {
         return;
       }
       this.done.set(data[0]);
+      // Remember the category prices for the next set
+      const prices = Object.entries(this.catPrices())
+        .filter(([name, price]) => price.trim() !== '' && this.categoryIds.has(name))
+        .map(([name, price]) => ({ part_cat_id: this.categoryIds.get(name)!, price: Number(price), updated_at: new Date().toISOString() }));
+      if (prices.length) await this.db.from('part_category_prices').upsert(prices);
       this.toast.success(`${data[0].created + data[0].updated} обяви са създадени или допълнени.`);
       this.setName.set(null);
       this.rows.set([]);

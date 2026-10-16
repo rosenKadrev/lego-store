@@ -220,6 +220,25 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"part_category_prices": {
+                  Row: {
+                    "part_cat_id": number,"price": number,"updated_at": string
+                  }
+                  Insert: {
+                    "part_cat_id": number,"price": number,"updated_at"?: string
+                  }
+                  Update: {
+                    "part_cat_id"?: number,"price"?: number,"updated_at"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "part_category_prices_part_cat_id_fkey"
+      columns: ["part_cat_id"]
+isOneToOne: true
+      referencedRelation: "part_categories"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"part_colors": {
                   Row: {
                     "color_id": number,"img_url": string | null,"part_num": string
