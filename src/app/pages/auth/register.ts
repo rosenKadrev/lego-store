@@ -5,11 +5,12 @@ import { Icon } from '../../shared/icon';
 import { AuthStore } from '../../stores/auth.store';
 import { AuthShell } from './auth-shell';
 import { safeRedirect } from './login';
+import { PasswordToggle, passwordsMatch } from './password';
 
 @Component({
   selector: 'app-register',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, AuthShell, Icon],
+  imports: [ReactiveFormsModule, RouterLink, AuthShell, Icon, PasswordToggle],
   template: `
     <app-auth-shell title="Регистрация" subtitle="Бърза поръчка и история на покупките.">
       @if (confirmationSent()) {
@@ -37,8 +38,22 @@ import { safeRedirect } from './login';
           </div>
           <div>
             <label class="label" for="password">Парола</label>
-            <input id="password" class="input" type="password" formControlName="password" autocomplete="new-password" />
+            <div class="relative">
+              <input id="password" class="input pr-11" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" />
+              <app-password-toggle [shown]="showPassword()" (toggle)="showPassword.set(!showPassword())" />
+            </div>
             <p class="mt-1 text-xs text-fg-muted">Поне 8 символа.</p>
+          </div>
+          <div>
+            <label class="label" for="confirm">Потвърдете паролата</label>
+            <!-- One eye state for both fields: showing one shows the other -->
+            <div class="relative">
+              <input id="confirm" class="input pr-11" [type]="showPassword() ? 'text' : 'password'" formControlName="confirm" autocomplete="new-password" />
+              <app-password-toggle [shown]="showPassword()" (toggle)="showPassword.set(!showPassword())" />
+            </div>
+            @if (form.controls.confirm.touched && form.hasError('mismatch')) {
+              <p class="field-error">Паролите не съвпадат.</p>
+            }
           </div>
           @if (error()) {
             <p class="rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ error() }}</p>
@@ -61,12 +76,17 @@ export class Register {
 
   readonly redirect = input<string | undefined>();
 
-  protected readonly form = inject(FormBuilder).nonNullable.group({
-    fullName: ['', [Validators.required, Validators.minLength(3)]],
-    phone: [''],
-    email: ['', [Validators.required, Validators.email]],
-    password: ['', [Validators.required, Validators.minLength(8)]],
-  });
+  protected readonly form = inject(FormBuilder).nonNullable.group(
+    {
+      fullName: ['', [Validators.required, Validators.minLength(3)]],
+      phone: [''],
+      email: ['', [Validators.required, Validators.email]],
+      password: ['', [Validators.required, Validators.minLength(8)]],
+      confirm: ['', Validators.required],
+    },
+    { validators: passwordsMatch },
+  );
+  protected readonly showPassword = signal(false);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
   protected readonly confirmationSent = signal(false);

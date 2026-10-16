@@ -3,11 +3,12 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthStore } from '../../stores/auth.store';
 import { AuthShell } from './auth-shell';
+import { PasswordToggle } from './password';
 
 @Component({
   selector: 'app-login',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, AuthShell],
+  imports: [ReactiveFormsModule, RouterLink, AuthShell, PasswordToggle],
   template: `
     <app-auth-shell title="Вход" subtitle="Влезте, за да следите поръчките си.">
       <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4" novalidate>
@@ -20,7 +21,10 @@ import { AuthShell } from './auth-shell';
             <label class="label mb-0" for="password">Парола</label>
             <a routerLink="/forgot-password" class="text-xs font-medium text-accent hover:underline">Забравена парола?</a>
           </div>
-          <input id="password" class="input" type="password" formControlName="password" autocomplete="current-password" />
+          <div class="relative">
+            <input id="password" class="input pr-11" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="current-password" />
+            <app-password-toggle [shown]="showPassword()" (toggle)="showPassword.set(!showPassword())" />
+          </div>
         </div>
         @if (error()) {
           <p class="rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ error() }}</p>
@@ -47,6 +51,7 @@ export class Login {
     email: ['', [Validators.required, Validators.email]],
     password: ['', Validators.required],
   });
+  protected readonly showPassword = signal(false);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
 

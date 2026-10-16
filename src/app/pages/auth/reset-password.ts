@@ -1,13 +1,9 @@
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
-import { AbstractControl, FormBuilder, ReactiveFormsModule, ValidationErrors, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthStore } from '../../stores/auth.store';
 import { AuthShell } from './auth-shell';
-
-function passwordsMatch(group: AbstractControl): ValidationErrors | null {
-  const { password, confirm } = group.value as { password: string; confirm: string };
-  return password && confirm && password !== confirm ? { mismatch: true } : null;
-}
+import { PasswordToggle, passwordsMatch } from './password';
 
 /**
  * Landing page of the reset email. supabase-js reads the recovery token from the URL
@@ -17,7 +13,7 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
 @Component({
   selector: 'app-reset-password',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, AuthShell],
+  imports: [ReactiveFormsModule, RouterLink, AuthShell, PasswordToggle],
   template: `
     <app-auth-shell title="Нова парола" subtitle="Изберете парола с поне 8 символа.">
       @if (!ready()) {
@@ -31,14 +27,20 @@ function passwordsMatch(group: AbstractControl): ValidationErrors | null {
         <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-4" novalidate>
           <div>
             <label class="label" for="password">Нова парола</label>
-            <input id="password" class="input" type="password" formControlName="password" autocomplete="new-password" />
+            <div class="relative">
+              <input id="password" class="input pr-11" [type]="showPassword() ? 'text' : 'password'" formControlName="password" autocomplete="new-password" />
+              <app-password-toggle [shown]="showPassword()" (toggle)="showPassword.set(!showPassword())" />
+            </div>
             @if (form.controls.password.touched && form.controls.password.invalid) {
               <p class="field-error">Поне 8 символа.</p>
             }
           </div>
           <div>
             <label class="label" for="confirm">Повторете паролата</label>
-            <input id="confirm" class="input" type="password" formControlName="confirm" autocomplete="new-password" />
+            <div class="relative">
+              <input id="confirm" class="input pr-11" [type]="showPassword() ? 'text' : 'password'" formControlName="confirm" autocomplete="new-password" />
+              <app-password-toggle [shown]="showPassword()" (toggle)="showPassword.set(!showPassword())" />
+            </div>
             @if (form.controls.confirm.touched && form.hasError('mismatch')) {
               <p class="field-error">Паролите не съвпадат.</p>
             }
@@ -65,6 +67,7 @@ export class ResetPassword implements OnInit {
     },
     { validators: passwordsMatch },
   );
+  protected readonly showPassword = signal(false);
   protected readonly ready = signal(false);
   protected readonly loading = signal(false);
   protected readonly error = signal<string | null>(null);
