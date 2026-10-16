@@ -1,5 +1,5 @@
 import { CurrencyPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, inject, input, linkedSignal, signal, untracked } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, effect, ElementRef, inject, input, linkedSignal, signal, untracked, viewChild } from '@angular/core';
 import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Analytics } from '../core/analytics';
@@ -8,6 +8,7 @@ import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, isCustomFigNum, SHO
 import { ColorSwatch } from '../shared/color-swatch';
 import { FavoriteButton } from '../shared/favorite-button';
 import { Icon } from '../shared/icon';
+import { ProductRail } from '../shared/product-rail';
 import { QuantityStepper } from '../shared/quantity-stepper';
 import { CartStore } from '../stores/cart.store';
 import { LiveStockStore } from '../stores/live-stock.store';
@@ -17,7 +18,7 @@ import { ThemesStore } from '../stores/themes.store';
 @Component({
   selector: 'app-product',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper, ColorSwatch, FavoriteButton],
+  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper, ColorSwatch, FavoriteButton, ProductRail],
   providers: [ProductStore],
   template: `
     <div class="container-page pt-6">
@@ -148,7 +149,7 @@ import { ThemesStore } from '../stores/themes.store';
               }
             </p>
 
-            <div class="mt-6 flex flex-wrap items-center gap-3">
+            <div #buyRow class="mt-6 flex flex-wrap items-center gap-3">
               @if (stock() > 1) {
                 <app-quantity-stepper [large]="true" [value]="quantity()" [min]="1" [max]="available()" (valueChange)="quantity.set($event)" />
               }
@@ -293,6 +294,39 @@ import { ThemesStore } from '../stores/themes.store';
             </div>
           </section>
         }
+
+        @if (store.related().length) {
+          <section class="mt-16">
+            <app-product-rail
+              [title]="relatedTitle()"
+              [items]="store.related()"
+              [loading]="false"
+              [moreParams]="relatedParams()"
+            />
+          </section>
+        }
+
+        <!-- Phones: price + "add to cart" stay at hand once the main button has scrolled away -->
+        @if (showBuyBar()) {
+          <div
+            class="fixed inset-x-0 bottom-0 z-40 flex items-center gap-3 border-t border-line bg-surface/95 px-4 pt-2.5 pb-[calc(0.625rem+env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgb(0_0_0/0.08)] backdrop-blur-lg lg:hidden"
+          >
+            <div class="min-w-0 leading-tight">
+              <p class="font-display text-xl font-extrabold whitespace-nowrap">
+                {{ l.price | currency }}
+                @if (l.item_type === 'part') {
+                  <span class="font-sans text-xs font-medium text-fg-muted">/ бр.</span>
+                }
+              </p>
+              <p class="text-xs" [class]="available() > 0 ? 'text-emerald-700 dark:text-emerald-400' : 'text-accent-strong'">
+                {{ available() > 0 ? 'В наличност' : inCart() ? 'Всички са в количката' : 'Изчерпан' }}
+              </p>
+            </div>
+            <button type="button" class="btn-primary h-11 flex-1 whitespace-nowrap" [disabled]="available() === 0" (click)="addToCart()">
+              <app-icon name="cart" [size]="18" class="max-[359px]:hidden" /> Добави в количката
+            </button>
+          </div>
+        }
       }
     </div>
   `,
@@ -334,6 +368,25 @@ export class Product {
     return l ? this.liveStock.stockOf(l) : 0;
   });
   protected readonly available = computed(() => Math.max(0, this.stock() - this.cart.quantityOf(this.id())));
+
+  /** Top-level theme of the product, for "Още от …" */
+  private readonly rootTheme = computed(() => this.themePath()[0] ?? null);
+  protected readonly relatedTitle = computed(() => {
+    const l = this.store.listing();
+    if (this.rootTheme()) return `Още от ${this.rootTheme()!.name}`;
+    return l?.part_category ? `Още ${l.part_category}` : 'Още продукти';
+  });
+  protected readonly relatedParams = computed((): Record<string, string> => {
+    const l = this.store.listing();
+    if (this.rootTheme()) return { theme: String(this.rootTheme()!.id) };
+    return l?.part_cat_id != null ? { type: 'part', category: String(l.part_cat_id) } : { type: 'part' };
+  });
+
+  private readonly buyRow = viewChild<ElementRef<HTMLElement>>('buyRow');
+  private readonly buyRowInView = signal(true);
+  private readonly footerInView = signal(false);
+  /** Phone bar with price + button: shown while neither the main button nor the footer is on screen */
+  protected readonly showBuyBar = computed(() => !!this.store.listing() && !this.buyRowInView() && !this.footerInView());
   protected readonly usedDetails = computed(() => {
     const l = this.store.listing();
     if (!l) return [];
@@ -350,6 +403,25 @@ export class Product {
   });
 
   constructor() {
+    // Watch the main buy button (re-created on every product) and the footer
+    effect((onCleanup) => {
+      const row = this.buyRow()?.nativeElement;
+      if (!row || typeof IntersectionObserver === 'undefined') return;
+      const observer = new IntersectionObserver((entries) => {
+        for (const e of entries) (e.target === row ? this.buyRowInView : this.footerInView).set(e.isIntersecting);
+      });
+      observer.observe(row);
+      const footer = document.querySelector('app-footer');
+      if (footer) observer.observe(footer);
+      onCleanup(() => observer.disconnect());
+    });
+    // "Още от …" once the product and the theme tree are known
+    effect(() => {
+      const l = this.store.listing();
+      const root = this.rootTheme();
+      if (!l) return;
+      untracked(() => void this.store.loadRelated(l, root ? this.themes.withDescendants(root.id) : []));
+    });
     effect(() => {
       const id = this.id();
       untracked(() => {

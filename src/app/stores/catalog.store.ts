@@ -97,15 +97,18 @@ export const CatalogStore = signalStore(
           .eq('is_published', true)
           .gt('stock', 0);
 
+        const q = filters.q.trim().replace(/[,()*%]/g, ' ').trim();
         if (filters.condition) query = query.eq('condition', filters.condition);
         if (filters.type) query = query.eq('item_type', filters.type);
+        // Loose parts come in by the hundred (a whole set at once) and would bury everything else:
+        // "all products" leaves them out unless searching or filtering by a part's colour/category
+        else if (!q && filters.color == null && filters.category == null) query = query.neq('item_type', 'part');
         if (filters.theme != null) query = query.in('theme_id', themes.withDescendants(filters.theme));
         if (filters.color != null) query = query.eq('color_id', filters.color);
         if (filters.category != null) query = query.eq('part_cat_id', filters.category);
         if (filters.minPrice != null) query = query.gte('price', filters.minPrice);
         if (filters.maxPrice != null) query = query.lte('price', filters.maxPrice);
 
-        const q = filters.q.trim().replace(/[,()*%]/g, ' ').trim();
         if (q) query = query.or(searchFilter(q));
 
         for (const [column, ascending] of SORT_ORDER[filters.sort]) {

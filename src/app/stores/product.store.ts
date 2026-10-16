@@ -11,6 +11,8 @@ type ProductState = {
   images: ListingImage[];
   minifigs: RelatedFig[];
   otherOffers: CatalogListing[];
+  /** "Още от …" under the product: other products of the same top-level theme (parts: same category) */
+  related: CatalogListing[];
   loading: boolean;
   notFound: boolean;
 };
@@ -22,6 +24,7 @@ export const ProductStore = signalStore(
     images: [],
     minifigs: [],
     otherOffers: [],
+    related: [],
     loading: true,
     notFound: false,
   }),
@@ -35,7 +38,7 @@ export const ProductStore = signalStore(
   })),
   withMethods((store, supabase = inject(Supabase), pageLoading = inject(PageLoading)) => ({
     async load(id: number): Promise<void> {
-      patchState(store, { loading: true, notFound: false, images: [], minifigs: [], otherOffers: [] });
+      patchState(store, { loading: true, notFound: false, images: [], minifigs: [], otherOffers: [], related: [] });
       const db = supabase.client;
 
       const { data: listing } = await pageLoading.track(db.from('catalog_listings').select('*').eq('id', id).maybeSingle());
@@ -70,6 +73,21 @@ export const ProductStore = signalStore(
         otherOffers: offers.data ?? [],
         loading: false,
       });
+    },
+
+    /** Other products of these themes (or this part category), newest first; offers of the same item excluded. */
+    async loadRelated(listing: CatalogListing, themeIds: number[]): Promise<void> {
+      let query = supabase.client
+        .from('catalog_listings')
+        .select('*')
+        .eq('is_published', true)
+        .gt('stock', 0)
+        .neq('item_num', listing.item_num!);
+      if (themeIds.length) query = query.in('theme_id', themeIds);
+      else if (listing.part_cat_id != null) query = query.eq('part_cat_id', listing.part_cat_id);
+      else return;
+      const { data } = await query.order('created_at', { ascending: false }).limit(12);
+      if (store.listing()?.id === listing.id) patchState(store, { related: data ?? [] });
     },
   })),
 );

@@ -32,9 +32,10 @@ import { Icon } from './icon';
           <div class="absolute inset-0 grid place-items-center text-fg-ghost"><app-icon name="image" [size]="48" /></div>
         }
         <div class="absolute top-2 right-11 left-2 flex flex-wrap gap-1.5 sm:top-3 sm:right-14 sm:left-3">
-          <span class="chip" [class]="l.condition === 'new' ? 'bg-emerald-600 text-white' : 'bg-stud-400 text-ink-900'">
-            {{ conditionLabel() }}
-          </span>
+          <!-- Nearly everything is new: only "used" gets a badge, so it stands out -->
+          @if (l.condition !== 'new') {
+            <span class="chip bg-stud-400 text-ink-900">{{ conditionLabel() }}</span>
+          }
           @if (l.box_damaged) {
             <span class="chip bg-amber-100 text-amber-900 ring-1 ring-amber-300">{{ boxDamagedLabel }}</span>
           }

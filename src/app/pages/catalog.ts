@@ -83,6 +83,10 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
           <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{{ heading() }}</h1>
           <p class="mt-1 text-sm text-fg-muted">
             @if (store.loading()) { Зареждане… } @else { {{ store.total() }} продукта }
+            @if (partsLeftOut()) {
+              · Частите на брой са в
+              <button type="button" class="font-semibold text-accent hover:underline" (click)="update({ type: 'part' })">раздел „Части“</button>
+            }
           </p>
         </div>
       </div>
@@ -284,7 +288,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
             [class]="stuck() ? 'border-line bg-page/95 backdrop-blur-lg' : 'border-transparent bg-page'"
           >
             <div class="flex flex-wrap items-center gap-2 lg:flex-nowrap">
-              <button type="button" class="btn-outline flex-1 max-[400px]:basis-full sm:flex-none lg:hidden" (click)="filtersOpen.set(true)">
+              <button type="button" class="btn-outline shrink-0 lg:hidden" (click)="filtersOpen.set(true)">
                 <app-icon name="filter" [size]="18" /> Филтри
                 @if (store.hasFilters()) {
                   <span class="size-2 rounded-full bg-brick-600"></span>
@@ -293,7 +297,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               <label class="sr-only" for="sort">Подреди</label>
               <select
                 id="sort"
-                class="input flex-1 rounded-full max-[400px]:basis-full sm:ml-auto sm:w-56 sm:flex-none lg:order-last"
+                class="input min-w-0 flex-1 rounded-full sm:ml-auto sm:w-56 sm:flex-none lg:order-last"
                 [ngModel]="f.sort"
                 (ngModelChange)="update({ sort: $event })"
               >
@@ -351,7 +355,16 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
           @if (store.error()) {
             <p class="rounded-2xl bg-accent-soft p-4 text-sm text-accent-ink">{{ store.error() }}</p>
           }
-          <div class="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4" [class.opacity-60]="store.loading()">
+          <!-- Parts are small and many: a denser grid -->
+          <div
+            class="grid"
+            [class]="
+              f.type === 'part'
+                ? 'grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5'
+                : 'grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4 md:grid-cols-3 xl:grid-cols-4'
+            "
+            [class.opacity-60]="store.loading()"
+          >
             @for (item of store.items(); track item.id) {
               <app-product-card [listing]="item" />
             } @empty {
@@ -507,6 +520,12 @@ export class Catalog {
   protected readonly categoryName = computed(() => {
     const id = this.store.filters().category;
     return id != null ? (this.partFilters.categories().find((c) => c.id === id)?.name ?? null) : null;
+  });
+
+  /** "All products" doesn't list loose parts (see CatalogStore.load) — say where they are */
+  protected readonly partsLeftOut = computed(() => {
+    const f = this.store.filters();
+    return !f.type && !f.q.trim() && f.color == null && f.category == null;
   });
 
   protected readonly heading = computed(() => {
