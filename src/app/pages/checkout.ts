@@ -4,6 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { Analytics, TrackedItem } from '../core/analytics';
+import { Busy } from '../core/busy';
 import { Courier, DeliveryType } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
@@ -220,6 +221,7 @@ export class Checkout {
   protected readonly cart = inject(CartStore);
   protected readonly auth = inject(AuthStore);
   private readonly supabase = inject(Supabase);
+  private readonly busy = inject(Busy);
   private readonly router = inject(Router);
   private readonly analytics = inject(Analytics);
   private readonly fb = inject(FormBuilder).nonNullable;
@@ -317,6 +319,10 @@ export class Checkout {
       return;
     }
 
+    await this.busy.track(() => this.placeOrder(), 'Изпращане на поръчката…');
+  }
+
+  private async placeOrder(): Promise<void> {
     this.submitting.set(true);
     this.cart.pauseLiveUpdates(true);
     try {

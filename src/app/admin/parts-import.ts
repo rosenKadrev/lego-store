@@ -1,6 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { Busy } from '../core/busy';
 import { Supabase } from '../core/supabase';
 import { ColorSwatch } from '../shared/color-swatch';
 import { Icon } from '../shared/icon';
@@ -185,6 +186,7 @@ type Row = InventoryRow & {
 export class PartsImport {
   private readonly db = inject(Supabase).client;
   private readonly toast = inject(ToastStore);
+  private readonly busy = inject(Busy);
 
   protected readonly setNum = signal('');
   protected readonly setName = signal<string | null>(null);
@@ -250,66 +252,70 @@ export class PartsImport {
   }
 
   protected async load(): Promise<void> {
-    this.loading.set(true);
-    this.error.set(null);
-    this.done.set(null);
-    const { data, error } = await this.db.functions.invoke<{ set: { num: string; name: string }; parts: InventoryRow[]; minifigs: InventoryMinifig[] }>(
-      'set-parts',
-      { body: { num: this.setNum().trim() } },
-    );
-    if (error || !data?.parts) {
+    return this.busy.track(async () => {
+      this.loading.set(true);
+      this.error.set(null);
+      this.done.set(null);
+      const { data, error } = await this.db.functions.invoke<{ set: { num: string; name: string }; parts: InventoryRow[]; minifigs: InventoryMinifig[] }>(
+        'set-parts',
+        { body: { num: this.setNum().trim() } },
+      );
+      if (error || !data?.parts) {
+        this.loading.set(false);
+        const message = error && 'context' in error ? ((await (error.context as Response).json().catch(() => null))?.error as string | undefined) : undefined;
+        this.error.set(message ?? 'Инвентарът не можа да бъде зареден.');
+        return;
+      }
+
+      // What's already for sale as new, so the admin sees stock will be added rather than a new listing made
+      const partNums = [...new Set(data.parts.map((p) => p.part_num))];
+      const { data: existing } = await this.db
+        .from('listings')
+        .select('part_num, color_id, stock')
+        .eq('item_type', 'part')
+        .eq('condition', 'new')
+        .in('part_num', partNums);
+      const stock = new Map<string, number>();
+      for (const l of existing ?? []) stock.set(`${l.part_num}|${l.color_id}`, (stock.get(`${l.part_num}|${l.color_id}`) ?? 0) + l.stock);
+      const figNums = (data.minifigs ?? []).map((f) => f.fig_num);
+      const { data: existingFigs } = figNums.length
+        ? await this.db.from('listings').select('fig_num, stock').eq('item_type', 'minifig').eq('condition', 'new').in('fig_num', figNums)
+        : { data: [] };
+      const figStock = new Map<string, number>();
+      for (const l of existingFigs ?? []) figStock.set(l.fig_num!, (figStock.get(l.fig_num!) ?? 0) + l.stock);
+      this.figs.set((data.minifigs ?? []).map((f) => ({ ...f, include: true, price: '', inStock: figStock.get(f.fig_num) ?? 0 })));
+
+      this.setName.set(`${data.set.num.replace(/-1$/, '')} ${data.set.name}`);
+      this.rows.set(
+        data.parts
+          .map((p) => ({ ...p, include: true, price: '', inStock: stock.get(`${p.part_num}|${p.color_id}`) ?? 0 }))
+          .sort((a, b) => (a.category ?? '').localeCompare(b.category ?? '') || a.name.localeCompare(b.name) || a.color_name.localeCompare(b.color_name)),
+      );
       this.loading.set(false);
-      const message = error && 'context' in error ? ((await (error.context as Response).json().catch(() => null))?.error as string | undefined) : undefined;
-      this.error.set(message ?? 'Инвентарът не можа да бъде зареден.');
-      return;
-    }
-
-    // What's already for sale as new, so the admin sees stock will be added rather than a new listing made
-    const partNums = [...new Set(data.parts.map((p) => p.part_num))];
-    const { data: existing } = await this.db
-      .from('listings')
-      .select('part_num, color_id, stock')
-      .eq('item_type', 'part')
-      .eq('condition', 'new')
-      .in('part_num', partNums);
-    const stock = new Map<string, number>();
-    for (const l of existing ?? []) stock.set(`${l.part_num}|${l.color_id}`, (stock.get(`${l.part_num}|${l.color_id}`) ?? 0) + l.stock);
-    const figNums = (data.minifigs ?? []).map((f) => f.fig_num);
-    const { data: existingFigs } = figNums.length
-      ? await this.db.from('listings').select('fig_num, stock').eq('item_type', 'minifig').eq('condition', 'new').in('fig_num', figNums)
-      : { data: [] };
-    const figStock = new Map<string, number>();
-    for (const l of existingFigs ?? []) figStock.set(l.fig_num!, (figStock.get(l.fig_num!) ?? 0) + l.stock);
-    this.figs.set((data.minifigs ?? []).map((f) => ({ ...f, include: true, price: '', inStock: figStock.get(f.fig_num) ?? 0 })));
-
-    this.setName.set(`${data.set.num.replace(/-1$/, '')} ${data.set.name}`);
-    this.rows.set(
-      data.parts
-        .map((p) => ({ ...p, include: true, price: '', inStock: stock.get(`${p.part_num}|${p.color_id}`) ?? 0 }))
-        .sort((a, b) => (a.category ?? '').localeCompare(b.category ?? '') || a.name.localeCompare(b.name) || a.color_name.localeCompare(b.color_name)),
-    );
-    this.loading.set(false);
+    }, 'Зареждане на частите…');
   }
 
   protected async create(): Promise<void> {
-    const items = this.rows()
-      .filter((r) => r.include && this.qty(r) > 0)
-      .map((r) => ({ part_num: r.part_num, color_id: r.color_id, quantity: this.qty(r), price: this.price(r) }));
-    const minifigs = this.figs()
-      .filter((f) => f.include && f.quantity > 0)
-      .map((f) => ({ fig_num: f.fig_num, quantity: f.quantity, price: this.figPriceOf(f) }));
-    if (!items.length && !minifigs.length) return;
-    this.saving.set(true);
-    const { data, error } = await this.db.rpc('import_set_inventory', { p_parts: items, p_minifigs: minifigs, p_condition: 'new' });
-    this.saving.set(false);
-    if (error || !data?.[0]) {
-      this.toast.error('Обявите не бяха създадени.');
-      return;
-    }
-    this.done.set(data[0]);
-    this.toast.success(`${data[0].created + data[0].updated} обяви са създадени или допълнени.`);
-    this.setName.set(null);
-    this.rows.set([]);
-    this.figs.set([]);
+    return this.busy.track(async () => {
+      const items = this.rows()
+        .filter((r) => r.include && this.qty(r) > 0)
+        .map((r) => ({ part_num: r.part_num, color_id: r.color_id, quantity: this.qty(r), price: this.price(r) }));
+      const minifigs = this.figs()
+        .filter((f) => f.include && f.quantity > 0)
+        .map((f) => ({ fig_num: f.fig_num, quantity: f.quantity, price: this.figPriceOf(f) }));
+      if (!items.length && !minifigs.length) return;
+      this.saving.set(true);
+      const { data, error } = await this.db.rpc('import_set_inventory', { p_parts: items, p_minifigs: minifigs, p_condition: 'new' });
+      this.saving.set(false);
+      if (error || !data?.[0]) {
+        this.toast.error('Обявите не бяха създадени.');
+        return;
+      }
+      this.done.set(data[0]);
+      this.toast.success(`${data[0].created + data[0].updated} обяви са създадени или допълнени.`);
+      this.setName.set(null);
+      this.rows.set([]);
+      this.figs.set([]);
+    }, 'Създаване на обявите…');
   }
 }

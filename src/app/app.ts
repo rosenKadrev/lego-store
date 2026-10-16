@@ -7,11 +7,12 @@ import { Footer } from './layout/footer';
 import { Header } from './layout/header';
 import { RouteProgress } from './layout/route-progress';
 import { Toaster } from './layout/toaster';
+import { BusyOverlay } from './shared/busy-overlay';
 
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouteProgress, Header, Footer, CartDrawer, Toaster, CookieBanner],
+  imports: [RouterOutlet, RouteProgress, Header, Footer, CartDrawer, Toaster, CookieBanner, BusyOverlay],
   host: { class: 'flex min-h-dvh flex-col' },
   template: `
     <app-route-progress />
@@ -23,6 +24,7 @@ import { Toaster } from './layout/toaster';
     <app-cart-drawer />
     <app-toaster />
     <app-cookie-banner />
+    <app-busy-overlay />
   `,
 })
 export class App {

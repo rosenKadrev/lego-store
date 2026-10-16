@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
+import { Busy } from '../core/busy';
 import { CatalogListing, ItemType, Listing, ListingImage } from '../core/models';
 import { LISTING_IMAGES_BUCKET, Supabase } from '../core/supabase';
 
@@ -79,7 +80,7 @@ const initialState: State = {
 
 export const ListingFormStore = signalStore(
   withState<State>(initialState),
-  withMethods((store, supabase = inject(Supabase)) => {
+  withMethods((store, supabase = inject(Supabase), busy = inject(Busy)) => {
     const db = supabase.client;
     let searchId = 0;
 
@@ -233,19 +234,21 @@ export const ListingFormStore = signalStore(
 
       /** Fetches a set/minifig missing from our catalog from the Rebrickable API (Edge Function) and selects it. */
       async lookupRebrickable(type: ItemType, num: string): Promise<void> {
-        patchState(store, { searching: true, error: null });
-        const { data, error } = await db.functions.invoke<{ item?: CatalogItem; error?: string }>('rebrickable-lookup', {
-          body: { type, num: num.trim() },
-        });
-        patchState(store, { searching: false });
-        if (error || !data?.item) {
-          // FunctionsHttpError carries the function's JSON body in `context`
-          const body = await (error as { context?: Response } | null)?.context?.json?.().catch(() => null);
-          patchState(store, { error: body?.error ?? data?.error ?? 'Търсенето в Rebrickable не успя.' });
-          return;
-        }
-        patchState(store, { item: data.item, results: [] });
-        await loadExistingOffers(data.item.num);
+        return busy.track(async () => {
+          patchState(store, { searching: true, error: null });
+          const { data, error } = await db.functions.invoke<{ item?: CatalogItem; error?: string }>('rebrickable-lookup', {
+            body: { type, num: num.trim() },
+          });
+          patchState(store, { searching: false });
+          if (error || !data?.item) {
+            // FunctionsHttpError carries the function's JSON body in `context`
+            const body = await (error as { context?: Response } | null)?.context?.json?.().catch(() => null);
+            patchState(store, { error: body?.error ?? data?.error ?? 'Търсенето в Rebrickable не успя.' });
+            return;
+          }
+          patchState(store, { item: data.item, results: [] });
+          await loadExistingOffers(data.item.num);
+        }, 'Търсене в Rebrickable…');
       },
 
       async selectItem(item: CatalogItem | null): Promise<void> {
@@ -329,61 +332,69 @@ export const ListingFormStore = signalStore(
 
       /** Creates or updates the listing; returns its id on success. */
       async save(draft: ListingDraft): Promise<number | null> {
-        patchState(store, { saving: true, error: null });
-        const current = store.listing();
-        const { data, error } = current
-          ? await db.from('listings').update(draft).eq('id', current.id).select().single()
-          : await db.from('listings').insert(draft).select().single();
-        patchState(store, { saving: false });
-        if (error) {
-          patchState(store, { error: `Грешка при запис: ${error.message}` });
-          return null;
-        }
-        patchState(store, { listing: data });
-        await saveNameBg();
-        return data.id;
+        return busy.track(async () => {
+          patchState(store, { saving: true, error: null });
+          const current = store.listing();
+          const { data, error } = current
+            ? await db.from('listings').update(draft).eq('id', current.id).select().single()
+            : await db.from('listings').insert(draft).select().single();
+          patchState(store, { saving: false });
+          if (error) {
+            patchState(store, { error: `Грешка при запис: ${error.message}` });
+            return null;
+          }
+          patchState(store, { listing: data });
+          await saveNameBg();
+          return data.id;
+        }, 'Запис на обявата…');
       },
 
       async remove(): Promise<boolean> {
-        const current = store.listing();
-        if (!current) return false;
-        const { error } = await db.from('listings').delete().eq('id', current.id);
-        if (error) {
-          patchState(store, {
-            error: error.code === '23503' ? 'Обявата има поръчки и не може да бъде изтрита. Скрийте я вместо това.' : error.message,
-          });
-          return false;
-        }
-        const paths = store.images().map((i) => i.path);
-        if (paths.length) await db.storage.from(LISTING_IMAGES_BUCKET).remove(paths);
-        return true;
+        return busy.track(async () => {
+          const current = store.listing();
+          if (!current) return false;
+          const { error } = await db.from('listings').delete().eq('id', current.id);
+          if (error) {
+            patchState(store, {
+              error: error.code === '23503' ? 'Обявата има поръчки и не може да бъде изтрита. Скрийте я вместо това.' : error.message,
+            });
+            return false;
+          }
+          const paths = store.images().map((i) => i.path);
+          if (paths.length) await db.storage.from(LISTING_IMAGES_BUCKET).remove(paths);
+          return true;
+        }, 'Изтриване на обявата…');
       },
 
       async upload(files: FileList | File[]): Promise<void> {
-        const listing = store.listing();
-        if (!listing) return;
-        patchState(store, { uploading: true, error: null });
-        let order = Math.max(-1, ...store.images().map((i) => i.sort_order)) + 1;
-        for (const file of Array.from(files)) {
-          const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-          const path = `${listing.id}/${crypto.randomUUID()}.${ext}`;
-          const { error: uploadError } = await db.storage
-            .from(LISTING_IMAGES_BUCKET)
-            .upload(path, file, { contentType: file.type, cacheControl: '31536000' });
-          if (uploadError) {
-            patchState(store, { error: `${file.name}: ${uploadError.message}` });
-            continue;
+        return busy.track(async () => {
+          const listing = store.listing();
+          if (!listing) return;
+          patchState(store, { uploading: true, error: null });
+          let order = Math.max(-1, ...store.images().map((i) => i.sort_order)) + 1;
+          for (const file of Array.from(files)) {
+            const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
+            const path = `${listing.id}/${crypto.randomUUID()}.${ext}`;
+            const { error: uploadError } = await db.storage
+              .from(LISTING_IMAGES_BUCKET)
+              .upload(path, file, { contentType: file.type, cacheControl: '31536000' });
+            if (uploadError) {
+              patchState(store, { error: `${file.name}: ${uploadError.message}` });
+              continue;
+            }
+            await db.from('listing_images').insert({ listing_id: listing.id, path, sort_order: order++ });
           }
-          await db.from('listing_images').insert({ listing_id: listing.id, path, sort_order: order++ });
-        }
-        await loadImages(listing.id);
-        patchState(store, { uploading: false });
+          await loadImages(listing.id);
+          patchState(store, { uploading: false });
+        }, 'Качване на снимките…');
       },
 
       async deleteImage(image: ListingImage): Promise<void> {
-        await db.from('listing_images').delete().eq('id', image.id);
-        await db.storage.from(LISTING_IMAGES_BUCKET).remove([image.path]);
-        patchState(store, { images: store.images().filter((i) => i.id !== image.id) });
+        return busy.track(async () => {
+          await db.from('listing_images').delete().eq('id', image.id);
+          await db.storage.from(LISTING_IMAGES_BUCKET).remove([image.path]);
+          patchState(store, { images: store.images().filter((i) => i.id !== image.id) });
+        }, 'Изтриване на снимката…');
       },
 
       /** Moves an image one position left/right and renumbers all sort orders. */

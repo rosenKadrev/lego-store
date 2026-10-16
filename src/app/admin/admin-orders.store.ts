@@ -1,5 +1,6 @@
 import { computed, inject } from '@angular/core';
 import { patchState, signalStore, withComputed, withMethods, withState } from '@ngrx/signals';
+import { Busy } from '../core/busy';
 import { Order, OrderItem, ORDER_STATUS_LABEL, OrderStatus } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { ToastStore } from '../stores/toast.store';
@@ -37,10 +38,12 @@ export const AdminOrdersStore = signalStore(
   withComputed(({ orders }) => ({
     newCount: computed(() => orders().filter((o) => o.status === 'new').length),
   })),
-  withMethods((store, supabase = inject(Supabase), toast = inject(ToastStore)) => {
+  withMethods((store, supabase = inject(Supabase), toast = inject(ToastStore), busy = inject(Busy)) => {
     const db = supabase.client;
+    let requestId = 0;
 
     async function load(): Promise<void> {
+      const id = ++requestId;
       patchState(store, { loading: true, error: null });
       const f = store.filter();
       let query = db.from('orders').select('*, order_items(*)');
@@ -55,6 +58,7 @@ export const AdminOrdersStore = signalStore(
         const { data: risky } = await db.from('orders').select('phone').in('phone', phones).in('status', ['refused', 'returned']);
         for (const r of risky ?? []) riskByPhone[r.phone] = (riskByPhone[r.phone] ?? 0) + 1;
       }
+      if (id !== requestId) return; // a newer filter was picked meanwhile
       patchState(store, { orders, riskByPhone, loading: false, error: error?.message ?? null });
     }
 
@@ -72,39 +76,43 @@ export const AdminOrdersStore = signalStore(
 
       /** Staff-confirmed courier price; the order total is recalculated in the database. */
       async setShipping(order: AdminOrder, price: number): Promise<boolean> {
-        const { error } = await db.rpc('set_order_shipping', { p_order_id: order.id, p_shipping_price: price });
-        if (error) {
-          toast.error('Цената на доставката не беше запазена.');
-          return false;
-        }
-        toast.success(`${order.number}: доставката е записана.`);
-        const shipping = Math.round(price * 100) / 100;
-        patchState(store, {
-          orders: store.orders().map((o) =>
-            o.id === order.id ? { ...o, shipping_price: shipping, total: Math.round((o.subtotal + shipping) * 100) / 100 } : o,
-          ),
-        });
-        return true;
+        return busy.track(async () => {
+          const { error } = await db.rpc('set_order_shipping', { p_order_id: order.id, p_shipping_price: price });
+          if (error) {
+            toast.error('Цената на доставката не беше запазена.');
+            return false;
+          }
+          toast.success(`${order.number}: доставката е записана.`);
+          const shipping = Math.round(price * 100) / 100;
+          patchState(store, {
+            orders: store.orders().map((o) =>
+              o.id === order.id ? { ...o, shipping_price: shipping, total: Math.round((o.subtotal + shipping) * 100) / 100 } : o,
+            ),
+          });
+          return true;
+        }, 'Запис на доставката…');
       },
 
       async setStatus(order: AdminOrder, status: OrderStatus, trackingNumber?: string): Promise<void> {
-        const { error } = await db.rpc('set_order_status', {
-          p_order_id: order.id,
-          p_status: status,
-          p_tracking_number: trackingNumber?.trim() || undefined,
-        });
-        if (error) {
-          toast.error('Статусът не беше променен.');
-          return;
-        }
-        // Marking an order shipped queues the tracking e-mail; this sends it
-        if (status === 'shipped') void db.functions.invoke('order-emails');
-        toast.success(`${order.number}: ${ORDER_STATUS_LABEL[status].toLowerCase()}.`);
-        patchState(store, {
-          orders: store.orders().map((o) =>
-            o.id === order.id ? { ...o, status, tracking_number: trackingNumber?.trim() || o.tracking_number } : o,
-          ),
-        });
+        return busy.track(async () => {
+          const { error } = await db.rpc('set_order_status', {
+            p_order_id: order.id,
+            p_status: status,
+            p_tracking_number: trackingNumber?.trim() || undefined,
+          });
+          if (error) {
+            toast.error('Статусът не беше променен.');
+            return;
+          }
+          // Marking an order shipped queues the tracking e-mail; this sends it
+          if (status === 'shipped') void db.functions.invoke('order-emails');
+          toast.success(`${order.number}: ${ORDER_STATUS_LABEL[status].toLowerCase()}.`);
+          patchState(store, {
+            orders: store.orders().map((o) =>
+              o.id === order.id ? { ...o, status, tracking_number: trackingNumber?.trim() || o.tracking_number } : o,
+            ),
+          });
+        }, 'Смяна на статуса…');
       },
     };
   }),
