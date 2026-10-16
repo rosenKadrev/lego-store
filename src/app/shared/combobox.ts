@@ -15,9 +15,15 @@ export type ComboboxOption = { id: number; name: string; rgb?: string; trans?: b
   imports: [Icon, ColorSwatch],
   host: { class: 'relative block', '(document:mousedown)': 'onDocumentMouseDown($event)' },
   template: `
+    <!-- Closed with a value: the full name wraps over several lines (an input can only show one, cut off);
+         the input stays on top, transparent, so clicking and typing work as usual -->
+    @if (showFull()) {
+      <div class="input pr-16 leading-snug break-words" aria-hidden="true">{{ selectedName() }}</div>
+    }
     <input
       [id]="inputId()"
       class="input pr-16"
+      [class]="showFull() ? 'absolute inset-0 h-full border-transparent bg-transparent text-transparent' : ''"
       role="combobox"
       autocomplete="off"
       [attr.aria-expanded]="open()"
@@ -30,7 +36,7 @@ export type ComboboxOption = { id: number; name: string; rgb?: string; trans?: b
       (input)="onInput($any($event.target).value)"
       (keydown)="onKeydown($event)"
     />
-    <div class="absolute inset-y-0 right-2 flex items-center gap-0.5">
+    <div class="absolute top-0 right-2 flex h-[2.625rem] items-center gap-0.5">
       @if (value() != null) {
         <button type="button" class="grid size-7 place-items-center rounded-full text-fg-muted hover:bg-surface-3 hover:text-fg" aria-label="Изчисти" (click)="pick(null)">
           <app-icon name="close" [size]="14" />
@@ -61,7 +67,7 @@ export type ComboboxOption = { id: number; name: string; rgb?: string; trans?: b
             @if (o.rgb) {
               <app-color-swatch [rgb]="o.rgb" [trans]="!!o.trans" [size]="12" />
             }
-            <span class="min-w-0 flex-1 truncate">{{ o.name }}</span>
+            <span class="min-w-0 flex-1 leading-snug break-words">{{ o.name }}</span>
             @if (o.hint) {
               <span class="text-xs font-normal text-fg-muted">{{ o.hint }}</span>
             }
@@ -87,6 +93,7 @@ export class Combobox {
   protected readonly active = signal(-1);
 
   protected readonly selectedName = computed(() => this.options().find((o) => o.id === this.value())?.name ?? '');
+  protected readonly showFull = computed(() => !this.open() && !!this.selectedName());
   protected readonly filtered = computed(() => {
     const q = this.query().trim().toLowerCase();
     if (!q) return this.options();

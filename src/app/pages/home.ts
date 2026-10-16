@@ -51,30 +51,30 @@ import { ThemesStore } from '../stores/themes.store';
           <a
             routerLink="/catalog"
             [queryParams]="{ type: 'part' }"
-            class="group relative flex flex-col justify-end overflow-hidden rounded-[1.25rem] bg-stud-400 p-4 pt-18 text-ink-900 sm:min-h-52 sm:rounded-3xl sm:p-6"
+            class="group relative flex flex-col justify-end overflow-hidden rounded-[1.25rem] bg-stud-400 p-4 pt-18 max-[359px]:px-3 text-ink-900 sm:min-h-52 sm:rounded-3xl sm:p-6"
           >
             @if (partPhotos().length) {
               <ng-container *ngTemplateOutlet="fan; context: { $implicit: partPhotos() }" />
             } @else {
               <app-icon name="brick" [size]="120" [stroke]="1" class="absolute -top-6 -right-6 text-ink-900/10 transition group-hover:-rotate-12" />
             }
-            <h2 class="relative text-lg font-extrabold sm:max-w-[54%] sm:text-2xl">Части</h2>
+            <h2 class="relative text-lg font-extrabold max-[359px]:text-[0.9rem] sm:max-w-[54%] sm:text-2xl">Части</h2>
             <p class="relative mt-1 hidden text-sm text-ink-900/70 sm:block sm:max-w-[54%]">Единични елементи във всякакви цветове — за подмяна, MOC или липсваща част.</p>
-            <span class="relative mt-1.5 inline-flex items-center gap-1 text-[0.8rem] font-bold whitespace-nowrap sm:mt-4 sm:text-sm">Виж всички <app-icon name="arrowRight" [size]="16" /></span>
+            <span class="relative mt-1.5 inline-flex items-center gap-1 text-[0.8rem] font-bold whitespace-nowrap max-[359px]:text-xs sm:mt-4 sm:text-sm">Виж всички <app-icon name="arrowRight" [size]="16" /></span>
           </a>
           <a
             routerLink="/catalog"
             [queryParams]="{ type: 'minifig' }"
-            class="group relative flex flex-col justify-end overflow-hidden rounded-[1.25rem] bg-ink-900 p-4 pt-18 text-white sm:min-h-52 sm:rounded-3xl sm:p-6 dark:ring-1 dark:ring-white/10"
+            class="group relative flex flex-col justify-end overflow-hidden rounded-[1.25rem] bg-ink-900 p-4 pt-18 max-[359px]:px-3 text-white sm:min-h-52 sm:rounded-3xl sm:p-6 dark:ring-1 dark:ring-white/10"
           >
             @if (figPhotos().length) {
               <ng-container *ngTemplateOutlet="fan; context: { $implicit: figPhotos() }" />
             } @else {
               <app-icon name="person" [size]="120" [stroke]="1" class="absolute -top-4 -right-4 text-white/10 transition group-hover:-translate-y-1" />
             }
-            <h2 class="relative text-lg font-extrabold sm:max-w-[54%] sm:text-2xl">Минифигурки</h2>
+            <h2 class="relative text-lg font-extrabold max-[359px]:text-[0.9rem] sm:max-w-[54%] sm:text-2xl">Минифигурки</h2>
             <p class="relative mt-1 hidden text-sm text-white/70 sm:block sm:max-w-[54%]">Липсва ти някой герой? Тук е.</p>
-            <span class="relative mt-1.5 inline-flex items-center gap-1 text-[0.8rem] font-bold whitespace-nowrap text-stud-400 sm:mt-4 sm:text-sm">Разгледай <app-icon name="arrowRight" [size]="16" /></span>
+            <span class="relative mt-1.5 inline-flex items-center gap-1 text-[0.8rem] font-bold whitespace-nowrap max-[359px]:text-xs text-stud-400 sm:mt-4 sm:text-sm">Разгледай <app-icon name="arrowRight" [size]="16" /></span>
           </a>
         </div>
 
