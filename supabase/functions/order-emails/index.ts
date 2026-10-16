@@ -44,8 +44,9 @@ type Mail = { to: string; toName?: string; replyTo?: string; subject: string; ht
 
 const COURIER = { econt: 'Еконт', speedy: 'Спиди' } as const;
 const CONDITION = { new: 'Ново', used: 'Употребявано' } as const;
-// 77262-1 → LEGO 77262; magazines have no catalog number
-const itemNum = (num: string) => (/^M-\d+$/.test(num) ? 'LEGO списание' : `LEGO ${num.replace(/-1$/, '')}`);
+// 77262-1 → LEGO 77262; magazines and custom minifigs (genuine parts, no official set) have no LEGO number
+const itemNum = (num: string) =>
+  /^M-\d+$/.test(num) ? 'LEGO списание' : num.startsWith('custom-') ? 'LEGO къстъм фигурка' : `LEGO ${num.replace(/-1$/, '')}`;
 const money = new Intl.NumberFormat('bg-BG', { style: 'currency', currency: 'EUR' });
 
 function json(body: unknown, status = 200): Response {

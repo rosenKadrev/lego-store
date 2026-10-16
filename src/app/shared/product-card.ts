@@ -1,7 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, slugify } from '../core/models';
+import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, isCustomFigNum, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { CartStore } from '../stores/cart.store';
 import { LiveStockStore } from '../stores/live-stock.store';
@@ -47,7 +47,7 @@ import { Icon } from './icon';
 
       <div class="flex flex-1 flex-col gap-1 p-4">
         <p class="text-xs font-medium tracking-wide text-fg-muted uppercase">
-          {{ l.theme_name ?? l.part_category ?? (l.item_type === 'minifig' ? 'Минифигурка' : 'LEGO') }} · {{ itemNum() }}
+          @if (isCustom()) { {{ itemNum() }} } @else { {{ l.theme_name ?? l.part_category ?? (l.item_type === 'minifig' ? 'Минифигурка' : 'LEGO') }} · {{ itemNum() }} }
         </p>
         <h3 class="line-clamp-2 font-sans text-sm leading-snug font-semibold text-fg">
           <a [routerLink]="link()" class="after:absolute after:inset-0 after:content-['']">{{ l.name }}</a>
@@ -101,6 +101,7 @@ export class ProductCard {
   /** The URL exists but nothing loads (e.g. a Rebrickable image that was removed) → placeholder icon */
   protected readonly imageFailed = linkedSignal({ source: this.image, computation: () => false });
   protected readonly itemNum = computed(() => displayItemNum(this.listing().item_num));
+  protected readonly isCustom = computed(() => isCustomFigNum(this.listing().item_num));
   protected readonly conditionLabel = computed(() => CONDITION_LABEL[this.listing().condition ?? 'new']);
   protected readonly link = computed(() => ['/p', `${this.listing().id}-${slugify(this.listing().name ?? '')}`]);
   protected readonly discount = computed(() => {

@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Busy } from '../core/busy';
-import { CatalogListing, ItemType, Listing, ListingImage } from '../core/models';
+import { CatalogListing, CUSTOM_FIG_PREFIX, ItemType, Listing, ListingImage } from '../core/models';
 import { LISTING_IMAGES_BUCKET, Supabase } from '../core/supabase';
 
 /**
@@ -249,6 +249,37 @@ export const ListingFormStore = signalStore(
           patchState(store, { item: data.item, results: [] });
           await loadExistingOffers(data.item.num);
         }, 'Търсене в Rebrickable…');
+      },
+
+      /**
+       * A custom minifig that isn't in Rebrickable: added to our minifigs catalog as custom-0001, custom-0002…
+       * (the weekly sync only upserts Rebrickable's rows, so these stay). Its photos are the listing's own.
+       */
+      async createCustomMinifig(name: string): Promise<void> {
+        const title = name.trim();
+        if (!title) return;
+        return busy.track(async () => {
+          patchState(store, { error: null });
+          const { data: last } = await db
+            .from('minifigs')
+            .select('fig_num')
+            .like('fig_num', `${CUSTOM_FIG_PREFIX}%`)
+            .order('fig_num', { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          const next = (Number(last?.fig_num.slice(CUSTOM_FIG_PREFIX.length)) || 0) + 1;
+          const fig_num = `${CUSTOM_FIG_PREFIX}${String(next).padStart(4, '0')}`;
+          const { error } = await db.from('minifigs').insert({ fig_num, name: title, num_parts: 0, img_url: null });
+          if (error) {
+            patchState(store, { error: `Фигурката не беше създадена: ${error.message}` });
+            return;
+          }
+          patchState(store, {
+            item: { type: 'minifig', num: fig_num, name: title, img_url: null, year: null, num_parts: 0, theme_name: null },
+            results: [],
+            existingOffers: [],
+          });
+        }, 'Създаване на фигурката…');
       },
 
       async selectItem(item: CatalogItem | null): Promise<void> {

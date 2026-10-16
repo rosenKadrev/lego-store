@@ -106,8 +106,19 @@ export function isMagazineNum(itemNum: string | null | undefined): boolean {
   return /^M-\d+$/.test(itemNum ?? '');
 }
 
+/**
+ * Custom minifigs: built from genuine LEGO parts but not from any official set, so Rebrickable doesn't list them.
+ * The admin adds them to our catalog as custom-0001, custom-0002… (no official LEGO number).
+ */
+export const CUSTOM_FIG_PREFIX = 'custom-';
+
+export function isCustomFigNum(itemNum: string | null | undefined): boolean {
+  return (itemNum ?? '').startsWith(CUSTOM_FIG_PREFIX);
+}
+
 /** Rebrickable set numbers carry a '-1' variant suffix that buyers don't need to see; magazines show their kind. */
 export function displayItemNum(itemNum: string | null | undefined): string {
   if (isMagazineNum(itemNum)) return ITEM_TYPE_LABEL.magazine;
+  if (isCustomFigNum(itemNum)) return 'Къстъм фигурка';
   return (itemNum ?? '').replace(/-1$/, '');
 }

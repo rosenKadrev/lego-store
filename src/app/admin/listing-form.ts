@@ -234,6 +234,24 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                   </button>
                 </div>
               }
+              @if (searchType() === 'minifig') {
+                <form class="mt-3 rounded-2xl border border-dashed border-line p-4 text-sm" (submit)="$event.preventDefault(); createCustomFig()">
+                  <label class="font-semibold" for="custom-fig">Къстъм фигурка, която я няма в каталога?</label>
+                  <p class="mt-0.5 text-xs text-fg-muted">От оригинални LEGO части, но не от официален сет. Получава номер custom-0001, custom-0002… Снимките качвате в обявата.</p>
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    <input
+                      id="custom-fig"
+                      class="input min-w-0 flex-1 basis-56"
+                      [value]="customFigName()"
+                      (input)="customFigName.set($any($event.target).value)"
+                      placeholder="Напр. Мандалориан с джетпак"
+                    />
+                    <button type="submit" class="btn-dark" [disabled]="!customFigName().trim()">
+                      <app-icon name="plus" [size]="16" /> Създай фигурката
+                    </button>
+                  </div>
+                </form>
+              }
               @if (store.error() && !store.item()) {
                 <p class="mt-3 rounded-xl bg-accent-soft p-3 text-sm text-accent-ink">{{ store.error() }}</p>
               }
@@ -433,6 +451,7 @@ export class ListingForm {
 
   protected readonly isEdit = computed(() => !!this.id());
   protected readonly searchType = signal<ItemType>('set');
+  protected readonly customFigName = signal('');
   protected readonly term = signal('');
   /** Offer the Rebrickable lookup for anything that looks like an item number, once the local search finished. */
   protected readonly canLookup = computed(() => {
@@ -523,6 +542,10 @@ export class ListingForm {
     this.term.set(q.trim());
     clearTimeout(this.searchTimer);
     this.searchTimer = setTimeout(() => void this.store.search(this.searchType(), q), 250);
+  }
+
+  protected createCustomFig(): void {
+    void this.store.createCustomMinifig(this.customFigName());
   }
 
   protected lookup(): void {

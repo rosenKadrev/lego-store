@@ -4,7 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Analytics } from '../core/analytics';
 import { Seo } from '../core/seo';
-import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, SHOP_NAME, slugify } from '../core/models';
+import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, isCustomFigNum, SHOP_NAME, slugify } from '../core/models';
 import { ColorSwatch } from '../shared/color-swatch';
 import { FavoriteButton } from '../shared/favorite-button';
 import { Icon } from '../shared/icon';
@@ -109,7 +109,7 @@ import { ThemesStore } from '../stores/themes.store';
           <!-- Details -->
           <div>
             <p class="text-sm font-semibold tracking-wide text-accent uppercase">
-              {{ l.theme_name ?? l.part_category ?? (l.item_type === 'magazine' ? 'LEGO' : 'Минифигурка') }} · {{ itemNum() }}
+              @if (isCustom()) { {{ itemNum() }} } @else { {{ l.theme_name ?? l.part_category ?? (l.item_type === 'magazine' ? 'LEGO' : 'Минифигурка') }} · {{ itemNum() }} }
             </p>
             <h1 class="mt-2 text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">{{ l.name }}</h1>
             @if (l.name_en) {
@@ -323,6 +323,7 @@ export class Product {
   protected readonly activeImage = computed(() => this.store.gallery()[this.activeIndex()] ?? null);
   protected readonly activeImageFailed = linkedSignal({ source: this.activeImage, computation: () => false });
   protected readonly itemNum = computed(() => displayItemNum(this.store.listing()?.item_num));
+  protected readonly isCustom = computed(() => isCustomFigNum(this.store.listing()?.item_num));
   protected readonly slug = computed(() => slugify(this.store.listing()?.name ?? ''));
   protected readonly themePath = computed(() => this.themes.path(this.store.listing()?.theme_id));
   protected readonly minifigCount = computed(() => this.store.minifigs().reduce((n, f) => n + f.quantity, 0));
@@ -361,7 +362,8 @@ export class Product {
       const l = this.store.listing();
       if (!l) return;
       const color = l.color_name ? `, ${l.color_name}` : l.box_damaged ? `, ${BOX_DAMAGED_LABEL.toLowerCase()}` : '';
-      const num = l.item_type === 'magazine' ? '' : displayItemNum(l.item_num);
+      // Magazines and custom minifigs have no official LEGO number
+      const num = l.item_type === 'magazine' || isCustomFigNum(l.item_num) ? '' : displayItemNum(l.item_num);
       this.title.setTitle(`${l.name}${color}${num ? ` (${num})` : ''} — ${CONDITION_LABEL[l.condition!]} | ${SHOP_NAME}`);
       this.meta.updateTag({
         name: 'description',
@@ -377,7 +379,8 @@ export class Product {
       const l = this.store.listing();
       if (!l) return;
       const url = `${location.origin}/p/${l.id}-${slugify(l.name ?? '')}`;
-      const num = l.item_type === 'magazine' ? '' : displayItemNum(l.item_num);
+      // Magazines and custom minifigs have no official LEGO number
+      const num = l.item_type === 'magazine' || isCustomFigNum(l.item_num) ? '' : displayItemNum(l.item_num);
       this.seo.setCanonical(url);
       this.seo.setJsonLd('product-jsonld', {
         '@context': 'https://schema.org',
