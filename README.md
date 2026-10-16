@@ -96,6 +96,27 @@ npx supabase functions deploy order-emails       # verify_jwt = false идва �
 
 Локално всички имейли се виждат в Mailpit: http://127.0.0.1:54324
 
+### Backup
+
+`.github/workflows/backup.yml` всеки понеделник в 03:30 UTC (с обновяването на каталога; има и бутон „Run workflow“)
+прави dump на production базата — роли, схема и всички данни (вкл. потребителите) — и сваля снимките на обявите
+(`listing-images`). Архивът е криптиран (репото е публично) и стои 90 дни в Actions → „Backup“ → съответното
+пускане → Artifacts. GitHub secrets: `SUPABASE_DB_URL` (Supabase → Connect → Session pooler, паролата
+percent-encoded), `BACKUP_PASSPHRASE` (дълга случайна парола — пазете копие извън GitHub, без нея архивът не се
+отваря), плюс `SUPABASE_URL` и `SUPABASE_SECRET_KEY` като за каталога.
+
+Разархивиране (Git Bash) и възстановяване в празен Supabase проект:
+
+```bash
+gpg --decrypt tuhlensvyat-backup-ГГГГ-ММ-ДД.tar.gz.gpg | tar -xz   # пита за BACKUP_PASSPHRASE
+psql --single-transaction --variable ON_ERROR_STOP=1 \
+  --file roles.sql --file schema.sql \
+  --command 'SET session_replication_role = replica' --file data.sql \
+  --dbname "postgresql://...нов проект..."
+```
+
+Снимките са в `listing-images/` със същите пътища като в bucket-а — качват се обратно в bucket `listing-images`.
+
 ## Структура
 
 - `supabase/migrations` — схема, RLS, `place_order` (атомарно резервиране на наличност), `set_order_status`

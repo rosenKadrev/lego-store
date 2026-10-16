@@ -1,0 +1,72 @@
+# Weekly backup of the production database (roles, schema, all data incl. users) and the listing photos.
+# The archive is encrypted (the repo is public and the dump holds personal data and password hashes) and kept
+# as a workflow artifact for 90 days: Actions → "Backup" → a run → Artifacts.
+# Needs repository secrets (Settings → Secrets and variables → Actions):
+#   SUPABASE_DB_URL     Session pooler connection string (Supabase → Connect → Session pooler), password percent-encoded
+#   BACKUP_PASSPHRASE   long random passphrase for the archive — keep a copy outside GitHub, without it the backup is useless
+#   SUPABASE_URL, SUPABASE_SECRET_KEY   as for the catalog sync (photos)
+# Restore: see "Backup" in README.md.
+name: Backup
+
+on:
+  schedule:
+    - cron: '30 3 * * 1' # Mondays 03:30 UTC, same as the catalog sync
+  workflow_dispatch: # "Run workflow" button for a backup now
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.119.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci --ignore-scripts
+
+      - name: Check secrets
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          [ -n "$SUPABASE_DB_URL" ] || { echo "::error::SUPABASE_DB_URL secret is missing"; exit 1; }
+          [ ${#BACKUP_PASSPHRASE} -ge 16 ] || { echo "::error::BACKUP_PASSPHRASE secret is missing or shorter than 16 characters"; exit 1; }
+
+      - name: Dump the database
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+        run: |
+          mkdir -p backup
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/roles.sql --role-only
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/schema.sql
+          supabase db dump --db-url "$SUPABASE_DB_URL" -f backup/data.sql --use-copy --data-only
+
+      - name: Download the listing photos
+        run: node scripts/backup-storage.mjs backup/listing-images
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+
+      - name: Encrypt
+        id: archive
+        env:
+          BACKUP_PASSPHRASE: ${{ secrets.BACKUP_PASSPHRASE }}
+        run: |
+          name="tuhlensvyat-backup-$(date -u +%F)"
+          tar -czf - -C backup . \
+            | gpg --batch --yes --symmetric --cipher-algo AES256 --passphrase-fd 3 -o "$name.tar.gz.gpg" 3<<<"$BACKUP_PASSPHRASE"
+          rm -rf backup
+          ls -lh "$name.tar.gz.gpg"
+          echo "name=$name" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.archive.outputs.name }}
+          path: ${{ steps.archive.outputs.name }}.tar.gz.gpg
+          retention-days: 90
+          compression-level: 0 # already compressed and encrypted
+          if-no-files-found: error
