@@ -112,7 +112,7 @@ import { ThemesStore } from '../stores/themes.store';
             <p class="text-sm font-semibold tracking-wide text-accent uppercase">
               @if (isCustom()) { {{ itemNum() }} } @else { {{ l.theme_name ?? l.part_category ?? (l.item_type === 'magazine' ? 'LEGO' : 'Минифигурка') }} · {{ itemNum() }} }
             </p>
-            <h1 class="mt-2 text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl">{{ l.name }}</h1>
+            <h1 class="mt-2 text-[1.375rem] leading-tight font-extrabold tracking-tight sm:text-2xl lg:text-3xl">{{ l.name }}</h1>
             @if (l.name_en) {
               <p class="mt-1 text-sm text-fg-muted italic" lang="en">{{ l.name_en }}</p>
             }
@@ -124,7 +124,7 @@ import { ThemesStore } from '../stores/themes.store';
             }
 
             <div class="mt-5 flex items-end gap-3">
-              <p class="font-display text-4xl font-extrabold" [class.text-accent]="l.compare_at_price">
+              <p class="font-display text-[1.75rem] leading-none font-extrabold lg:text-3xl" [class.text-accent]="l.compare_at_price">
                 {{ l.price | currency }}
                 @if (l.item_type === 'part') {
                   <span class="font-sans text-base font-medium text-fg-muted">/ бр.</span>
