@@ -138,8 +138,14 @@ import { ThemesStore } from '../stores/themes.store';
               class="group flex flex-col items-center gap-2 rounded-2xl border border-line p-4 text-center transition hover:border-brick-600 hover:shadow-lg"
             >
               <span class="grid aspect-square w-full place-items-center overflow-hidden rounded-xl dark:bg-well">
-                @if (theme.sample_img_url) {
-                  <img [src]="theme.sample_img_url" alt="" loading="lazy" class="size-full object-contain mix-blend-multiply transition group-hover:scale-105" />
+                @if (themes.image(theme); as img) {
+                  <img
+                    [src]="img.src"
+                    alt=""
+                    loading="lazy"
+                    class="size-full transition group-hover:scale-105"
+                    [class]="img.photo ? 'object-cover' : 'object-contain mix-blend-multiply'"
+                  />
                 }
               </span>
               <span class="text-sm font-bold">{{ theme.name }}</span>

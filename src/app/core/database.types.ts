@@ -440,7 +440,7 @@ isOneToOne: false
                            },
 "listed_root_themes":
 { Args: Record<PropertyKey, never>; Returns: {
-              "listing_count": number,"name": string,"sample_img_url": string,"theme_id": number
+              "listing_count": number,"magazine_cover_path": string,"minifig_img_url": string,"name": string,"sample_img_url": string,"theme_id": number
             }[]
                            },
 "place_order":

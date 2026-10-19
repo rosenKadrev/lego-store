@@ -14,6 +14,17 @@ import { PartFiltersStore } from '../stores/part-filters.store';
 import { MENU_THEME_LIMIT, ThemesStore } from '../stores/themes.store';
 
 type NavLink = { label: string; params: Record<string, string> };
+type NavMenu = {
+  type: string;
+  label: string;
+  allLabel: string;
+  /** Heading above the groups in the dropdown */
+  sectionLabel: string;
+  /** Link under the kind in the phone side menu */
+  mobileLabel: string;
+  seeAll: { link: string; params: Record<string, string>; label: string };
+  groups: { id: number; name: string; count: number; params: Record<string, string | number> }[];
+};
 
 @Component({
   selector: 'app-header',
@@ -71,56 +82,54 @@ type NavLink = { label: string; params: Record<string, string> };
               </div>
             }
           </div>
-          @for (link of navLinks; track link.label) {
-            @if (link.params['type'] === 'part') {
-              <div class="relative" (mouseenter)="partsOpen.set(true)" (mouseleave)="partsOpen.set(false)">
+          @for (menu of navMenus(); track menu.type) {
+            @if (menu.groups.length) {
+              <div class="relative" (mouseenter)="openMenu.set(menu.type)" (mouseleave)="openMenu.set(null)">
                 <button
                   type="button"
                   class="flex items-center gap-1 rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-fg transition hover:bg-surface-3 xl:px-3"
-                  [class.!text-accent]="partsActive()"
-                  [attr.aria-expanded]="partsOpen()"
-                  (click)="partsOpen.set(!partsOpen())"
+                  [class.!text-accent]="activeType() === menu.type"
+                  [attr.aria-expanded]="openMenu() === menu.type"
+                  (click)="openMenu.set(openMenu() === menu.type ? null : menu.type)"
                 >
-                  Части <app-icon name="chevronDown" [size]="16" />
+                  {{ menu.label }} <app-icon name="chevronDown" [size]="16" />
                 </button>
-                @if (partsOpen()) {
+                @if (openMenu() === menu.type) {
                   <div class="absolute top-full left-0 w-72 pt-2">
                     <div class="card flex flex-col gap-0.5 p-2 shadow-2xl shadow-zinc-300/50 dark:shadow-black/40">
                       <a
                         routerLink="/catalog"
-                        [queryParams]="{ type: 'part' }"
+                        [queryParams]="{ type: menu.type }"
                         routerLinkActive="!text-accent"
                         [routerLinkActiveOptions]="{ queryParams: 'exact', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
                         class="rounded-lg px-3 py-2 text-sm font-semibold hover:bg-surface-2"
-                        >Всички части</a
+                        >{{ menu.allLabel }}</a
                       >
-                      @if (partCategories().length) {
-                        <a
-                          routerLink="/part-categories"
-                          class="mt-1 border-t border-line-soft px-3 pt-2.5 pb-1 text-xs font-semibold tracking-wider text-fg-faint uppercase hover:text-accent"
-                        >
-                          По категория
-                        </a>
-                      }
-                      @for (c of partCategories().slice(0, menuLimit); track c.id) {
+                      <a
+                        [routerLink]="menu.seeAll.link"
+                        [queryParams]="menu.seeAll.params"
+                        class="mt-1 border-t border-line-soft px-3 pt-2.5 pb-1 text-xs font-semibold tracking-wider text-fg-faint uppercase hover:text-accent"
+                      >
+                        {{ menu.sectionLabel }}
+                      </a>
+                      @for (g of menu.groups.slice(0, menuLimit); track g.id) {
                         <a
                           routerLink="/catalog"
-                          [queryParams]="{ type: 'part', category: c.id }"
+                          [queryParams]="g.params"
                           routerLinkActive="!text-accent"
                           [routerLinkActiveOptions]="{ queryParams: 'subset', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
                           class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-surface-2"
                         >
-                          {{ c.name }} <span class="text-xs font-normal text-fg-faint">{{ c.listing_count }}</span>
+                          {{ g.name }} <span class="text-xs font-normal text-fg-faint">{{ g.count }}</span>
                         </a>
                       }
-                      @if (partCategories().length) {
-                        <a
-                          routerLink="/part-categories"
-                          class="mt-1 flex items-center justify-center gap-1 rounded-lg border-t border-line-soft p-2.5 text-sm font-semibold text-accent hover:bg-accent-soft"
-                        >
-                          Виж всички категории ({{ partCategories().length }}) <app-icon name="arrowRight" [size]="16" />
-                        </a>
-                      }
+                      <a
+                        [routerLink]="menu.seeAll.link"
+                        [queryParams]="menu.seeAll.params"
+                        class="mt-1 flex items-center justify-center gap-1 rounded-lg border-t border-line-soft p-2.5 text-sm font-semibold text-accent hover:bg-accent-soft"
+                      >
+                        {{ menu.seeAll.label }} ({{ menu.groups.length }}) <app-icon name="arrowRight" [size]="16" />
+                      </a>
                     </div>
                   </div>
                 }
@@ -128,11 +137,11 @@ type NavLink = { label: string; params: Record<string, string> };
             } @else {
               <a
                 routerLink="/catalog"
-                [queryParams]="link.params"
+                [queryParams]="{ type: menu.type }"
                 routerLinkActive="!text-accent"
                 [routerLinkActiveOptions]="{ queryParams: 'subset', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
                 class="rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-fg transition hover:bg-surface-3 xl:px-3"
-                >{{ link.label }}</a
+                >{{ menu.label }}</a
               >
             }
           }
@@ -155,8 +164,8 @@ type NavLink = { label: string; params: Record<string, string> };
                       class="flex items-center gap-3 rounded-xl p-2 text-sm hover:bg-surface-2"
                     >
                       <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-well">
-                        @if (theme.sample_img_url) {
-                          <img [src]="theme.sample_img_url" alt="" class="size-full object-contain mix-blend-multiply" />
+                        @if (themes.image(theme); as img) {
+                          <img [src]="img.src" alt="" class="size-full" [class]="img.photo ? 'object-cover' : 'object-contain mix-blend-multiply'" />
                         }
                       </span>
                       <span class="font-medium">{{ theme.name }}</span>
@@ -290,10 +299,16 @@ type NavLink = { label: string; params: Record<string, string> };
               <a routerLink="/catalog" [queryParams]="link.params" class="rounded-xl px-3 py-3 font-semibold hover:bg-surface-2">{{
                 link.label
               }}</a>
-              @if (link.params['type'] === 'part' && partCategories().length) {
-                <a routerLink="/part-categories" class="-mt-1 flex items-center gap-1 rounded-xl px-6 py-2.5 text-sm text-fg-muted hover:bg-surface-2">
-                  Категории части ({{ partCategories().length }}) <app-icon name="arrowRight" [size]="14" />
-                </a>
+              @if (menuFor(link.params['type']); as menu) {
+                @if (menu.groups.length) {
+                  <a
+                    [routerLink]="menu.seeAll.link"
+                    [queryParams]="menu.seeAll.params"
+                    class="-mt-1 flex items-center gap-1 rounded-xl px-6 py-2.5 text-sm text-fg-muted hover:bg-surface-2"
+                  >
+                    {{ menu.mobileLabel }} ({{ menu.groups.length }}) <app-icon name="arrowRight" [size]="14" />
+                  </a>
+                }
               }
             }
             <a routerLink="/favorites" class="flex items-center justify-between rounded-xl px-3 py-3 font-semibold hover:bg-surface-2">
@@ -340,8 +355,41 @@ export class Header {
   protected readonly themes = inject(ThemesStore);
   protected readonly theme = inject(ThemeService);
   private readonly partFilters = inject(PartFiltersStore);
-  /** Desktop "Части ▾" dropdown: categories with parts for sale, most first */
-  protected readonly partCategories = computed(() => this.partFilters.categories());
+  /** "Минифигурки ▾", "Части ▾", "Списания ▾": everything of that kind, or one theme / category (most listings first) */
+  protected readonly navMenus = computed<NavMenu[]>(() => {
+    const byTheme = (type: 'minifig' | 'magazine') =>
+      this.themes.listedFor(type).map((t) => ({ id: t.theme_id, name: t.name, count: t.listing_count, params: { type, theme: t.theme_id } }));
+    const themesLink = (type: string) => ({ link: '/themes', params: { type }, label: 'Виж всички теми' });
+    return [
+      {
+        type: 'minifig',
+        label: 'Минифигурки',
+        allLabel: 'Всички минифигурки',
+        sectionLabel: 'По тема',
+        mobileLabel: 'Минифигурки по тема',
+        seeAll: themesLink('minifig'),
+        groups: byTheme('minifig'),
+      },
+      {
+        type: 'part',
+        label: 'Части',
+        allLabel: 'Всички части',
+        sectionLabel: 'По категория',
+        mobileLabel: 'Категории части',
+        seeAll: { link: '/part-categories', params: {}, label: 'Виж всички категории' },
+        groups: this.partFilters.categories().map((c) => ({ id: c.id, name: c.name, count: c.listing_count, params: { type: 'part', category: c.id } })),
+      },
+      {
+        type: 'magazine',
+        label: 'Списания',
+        allLabel: 'Всички списания',
+        sectionLabel: 'По тема',
+        mobileLabel: 'Списания по тема',
+        seeAll: themesLink('magazine'),
+        groups: byTheme('magazine'),
+      },
+    ];
+  });
   private readonly router = inject(Router);
 
   protected readonly shopName = SHOP_NAME;
@@ -352,8 +400,8 @@ export class Header {
     { label: 'Употребявани сетове', params: { condition: 'used', type: 'set' } },
     { label: 'Всички сетове', params: { type: 'set' } },
   ];
-  /** Desktop links next to the dropdown */
-  protected readonly navLinks: NavLink[] = [
+  /** Phone side menu links for the kinds that have a desktop dropdown (navMenus) */
+  private readonly navLinks: NavLink[] = [
     { label: 'Минифигурки', params: { type: 'minifig' } },
     { label: 'Части', params: { type: 'part' } },
     { label: 'Списания', params: { type: 'magazine' } },
@@ -370,9 +418,10 @@ export class Header {
   protected readonly setsOpen = signal(false);
   /** Highlights "Сетове" while the catalog shows sets */
   protected readonly setsActive = signal(false);
-  protected readonly partsOpen = signal(false);
-  /** Highlights "Части" while the catalog shows parts */
-  protected readonly partsActive = signal(false);
+  /** Which of navMenus is open (by kind) */
+  protected readonly openMenu = signal<string | null>(null);
+  /** The kind the catalog shows, to highlight its menu */
+  protected readonly activeType = signal<string | null>(null);
   protected readonly accountOpen = signal(false);
   protected readonly mobileSearchOpen = signal(false);
   private readonly accountMenu = viewChild<ElementRef<HTMLElement>>('accountMenu');
@@ -389,11 +438,11 @@ export class Header {
         const url = this.router.parseUrl(this.router.url);
         const inCatalog = url.root.children['primary']?.segments[0]?.path === 'catalog';
         this.setsActive.set(inCatalog && url.queryParams['type'] === 'set');
-        this.partsActive.set(inCatalog && url.queryParams['type'] === 'part');
+        this.activeType.set(inCatalog ? (url.queryParams['type'] ?? null) : null);
         this.menuOpen.set(false);
         this.themesOpen.set(false);
         this.setsOpen.set(false);
-        this.partsOpen.set(false);
+        this.openMenu.set(null);
         this.accountOpen.set(false);
         this.mobileSearchOpen.set(false);
       });
@@ -416,6 +465,10 @@ export class Header {
     if (this.accountOpen() && !this.accountMenu()?.nativeElement.contains(event.target as Node)) {
       this.accountOpen.set(false);
     }
+  }
+
+  protected menuFor(type: string | undefined): NavMenu | undefined {
+    return this.navMenus().find((m) => m.type === type);
   }
 
   protected async signOut(): Promise<void> {

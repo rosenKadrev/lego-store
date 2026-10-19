@@ -506,15 +506,7 @@ export class Catalog {
   /** Themes with something matching the kind/condition filters, counted the same way, most first */
   protected readonly sidebarThemes = computed(() => {
     const { type, condition } = this.store.filters();
-    const counts = new Map<number, number>();
-    for (const c of this.themes.counts()) {
-      if ((type && c.item_type !== type) || (condition && c.condition !== condition)) continue;
-      counts.set(c.theme_id, (counts.get(c.theme_id) ?? 0) + c.listing_count);
-    }
-    return this.themes
-      .listed()
-      .flatMap((t) => (counts.get(t.theme_id) ? [{ ...t, listing_count: counts.get(t.theme_id)! }] : []))
-      .sort((a, b) => b.listing_count - a.listing_count || a.name.localeCompare(b.name));
+    return this.themes.listedFor(type, condition);
   });
   /** First N themes, plus the selected one if it's further down the list */
   protected readonly visibleThemes = computed(() => {

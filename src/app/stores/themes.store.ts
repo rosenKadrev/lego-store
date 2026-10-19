@@ -11,8 +11,16 @@ export type ListedTheme = {
   theme_id: number;
   name: string;
   listing_count: number;
+  /** A set of the theme (Rebrickable photo) */
   sample_img_url: string | null;
+  /** A minifig of the theme (Rebrickable photo) */
+  minifig_img_url: string | null;
+  /** The newest magazine of the theme: the shop's own photo, a path in the listing-images bucket */
+  magazine_cover_path: string | null;
 };
+
+/** A theme's picture; `photo` is the shop's own photo (not a cut-out on white, so no blend) */
+export type ThemeImage = { src: string; photo: boolean };
 
 /** Listings for sale per top-level theme, by kind and condition (catalog sidebar counts) */
 export type ThemeCount = { theme_id: number; item_type: ItemType; condition: ItemCondition; listing_count: number };
@@ -60,6 +68,29 @@ export const ThemesStore = signalStore(
       ]);
       if (listed.data) patchState(store, { listed: listed.data as ListedTheme[] });
       if (counts.data) patchState(store, { counts: counts.data as ThemeCount[] });
+    },
+
+    /** Top-level themes with something of that kind for sale (in that condition; any when null), counted the same way, most first */
+    listedFor(type: ItemType | null, condition: ItemCondition | null = null): ListedTheme[] {
+      const counts = new Map<number, number>();
+      for (const c of store.counts()) {
+        if ((type && c.item_type !== type) || (condition && c.condition !== condition)) continue;
+        counts.set(c.theme_id, (counts.get(c.theme_id) ?? 0) + c.listing_count);
+      }
+      return store
+        .listed()
+        .flatMap((t) => (counts.get(t.theme_id) ? [{ ...t, listing_count: counts.get(t.theme_id)! }] : []))
+        .sort((a, b) => b.listing_count - a.listing_count || a.name.localeCompare(b.name));
+    },
+
+    /** Picture for a theme card: a minifig / magazine of the theme on those pages, otherwise a set (or whatever there is) */
+    image(theme: ListedTheme, kind: ItemType | null = null): ThemeImage | null {
+      const set = theme.sample_img_url ? { src: theme.sample_img_url, photo: false } : null;
+      const minifig = theme.minifig_img_url ? { src: theme.minifig_img_url, photo: false } : null;
+      const magazine = theme.magazine_cover_path ? { src: supabase.listingImageUrl(theme.magazine_cover_path), photo: true } : null;
+      if (kind === 'minifig') return minifig ?? set;
+      if (kind === 'magazine') return magazine ?? set;
+      return set ?? minifig ?? magazine;
     },
 
     /** The theme itself plus all nested sub-themes, for filtering. */
