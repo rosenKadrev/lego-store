@@ -122,19 +122,19 @@ import { ThemesStore } from '../stores/themes.store';
       />
     </section>
 
-    @if (themes.listed().length) {
+    @if (setThemes().length) {
       <section class="container-page mt-12 sm:mt-16">
         <div class="mb-5 flex items-end justify-between gap-4">
           <h2 class="text-2xl font-extrabold tracking-tight sm:text-3xl">Пазарувай по тема</h2>
-          @if (themes.listed().length > 12) {
-            <a routerLink="/themes" class="btn-ghost">Виж всички ({{ themes.listed().length }}) <app-icon name="arrowRight" [size]="16" /></a>
+          @if (setThemes().length > 12) {
+            <a routerLink="/themes" class="btn-ghost">Виж всички ({{ setThemes().length }}) <app-icon name="arrowRight" [size]="16" /></a>
           }
         </div>
         <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-          @for (theme of themes.listed().slice(0, 12); track theme.theme_id) {
+          @for (theme of setThemes().slice(0, 12); track theme.theme_id) {
             <a
               routerLink="/catalog"
-              [queryParams]="{ theme: theme.theme_id }"
+              [queryParams]="{ type: 'set', theme: theme.theme_id }"
               class="group flex flex-col items-center gap-2 rounded-2xl border border-line p-4 text-center transition hover:border-brick-600 hover:shadow-lg"
             >
               <span class="grid aspect-square w-full place-items-center overflow-hidden rounded-xl dark:bg-well">
@@ -192,6 +192,8 @@ export class Home implements OnInit {
   private readonly supabase = inject(Supabase);
   private readonly pageLoading = inject(PageLoading);
   protected readonly themes = inject(ThemesStore);
+  /** Themes of the sets for sale (minifigs and magazines are reached from their own menus) */
+  protected readonly setThemes = computed(() => this.themes.listedFor('set'));
 
   protected readonly loading = signal(true);
   protected readonly newSets = signal<CatalogListing[]>([]);

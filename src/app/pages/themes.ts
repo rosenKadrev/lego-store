@@ -6,14 +6,15 @@ import { Icon } from '../shared/icon';
 import { Pager, pagedList } from '../shared/pager';
 import { ThemesStore } from '../stores/themes.store';
 
-/** Kinds the page can be narrowed to (?type=minifig) — from the "Минифигурки ▾" / "Списания ▾" menus */
+/** Whose themes the page lists: sets by default ("Теми ▾"), minifigs / magazines with ?type= (their menus) */
 const KINDS = {
+  set: { title: 'Всички теми', count: 'теми с налични сетове', products: 'сета' },
   minifig: { title: 'Теми на минифигурки', count: 'теми с налични минифигурки', products: 'минифигурки' },
   magazine: { title: 'Теми на списания', count: 'теми с налични списания', products: 'списания' },
 } as const;
 type Kind = keyof typeof KINDS;
 
-/** All top-level themes that currently have products for sale (or minifigs / magazines only). */
+/** Top-level themes that currently have sets (or minifigs / magazines) for sale. */
 @Component({
   selector: 'app-themes',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -22,12 +23,12 @@ type Kind = keyof typeof KINDS;
     <div class="container-page pt-8">
       <div class="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{{ kind() ? kinds[kind()!].title : 'Всички теми' }}</h1>
+          <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">{{ kinds[kind()].title }}</h1>
           <p class="mt-1 text-sm text-fg-muted">
-            {{ list().length }} {{ kind() ? kinds[kind()!].count : 'теми с налични продукти' }}
-            @if (kind(); as k) {
-              · <a routerLink="/catalog" [queryParams]="{ type: k }" class="font-semibold text-accent hover:underline">Всички {{ kinds[k].products }}</a>
-              · <a routerLink="/themes" class="font-semibold text-accent hover:underline">Всички теми</a>
+            {{ list().length }} {{ kinds[kind()].count }}
+            @if (kind() !== 'set') {
+              · <a routerLink="/catalog" [queryParams]="{ type: kind() }" class="font-semibold text-accent hover:underline">Всички {{ kinds[kind()].products }}</a>
+              · <a routerLink="/themes" class="font-semibold text-accent hover:underline">Теми на сетове</a>
             }
           </p>
         </div>
@@ -63,7 +64,7 @@ type Kind = keyof typeof KINDS;
               }
             </span>
             <span class="text-sm font-bold">{{ theme.name }}</span>
-            <span class="text-xs text-fg-muted">{{ theme.listing_count }} {{ kind() ? kinds[kind()!].products : 'продукта' }}</span>
+            <span class="text-xs text-fg-muted">{{ theme.listing_count }} {{ kinds[kind()].products }}</span>
           </a>
         } @empty {
           <p class="col-span-full py-16 text-center text-sm text-fg-muted">
@@ -80,14 +81,11 @@ export class Themes {
   protected readonly themes = inject(ThemesStore);
   protected readonly kinds = KINDS;
   protected readonly kind = toSignal(
-    inject(ActivatedRoute).queryParamMap.pipe(map((params) => (params.get('type') ?? '') in KINDS ? (params.get('type') as Kind) : null)),
-    { initialValue: null },
+    inject(ActivatedRoute).queryParamMap.pipe(map((params) => (params.get('type') ?? '') in KINDS ? (params.get('type') as Kind) : 'set')),
+    { initialValue: 'set' as Kind },
   );
-  /** Counts only that kind when narrowed */
-  protected readonly list = computed(() => {
-    const kind = this.kind();
-    return kind ? this.themes.listedFor(kind) : this.themes.listed();
-  });
+  /** Counts only that kind */
+  protected readonly list = computed(() => this.themes.listedFor(this.kind()));
   protected readonly query = signal('');
   protected readonly filtered = computed(() => {
     const q = this.query().trim().toLowerCase();

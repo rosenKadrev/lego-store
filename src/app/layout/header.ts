@@ -157,10 +157,10 @@ type NavMenu = {
             @if (themesOpen()) {
               <div class="absolute top-full left-0 w-[34rem] pt-2">
                 <div class="card grid grid-cols-2 gap-1 p-3 shadow-2xl shadow-zinc-300/50 dark:shadow-black/40">
-                  @for (theme of themes.listed().slice(0, menuLimit); track theme.theme_id) {
+                  @for (theme of setThemes().slice(0, menuLimit); track theme.theme_id) {
                     <a
                       routerLink="/catalog"
-                      [queryParams]="{ theme: theme.theme_id }"
+                      [queryParams]="{ type: 'set', theme: theme.theme_id }"
                       class="flex items-center gap-3 rounded-xl p-2 text-sm hover:bg-surface-2"
                     >
                       <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-well">
@@ -174,12 +174,12 @@ type NavMenu = {
                   } @empty {
                     <p class="col-span-2 p-3 text-sm text-fg-muted">Все още няма продукти.</p>
                   }
-                  @if (themes.listed().length > menuLimit) {
+                  @if (setThemes().length > menuLimit) {
                     <a
                       routerLink="/themes"
                       class="col-span-2 mt-1 flex items-center justify-center gap-1 rounded-xl border-t border-line-soft p-3 text-sm font-semibold text-accent hover:bg-accent-soft"
                     >
-                      Виж всички теми ({{ themes.listed().length }}) <app-icon name="arrowRight" [size]="16" />
+                      Виж всички теми ({{ setThemes().length }}) <app-icon name="arrowRight" [size]="16" />
                     </a>
                   }
                 </div>
@@ -328,18 +328,18 @@ type NavMenu = {
           </nav>
           <p class="px-6 pt-2 text-xs font-semibold tracking-wider text-fg-faint uppercase">Теми</p>
           <nav class="flex flex-col p-3">
-            @for (theme of themes.listed().slice(0, menuLimit); track theme.theme_id) {
+            @for (theme of setThemes().slice(0, menuLimit); track theme.theme_id) {
               <a
                 routerLink="/catalog"
-                [queryParams]="{ theme: theme.theme_id }"
+                [queryParams]="{ type: 'set', theme: theme.theme_id }"
                 class="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm hover:bg-surface-2"
               >
                 {{ theme.name }} <span class="text-xs text-fg-faint">{{ theme.listing_count }}</span>
               </a>
             }
-            @if (themes.listed().length > menuLimit) {
+            @if (setThemes().length > menuLimit) {
               <a routerLink="/themes" class="flex items-center gap-1 rounded-xl px-3 py-2.5 text-sm font-semibold text-accent hover:bg-accent-soft">
-                Виж всички теми ({{ themes.listed().length }}) <app-icon name="arrowRight" [size]="16" />
+                Виж всички теми ({{ setThemes().length }}) <app-icon name="arrowRight" [size]="16" />
               </a>
             }
           </nav>
@@ -355,6 +355,8 @@ export class Header {
   protected readonly themes = inject(ThemesStore);
   protected readonly theme = inject(ThemeService);
   private readonly partFilters = inject(PartFiltersStore);
+  /** "Теми ▾": themes of the sets for sale — minifigs, parts and magazines have their own menus */
+  protected readonly setThemes = computed(() => this.themes.listedFor('set'));
   /** "Минифигурки ▾", "Части ▾", "Списания ▾": everything of that kind, or one theme / category (most listings first) */
   protected readonly navMenus = computed<NavMenu[]>(() => {
     const byTheme = (type: 'minifig' | 'magazine') =>
