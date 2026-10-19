@@ -97,10 +97,10 @@ export const ListingFormStore = signalStore(
 
     async function loadItem(type: ItemType, num: string, colorId?: number | null): Promise<CatalogItem | null> {
       if (type === 'part') {
-        const { data } = await db.from('parts').select('*, part_categories(name)').eq('part_num', num).maybeSingle();
+        const { data } = await db.from('parts').select('*, part_categories(name, name_bg)').eq('part_num', num).maybeSingle();
         if (!data) return null;
         const item: CatalogItem = {
-          type, num, name: data.name, img_url: data.img_url, year: null, num_parts: 1, theme_name: data.part_categories?.name ?? null,
+          type, num, name: data.name, img_url: data.img_url, year: null, num_parts: 1, theme_name: data.part_categories ? (data.part_categories.name_bg ?? data.part_categories.name) : null,
         };
         if (colorId == null) return item;
         const [{ data: color }, { data: pc }] = await Promise.all([
@@ -190,12 +190,12 @@ export const ListingFormStore = signalStore(
             : null;
           const { data } = await db
             .from('parts')
-            .select('*, part_categories(name)')
+            .select('*, part_categories(name, name_bg)')
             .or(`part_num.ilike.${term}*,name.ilike.*${term}*`)
             .order('part_num')
             .limit(20);
           results = (data ?? []).map((p) => ({
-            type, num: p.part_num, name: p.name, img_url: p.img_url, year: null, num_parts: 1, theme_name: p.part_categories?.name ?? null,
+            type, num: p.part_num, name: p.name, img_url: p.img_url, year: null, num_parts: 1, theme_name: p.part_categories ? (p.part_categories.name_bg ?? p.part_categories.name) : null,
           }));
           if (byElement) {
             const item = await loadItem('part', byElement.part_num, byElement.color_id);

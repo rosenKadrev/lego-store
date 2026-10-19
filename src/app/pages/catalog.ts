@@ -11,7 +11,6 @@ import { CatalogFilters, CatalogSort, CatalogStore, EMPTY_FILTERS } from '../sto
 import { PartFiltersStore } from '../stores/part-filters.store';
 import { SIDEBAR_THEME_LIMIT, ThemesStore } from '../stores/themes.store';
 import { ColorSwatch } from '../shared/color-swatch';
-import { Combobox } from '../shared/combobox';
 
 /** `types`: offered only when the catalog is narrowed to one of these kinds */
 const SORTS: { value: CatalogSort; label: string; types?: ItemType[] }[] = [
@@ -73,7 +72,7 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
 @Component({
   selector: 'app-catalog',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, ProductCard, Icon, ColorSwatch, Combobox],
+  imports: [FormsModule, ProductCard, Icon, ColorSwatch],
   host: { '(window:scroll)': 'onScroll()', '(window:resize)': 'onScroll()' },
   template: `
     @let f = store.filters();
@@ -198,23 +197,51 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
             </fieldset>
 
             @if (f.type === 'part') {
-              @if (partFilters.categories().length) {
+              @if (sidebarCategories().length) {
                 <fieldset>
                   <legend class="label">Категория</legend>
-                  <app-combobox
-                    inputId="part-category"
-                    placeholder="Всички категории"
-                    [options]="categoryOptions()"
-                    [value]="f.category"
-                    (valueChange)="update({ category: $event })"
-                  />
+                  <ul class="space-y-0.5 text-sm">
+                    <li>
+                      <button
+                        type="button"
+                        class="w-full rounded-lg px-3 py-2 text-left hover:bg-surface-2"
+                        [class.font-bold]="f.category == null"
+                        (click)="update({ category: null })"
+                      >
+                        Всички категории
+                      </button>
+                    </li>
+                    @for (c of visibleCategories(); track c.id) {
+                      <li>
+                        <button
+                          type="button"
+                          class="flex w-full items-center justify-between gap-2 rounded-lg px-3 py-2 text-left hover:bg-surface-2"
+                          [class]="f.category === c.id ? 'bg-accent-soft font-bold text-accent-strong' : ''"
+                          (click)="update({ category: c.id })"
+                        >
+                          {{ c.name }} <span class="text-xs text-fg-faint">{{ c.listing_count }}</span>
+                        </button>
+                      </li>
+                    }
+                  </ul>
+                  @if (sidebarCategories().length > sidebarLimit) {
+                    <button
+                      type="button"
+                      class="mt-1 flex w-full items-center gap-1 rounded-lg px-3 py-2 text-left text-sm font-semibold text-accent hover:bg-accent-soft"
+                      [attr.aria-expanded]="showAllCategories()"
+                      (click)="showAllCategories.set(!showAllCategories())"
+                    >
+                      {{ showAllCategories() ? 'Покажи по-малко' : 'Покажи всички (' + sidebarCategories().length + ')' }}
+                      <app-icon name="chevronDown" [size]="16" class="transition" [class.rotate-180]="showAllCategories()" />
+                    </button>
+                  }
                 </fieldset>
               }
-              @if (partFilters.colors().length) {
+              @if (sidebarColors().length) {
                 <fieldset>
                   <legend class="label">Цвят</legend>
                   <div class="flex flex-wrap gap-2">
-                    @for (c of partFilters.colors(); track c.id) {
+                    @for (c of sidebarColors(); track c.id) {
                       <button
                         type="button"
                         class="grid size-9 place-items-center rounded-full ring-2 ring-offset-2 transition"
@@ -513,9 +540,18 @@ export class Catalog {
     return id != null ? (this.partFilters.colors().find((c) => c.id === id)?.name ?? null) : null;
   });
 
-  protected readonly categoryOptions = computed(() =>
-    this.partFilters.categories().map((c) => ({ id: c.id, name: c.name, hint: String(c.listing_count) })),
-  );
+  /** Part categories / colours with something matching the condition filter, counted the same way */
+  protected readonly sidebarCategories = computed(() => this.partFilters.categories(this.store.filters().condition));
+  protected readonly sidebarColors = computed(() => this.partFilters.colors(this.store.filters().condition));
+  protected readonly showAllCategories = signal(false);
+  /** First N categories, plus the selected one if it's further down the list */
+  protected readonly visibleCategories = computed(() => {
+    const all = this.sidebarCategories();
+    if (this.showAllCategories() || all.length <= this.sidebarLimit) return all;
+    const top = all.slice(0, this.sidebarLimit);
+    const selected = all.find((c) => c.id === this.store.filters().category);
+    return selected && !top.includes(selected) ? [...top, selected] : top;
+  });
 
   protected readonly categoryName = computed(() => {
     const id = this.store.filters().category;

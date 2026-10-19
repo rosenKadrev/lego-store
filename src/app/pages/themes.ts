@@ -1,13 +1,14 @@
 import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { Icon } from '../shared/icon';
+import { Pager, pagedList } from '../shared/pager';
 import { ThemesStore } from '../stores/themes.store';
 
 /** All top-level themes that currently have products for sale. */
 @Component({
   selector: 'app-themes',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Icon],
+  imports: [RouterLink, Icon, Pager],
   template: `
     <div class="container-page pt-8">
       <div class="flex flex-wrap items-end justify-between gap-4">
@@ -23,13 +24,13 @@ import { ThemesStore } from '../stores/themes.store';
             placeholder="Търси тема…"
             aria-label="Търси тема"
             [value]="query()"
-            (input)="query.set($any($event.target).value)"
+            (input)="search($any($event.target).value)"
           />
         </div>
       </div>
 
       <div class="mt-8 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-        @for (theme of filtered(); track theme.theme_id) {
+        @for (theme of paged.items(); track theme.theme_id) {
           <a
             routerLink="/catalog"
             [queryParams]="{ theme: theme.theme_id }"
@@ -49,6 +50,8 @@ import { ThemesStore } from '../stores/themes.store';
           </p>
         }
       </div>
+
+      <app-pager [page]="paged.page()" [pageCount]="paged.pageCount()" (pageChange)="paged.goTo($event)" />
     </div>
   `,
 })
@@ -61,7 +64,14 @@ export class Themes {
     return q ? all.filter((t) => t.name.toLowerCase().includes(q)) : all;
   });
 
+  protected readonly paged = pagedList(this.filtered);
+
   constructor() {
     void this.themes.refreshListed();
+  }
+
+  protected search(text: string): void {
+    this.query.set(text);
+    this.paged.reset();
   }
 }

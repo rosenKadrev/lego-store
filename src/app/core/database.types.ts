@@ -209,10 +209,10 @@ isOneToOne: false
                   ]
                 },"part_categories": {
                   Row: {
-                    "id": number,"name": string
+                    "id": number,"name": string,"name_bg": string | null
                   }
                   Insert: {
-                    "id": number,"name": string
+                    "id": number,"name": string,"name_bg"?: string | null
                   }
                   Update: {
                     "id"?: number,"name"?: string
@@ -431,6 +431,11 @@ isOneToOne: false
 "listed_part_filters":
 { Args: Record<PropertyKey, never>; Returns: {
               "id": number,"kind": string,"listing_count": number,"name": string,"rgb": string
+            }[]
+                           },
+"listed_part_filter_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "condition": Database["public"]['Enums']["item_condition"],"id": number,"kind": string,"listing_count": number,"name": string,"rgb": string,"sample_img_url": string
             }[]
                            },
 "listed_root_theme_counts":

@@ -99,7 +99,7 @@ type Row = InventoryRow & {
             @for (cat of categories(); track cat.name) {
               <li class="flex items-center gap-3">
                 <span class="min-w-0 flex-1">
-                  <span class="block truncate font-medium" [title]="cat.name">{{ cat.name }}</span>
+                  <span class="block truncate font-medium" [title]="cat.label">{{ cat.label }}</span>
                   <span class="text-xs text-fg-muted">{{ cat.lots }} вида · {{ cat.pieces }} бр.</span>
                 </span>
                 <input
@@ -110,7 +110,7 @@ type Row = InventoryRow & {
                   [value]="catPrices()[cat.name] ?? ''"
                   [placeholder]="defaultPrice()"
                   (input)="setCatPrice(cat.name, $any($event.target).value)"
-                  [attr.aria-label]="'Цена за ' + cat.name"
+                  [attr.aria-label]="'Цена за ' + cat.label"
                 />
               </li>
             }
@@ -236,6 +236,8 @@ export class PartsImport {
   protected readonly printedFactor = signal('3');
   /** category name → id, to save the prices */
   private categoryIds = new Map<string, number>();
+  /** Rebrickable (English) category name → Bulgarian, for display */
+  private readonly categoryBg = signal(new Map<string, string>());
   protected readonly loading = signal(false);
   protected readonly saving = signal(false);
   protected readonly error = signal<string | null>(null);
@@ -248,15 +250,16 @@ export class PartsImport {
 
   /** Categories in this set, the ones with most pieces first */
   protected readonly categories = computed(() => {
-    const byName = new Map<string, { name: string; lots: number; pieces: number }>();
+    const byName = new Map<string, { name: string; label: string; lots: number; pieces: number }>();
+    const bg = this.categoryBg();
     for (const row of this.rows()) {
       if (!row.category) continue;
-      const cat = byName.get(row.category) ?? { name: row.category, lots: 0, pieces: 0 };
+      const cat = byName.get(row.category) ?? { name: row.category, label: bg.get(row.category) ?? row.category, lots: 0, pieces: 0 };
       cat.lots++;
       cat.pieces += this.qty(row);
       byName.set(row.category, cat);
     }
-    return [...byName.values()].sort((a, b) => b.pieces - a.pieces || a.name.localeCompare(b.name));
+    return [...byName.values()].sort((a, b) => b.pieces - a.pieces || a.label.localeCompare(b.label));
   });
 
   protected readonly summary = computed(() => {
@@ -349,10 +352,11 @@ export class PartsImport {
       const stock = new Map<string, number>();
       for (const l of existing ?? []) stock.set(`${l.part_num}|${l.color_id}`, (stock.get(`${l.part_num}|${l.color_id}`) ?? 0) + l.stock);
       const [{ data: categories }, { data: saved }] = await Promise.all([
-        this.db.from('part_categories').select('id, name'),
+        this.db.from('part_categories').select('id, name, name_bg'),
         this.db.from('part_category_prices').select('part_cat_id, price'),
       ]);
       this.categoryIds = new Map((categories ?? []).map((c) => [c.name, c.id]));
+      this.categoryBg.set(new Map((categories ?? []).flatMap((c) => (c.name_bg ? [[c.name, c.name_bg] as const] : []))));
       const savedPrice = new Map((saved ?? []).map((p) => [p.part_cat_id, p.price]));
       const catPrices: Record<string, string> = {};
       for (const name of new Set(data.parts.map((p) => p.category).filter((c): c is string => !!c))) {

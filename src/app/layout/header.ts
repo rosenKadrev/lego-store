@@ -1,4 +1,4 @@
-import { afterNextRender, ChangeDetectionStrategy, Component, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, computed, DestroyRef, ElementRef, inject, signal, viewChild } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { filter } from 'rxjs';
@@ -10,6 +10,7 @@ import { SearchBox } from './search-box';
 import { AuthStore } from '../stores/auth.store';
 import { CartStore } from '../stores/cart.store';
 import { FavoritesStore } from '../stores/favorites.store';
+import { PartFiltersStore } from '../stores/part-filters.store';
 import { MENU_THEME_LIMIT, ThemesStore } from '../stores/themes.store';
 
 type NavLink = { label: string; params: Record<string, string> };
@@ -71,14 +72,69 @@ type NavLink = { label: string; params: Record<string, string> };
             }
           </div>
           @for (link of navLinks; track link.label) {
-            <a
-              routerLink="/catalog"
-              [queryParams]="link.params"
-              routerLinkActive="!text-accent"
-              [routerLinkActiveOptions]="{ queryParams: 'subset', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
-              class="rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-fg transition hover:bg-surface-3 xl:px-3"
-              >{{ link.label }}</a
-            >
+            @if (link.params['type'] === 'part') {
+              <div class="relative" (mouseenter)="partsOpen.set(true)" (mouseleave)="partsOpen.set(false)">
+                <button
+                  type="button"
+                  class="flex items-center gap-1 rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-fg transition hover:bg-surface-3 xl:px-3"
+                  [class.!text-accent]="partsActive()"
+                  [attr.aria-expanded]="partsOpen()"
+                  (click)="partsOpen.set(!partsOpen())"
+                >
+                  Части <app-icon name="chevronDown" [size]="16" />
+                </button>
+                @if (partsOpen()) {
+                  <div class="absolute top-full left-0 w-72 pt-2">
+                    <div class="card flex flex-col gap-0.5 p-2 shadow-2xl shadow-zinc-300/50 dark:shadow-black/40">
+                      <a
+                        routerLink="/catalog"
+                        [queryParams]="{ type: 'part' }"
+                        routerLinkActive="!text-accent"
+                        [routerLinkActiveOptions]="{ queryParams: 'exact', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
+                        class="rounded-lg px-3 py-2 text-sm font-semibold hover:bg-surface-2"
+                        >Всички части</a
+                      >
+                      @if (partCategories().length) {
+                        <a
+                          routerLink="/part-categories"
+                          class="mt-1 border-t border-line-soft px-3 pt-2.5 pb-1 text-xs font-semibold tracking-wider text-fg-faint uppercase hover:text-accent"
+                        >
+                          По категория
+                        </a>
+                      }
+                      @for (c of partCategories().slice(0, menuLimit); track c.id) {
+                        <a
+                          routerLink="/catalog"
+                          [queryParams]="{ type: 'part', category: c.id }"
+                          routerLinkActive="!text-accent"
+                          [routerLinkActiveOptions]="{ queryParams: 'subset', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
+                          class="flex items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm font-medium hover:bg-surface-2"
+                        >
+                          {{ c.name }} <span class="text-xs font-normal text-fg-faint">{{ c.listing_count }}</span>
+                        </a>
+                      }
+                      @if (partCategories().length) {
+                        <a
+                          routerLink="/part-categories"
+                          class="mt-1 flex items-center justify-center gap-1 rounded-lg border-t border-line-soft p-2.5 text-sm font-semibold text-accent hover:bg-accent-soft"
+                        >
+                          Виж всички категории ({{ partCategories().length }}) <app-icon name="arrowRight" [size]="16" />
+                        </a>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            } @else {
+              <a
+                routerLink="/catalog"
+                [queryParams]="link.params"
+                routerLinkActive="!text-accent"
+                [routerLinkActiveOptions]="{ queryParams: 'subset', matrixParams: 'ignored', paths: 'exact', fragment: 'ignored' }"
+                class="rounded-full px-2.5 py-2 text-sm font-semibold whitespace-nowrap text-fg transition hover:bg-surface-3 xl:px-3"
+                >{{ link.label }}</a
+              >
+            }
           }
           <div class="relative" (mouseenter)="themesOpen.set(true)" (mouseleave)="themesOpen.set(false)">
             <button
@@ -234,6 +290,11 @@ type NavLink = { label: string; params: Record<string, string> };
               <a routerLink="/catalog" [queryParams]="link.params" class="rounded-xl px-3 py-3 font-semibold hover:bg-surface-2">{{
                 link.label
               }}</a>
+              @if (link.params['type'] === 'part' && partCategories().length) {
+                <a routerLink="/part-categories" class="-mt-1 flex items-center gap-1 rounded-xl px-6 py-2.5 text-sm text-fg-muted hover:bg-surface-2">
+                  Категории части ({{ partCategories().length }}) <app-icon name="arrowRight" [size]="14" />
+                </a>
+              }
             }
             <a routerLink="/favorites" class="flex items-center justify-between rounded-xl px-3 py-3 font-semibold hover:bg-surface-2">
               <span class="flex items-center gap-2"><app-icon name="heart" [size]="18" /> Любими</span>
@@ -278,6 +339,9 @@ export class Header {
   protected readonly favorites = inject(FavoritesStore);
   protected readonly themes = inject(ThemesStore);
   protected readonly theme = inject(ThemeService);
+  private readonly partFilters = inject(PartFiltersStore);
+  /** Desktop "Части ▾" dropdown: categories with parts for sale, most first */
+  protected readonly partCategories = computed(() => this.partFilters.categories());
   private readonly router = inject(Router);
 
   protected readonly shopName = SHOP_NAME;
@@ -306,12 +370,16 @@ export class Header {
   protected readonly setsOpen = signal(false);
   /** Highlights "Сетове" while the catalog shows sets */
   protected readonly setsActive = signal(false);
+  protected readonly partsOpen = signal(false);
+  /** Highlights "Части" while the catalog shows parts */
+  protected readonly partsActive = signal(false);
   protected readonly accountOpen = signal(false);
   protected readonly mobileSearchOpen = signal(false);
   private readonly accountMenu = viewChild<ElementRef<HTMLElement>>('accountMenu');
 
 
   constructor() {
+    void this.partFilters.load();
     this.router.events
       .pipe(
         filter((e) => e instanceof NavigationEnd),
@@ -319,10 +387,13 @@ export class Header {
       )
       .subscribe(() => {
         const url = this.router.parseUrl(this.router.url);
-        this.setsActive.set(url.root.children['primary']?.segments[0]?.path === 'catalog' && url.queryParams['type'] === 'set');
+        const inCatalog = url.root.children['primary']?.segments[0]?.path === 'catalog';
+        this.setsActive.set(inCatalog && url.queryParams['type'] === 'set');
+        this.partsActive.set(inCatalog && url.queryParams['type'] === 'part');
         this.menuOpen.set(false);
         this.themesOpen.set(false);
         this.setsOpen.set(false);
+        this.partsOpen.set(false);
         this.accountOpen.set(false);
         this.mobileSearchOpen.set(false);
       });

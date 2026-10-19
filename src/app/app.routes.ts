@@ -6,6 +6,7 @@ export const routes: Routes = [
   { path: '', component: Home, title: 'ТухленСвят — нови и употребявани LEGO® сетове' },
   { path: 'catalog', loadComponent: () => import('./pages/catalog').then((m) => m.Catalog) },
   { path: 'themes', loadComponent: () => import('./pages/themes').then((m) => m.Themes), title: 'Всички теми | ТухленСвят' },
+  { path: 'part-categories', loadComponent: () => import('./pages/part-categories').then((m) => m.PartCategories), title: 'Категории части | ТухленСвят' },
   { path: 'p/:slug', loadComponent: () => import('./pages/product').then((m) => m.Product) },
   {
     path: 'favorites',
