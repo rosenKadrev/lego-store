@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { Analytics } from '../core/analytics';
 import { Seo } from '../core/seo';
 import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, isCustomFigNum, SHOP_NAME, slugify } from '../core/models';
+import { BackToTop } from '../shared/back-to-top';
 import { ColorSwatch } from '../shared/color-swatch';
 import { FavoriteButton } from '../shared/favorite-button';
 import { Icon } from '../shared/icon';
@@ -18,7 +19,7 @@ import { ThemesStore } from '../stores/themes.store';
 @Component({
   selector: 'app-product',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper, ColorSwatch, FavoriteButton, ProductRail],
+  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper, ColorSwatch, FavoriteButton, ProductRail, BackToTop],
   providers: [ProductStore],
   template: `
     <div class="container-page pt-6">
@@ -305,6 +306,8 @@ import { ThemesStore } from '../stores/themes.store';
             />
           </section>
         }
+
+        <app-back-to-top [raised]="showBuyBar()" />
 
         <!-- Phones: price + "add to cart" stay at hand once the main button has scrolled away -->
         @if (showBuyBar()) {

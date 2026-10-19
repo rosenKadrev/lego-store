@@ -27,6 +27,12 @@ import { ProductCard } from './product-card';
       box-shadow: 0 6px 18px rgb(0 0 0 / 0.18);
       border: 1px solid var(--color-line);
     }
+    /* desktop has the arrows next to the title (md:hidden can't override this component style) */
+    @media (min-width: 48rem) {
+      .rail-arrow {
+        display: none;
+      }
+    }
   `,
   template: `
     <div class="mb-5 flex items-end justify-between gap-4">
@@ -70,12 +76,12 @@ import { ProductCard } from './product-card';
         </div>
         <!-- Swipe hint: arrows over the photos (the title arrows are desktop only) -->
         @if (!atStart()) {
-          <button type="button" class="rail-arrow -left-2 md:hidden" aria-label="Назад" (click)="scroll(-1)">
+          <button type="button" class="rail-arrow -left-2" aria-label="Назад" (click)="scroll(-1)">
             <app-icon name="chevronLeft" [size]="20" />
           </button>
         }
         @if (!atEnd()) {
-          <button type="button" class="rail-arrow -right-2 md:hidden" aria-label="Напред" (click)="scroll(1)">
+          <button type="button" class="rail-arrow -right-2" aria-label="Напред" (click)="scroll(1)">
             <app-icon name="chevronRight" [size]="20" />
           </button>
         }
