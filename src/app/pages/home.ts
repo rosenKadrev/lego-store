@@ -4,6 +4,7 @@ import { RouterLink } from '@angular/router';
 import { CatalogListing, ItemCondition, ItemType } from '../core/models';
 import { PageLoading } from '../core/page-loading';
 import { Supabase } from '../core/supabase';
+import { BackToTop } from '../shared/back-to-top';
 import { Icon } from '../shared/icon';
 import { ProductRail } from '../shared/product-rail';
 import { ThemesStore } from '../stores/themes.store';
@@ -11,7 +12,7 @@ import { ThemesStore } from '../stores/themes.store';
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, NgTemplateOutlet, ProductRail, Icon],
+  imports: [RouterLink, NgTemplateOutlet, ProductRail, Icon, BackToTop],
   template: `
     <!-- Hero -->
     <section class="container-page pt-6 lg:pt-8">
@@ -177,6 +178,8 @@ import { ThemesStore } from '../stores/themes.store';
         [moreParams]="{ type: 'minifig' }"
       />
     </section>
+
+    <app-back-to-top />
   `,
 })
 export class Home implements OnInit {
