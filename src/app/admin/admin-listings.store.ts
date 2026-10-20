@@ -61,7 +61,10 @@ export const AdminListingsStore = signalStore(
       patchState(store, { loading: true });
       const query = filtered('*', 'exact');
       const from = (store.page() - 1) * PAGE_SIZE;
-      const { data, count } = await query.order('created_at', { ascending: false }).range(from, from + PAGE_SIZE - 1);
+      const { data, count } = await query
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false }) // parts imported together share created_at — keep the pages stable
+        .range(from, from + PAGE_SIZE - 1);
       if (id !== requestId) return;
       patchState(store, { items: data ?? [], total: count ?? 0, loading: false });
     }
