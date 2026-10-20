@@ -45,6 +45,25 @@ export const PRICE_PRESETS: { label: string; min: number | null; max: number | n
   { label: 'над 300 €', min: 300, max: null },
 ];
 
+/**
+ * Sidebar options with the counts for the current filters: hides the ones with nothing left
+ * (except the selected one), most first. Without facet counts (not loaded yet) the overall counts stay.
+ */
+function withFacetCounts<T extends { listing_count: number; name: string }>(
+  options: T[],
+  id: (option: T) => number,
+  counts: Map<number, number> | undefined,
+  selected: number | null,
+): T[] {
+  if (!counts) return options;
+  return options
+    .flatMap((o) => {
+      const listing_count = counts.get(id(o)) ?? 0;
+      return listing_count || id(o) === selected ? [{ ...o, listing_count }] : [];
+    })
+    .sort((a, b) => b.listing_count - a.listing_count || a.name.localeCompare(b.name));
+}
+
 function filtersFromParams(params: ParamMap): CatalogFilters {
   const condition = params.get('condition');
   const type = params.get('type');
@@ -506,8 +525,8 @@ export class Catalog {
   protected readonly showAllThemes = signal(false);
   /** Themes with something matching the kind/condition filters, counted the same way, most first */
   protected readonly sidebarThemes = computed(() => {
-    const { type, condition } = this.store.filters();
-    return this.themes.listedFor(type, condition);
+    const { type, condition, theme } = this.store.filters();
+    return withFacetCounts(this.themes.listedFor(type, condition), (t) => t.theme_id, this.store.facets()?.theme, theme);
   });
   /** First N themes, plus the selected one if it's further down the list */
   protected readonly visibleThemes = computed(() => {
@@ -534,8 +553,14 @@ export class Catalog {
   });
 
   /** Part categories / colours with something matching the condition filter, counted the same way */
-  protected readonly sidebarCategories = computed(() => this.partFilters.categories(this.store.filters().condition));
-  protected readonly sidebarColors = computed(() => this.partFilters.colors(this.store.filters().condition));
+  protected readonly sidebarCategories = computed(() => {
+    const { condition, category } = this.store.filters();
+    return withFacetCounts(this.partFilters.categories(condition), (c) => c.id, this.store.facets()?.category, category);
+  });
+  protected readonly sidebarColors = computed(() => {
+    const { condition, color } = this.store.filters();
+    return withFacetCounts(this.partFilters.colors(condition), (c) => c.id, this.store.facets()?.color, color);
+  });
   protected readonly showAllCategories = signal(false);
   /** First N categories, plus the selected one if it's further down the list */
   protected readonly visibleCategories = computed(() => {

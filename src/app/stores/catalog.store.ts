@@ -63,17 +63,22 @@ export const EMPTY_FILTERS: CatalogFilters = {
 
 export const PAGE_SIZE = 24;
 
+/** Sidebar counts for the current filters — each facet applies every filter but its own (catalog_facet_counts) */
+export type CatalogFacets = Record<'theme' | 'category' | 'color', Map<number, number>>;
+
 type CatalogState = {
   filters: CatalogFilters;
   items: CatalogListing[];
   total: number;
   loading: boolean;
   error: string | null;
+  /** null until loaded (or when the counts failed) — the sidebar then shows the overall counts */
+  facets: CatalogFacets | null;
 };
 
 export const CatalogStore = signalStore(
   { providedIn: 'root' },
-  withState<CatalogState>({ filters: EMPTY_FILTERS, items: [], total: 0, loading: false, error: null }),
+  withState<CatalogState>({ filters: EMPTY_FILTERS, items: [], total: 0, loading: false, error: null, facets: null }),
   withComputed(({ total, filters }) => ({
     pageCount: computed(() => Math.max(1, Math.ceil(total() / PAGE_SIZE))),
     hasFilters: computed(() => {
@@ -83,6 +88,23 @@ export const CatalogStore = signalStore(
   })),
   withMethods((store, supabase = inject(Supabase), themes = inject(ThemesStore), pageLoading = inject(PageLoading)) => {
     let requestId = 0;
+
+    async function loadFacets(filters: CatalogFilters, q: string): Promise<CatalogFacets | null> {
+      const { data, error } = await supabase.client.rpc('catalog_facet_counts', {
+        p_condition: filters.condition ?? undefined,
+        p_type: filters.type ?? undefined,
+        p_theme: filters.theme ?? undefined,
+        p_color: filters.color ?? undefined,
+        p_category: filters.category ?? undefined,
+        p_min_price: filters.minPrice ?? undefined,
+        p_max_price: filters.maxPrice ?? undefined,
+        p_q: q || undefined,
+      });
+      if (error) return null;
+      const facets: CatalogFacets = { theme: new Map(), category: new Map(), color: new Map() };
+      for (const row of data ?? []) facets[row.kind as keyof CatalogFacets]?.set(row.id, row.listing_count);
+      return facets;
+    }
 
     return {
       async load(filters: CatalogFilters): Promise<void> {
@@ -116,7 +138,9 @@ export const CatalogStore = signalStore(
         }
 
         const from = (filters.page - 1) * PAGE_SIZE;
-        const { data, count, error } = await pageLoading.track(query.order('id').range(from, from + PAGE_SIZE - 1));
+        const [{ data, count, error }, facets] = await pageLoading.track(
+          Promise.all([query.order('id').range(from, from + PAGE_SIZE - 1), loadFacets(filters, q)]),
+        );
 
         if (id !== requestId) return; // a newer request already started
         patchState(store, {
@@ -124,6 +148,7 @@ export const CatalogStore = signalStore(
           total: count ?? 0,
           loading: false,
           error: error ? 'Възникна грешка при зареждането. Опитайте отново.' : null,
+          facets,
         });
       },
     };

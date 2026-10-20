@@ -428,6 +428,11 @@ isOneToOne: false
 "is_owner_account":
 { Args: { "p_user_id": string }; Returns: boolean
                            },
+"catalog_facet_counts":
+{ Args: { "p_category"?: number,"p_color"?: number,"p_condition"?: Database["public"]['Enums']["item_condition"],"p_max_price"?: number,"p_min_price"?: number,"p_q"?: string,"p_theme"?: number,"p_type"?: Database["public"]['Enums']["item_type"] }; Returns: {
+              "id": number,"kind": string,"listing_count": number
+            }[]
+                           },
 "listed_part_filter_counts":
 { Args: Record<PropertyKey, never>; Returns: {
               "condition": Database["public"]['Enums']["item_condition"],"id": number,"kind": string,"listing_count": number,"name": string,"rgb": string,"sample_img_url": string
