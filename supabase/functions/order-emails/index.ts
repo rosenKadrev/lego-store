@@ -7,7 +7,7 @@
 // Secret: BREVO_API_KEY  (`npx supabase secrets set BREVO_API_KEY=...`)
 // Optional: SHOP_SENDER_EMAIL (default noreply@tuhlensvyat.com), SITE_URL (default https://tuhlensvyat.com)
 
-import { createClient } from 'npm:@supabase/supabase-js@2';
+import { createClient, type SupabaseClient } from 'npm:@supabase/supabase-js@2';
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -38,7 +38,15 @@ type Order = {
   total: number;
   tracking_number: string | null;
 };
-type OrderItem = { name: string; item_num: string; condition: 'new' | 'used'; unit_price: number; quantity: number };
+type OrderItem = {
+  listing_id: number;
+  name: string;
+  item_num: string;
+  condition: 'new' | 'used';
+  unit_price: number;
+  quantity: number;
+  image?: string | null;
+};
 type Settings = { pickup_address: string | null; pickup_hours: string | null };
 type Mail = { to: string; toName?: string; replyTo?: string; subject: string; html: string };
 
@@ -47,6 +55,17 @@ const CONDITION = { new: 'Ново', used: 'Употребявано' } as const
 // 77262-1 → LEGO 77262; magazines and custom minifigs (genuine parts, no official set) have no LEGO number
 const itemNum = (num: string) =>
   /^M-\d+$/.test(num) ? 'LEGO списание' : num.startsWith('custom-') ? 'LEGO къстъм фигурка' : `LEGO ${num.replace(/-1$/, '')}`;
+// Same as slugify() in src/app/core/models.ts — the product page only reads the id, the rest is for looks
+const slugify = (text: string) =>
+  text
+    .toLowerCase()
+    .normalize('NFKD')
+    .replace(/(?<=[a-z])\p{M}+/gu, '')
+    .normalize('NFC')
+    .replace(/[^\p{L}\p{N}]+/gu, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 60);
+const productUrl = (i: OrderItem) => `${SITE_URL}/p/${i.listing_id}-${slugify(i.name)}`;
 const money = new Intl.NumberFormat('bg-BG', { style: 'currency', currency: 'EUR' });
 
 function json(body: unknown, status = 200): Response {
@@ -127,21 +146,44 @@ function infoTable(rows: [string, string][]): string {
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 20px;width:100%">${cells}</table>`;
 }
 
+/** Picture + name, both linking to the product page */
+const itemCells = (i: OrderItem) => `<td style="width:64px;padding:10px 12px 10px 0;border-bottom:1px solid #f4f4f5;vertical-align:middle">
+          <a href="${esc(productUrl(i))}" style="display:block;width:64px">${
+            i.image
+              ? `<img src="${esc(i.image)}" width="64" alt="${esc(i.name)}" style="display:block;width:64px;height:auto;border:0;border-radius:6px" />`
+              : ''
+          }</a>
+        </td>
+        <td style="padding:10px 8px 10px 0;border-bottom:1px solid #f4f4f5;font-size:14px;line-height:1.4">
+          <a href="${esc(productUrl(i))}" style="color:#16161d;text-decoration:none"><b>${esc(i.name)}</b></a><br />
+          <span style="font-size:12px;color:#71717a">${esc(itemNum(i.item_num))} · ${CONDITION[i.condition]}</span>
+        </td>`;
+
+/** The items without prices (shipped / ready for pickup) */
+function itemsList(items: OrderItem[]): string {
+  const rows = items
+    .map(
+      (i) => `<tr>
+        ${itemCells(i)}
+        <td style="padding:10px 0 10px 8px;border-bottom:1px solid #f4f4f5;font-size:14px;text-align:right;white-space:nowrap">× ${i.quantity}</td>
+      </tr>`,
+    )
+    .join('');
+  return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 16px;width:100%">${rows}</table>`;
+}
+
 function itemsTable(order: Order, items: OrderItem[]): string {
   const rows = items
     .map(
       (i) => `<tr>
-        <td style="padding:10px 8px 10px 0;border-bottom:1px solid #f4f4f5;font-size:14px;line-height:1.4">
-          <b>${esc(i.name)}</b><br />
-          <span style="font-size:12px;color:#71717a">${esc(itemNum(i.item_num))} · ${CONDITION[i.condition]}</span>
-        </td>
+        ${itemCells(i)}
         <td style="padding:10px 8px;border-bottom:1px solid #f4f4f5;font-size:14px;text-align:center;white-space:nowrap">× ${i.quantity}</td>
         <td style="padding:10px 0 10px 8px;border-bottom:1px solid #f4f4f5;font-size:14px;text-align:right;white-space:nowrap">${money.format(i.unit_price * i.quantity)}</td>
       </tr>`,
     )
     .join('');
   const sum = (label: string, value: string, bold = false) => `<tr>
-      <td colspan="2" style="padding:6px 8px 0 0;font-size:14px;color:${bold ? '#16161d' : '#71717a'};${bold ? 'font-weight:700;' : ''}">${label}</td>
+      <td colspan="3" style="padding:6px 8px 0 0;font-size:14px;color:${bold ? '#16161d' : '#71717a'};${bold ? 'font-weight:700;' : ''}">${label}</td>
       <td style="padding:6px 0 0 8px;font-size:14px;text-align:right;white-space:nowrap;${bold ? 'font-weight:700;' : ''}">${value}</td>
     </tr>`;
   const shippingKnown = order.delivery_type === 'pickup' || order.shipping_price != null;
@@ -222,9 +264,7 @@ function customerReadyForPickup(order: Order, items: OrderItem[], settings: Sett
       ['За плащане', `<b>${money.format(order.total)}</b> в брой на място`],
     ]),
     p('Можете да прегледате поръчката, преди да платите.'),
-    `<ul style="margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.6;color:#3f3f46">${items
-      .map((i) => `<li>${esc(i.name)} (${esc(itemNum(i.item_num))})${i.quantity > 1 ? ` × ${i.quantity}` : ''}</li>`)
-      .join('')}</ul>`,
+    itemsList(items),
     small(`Имате въпрос? Отговорете на този имейл или пишете на <a href="mailto:${esc(shopEmail)}" style="color:#71717a">${esc(shopEmail)}</a>.`),
   ];
   return {
@@ -260,9 +300,7 @@ function customerShipped(order: Order, items: OrderItem[], settings: Settings, s
         : `Куриерът ще ви се обади преди доставката. Можете да прегледате пратката, преди да платите.`,
     ),
     `<p style="margin:0 0 8px;font-size:15px;font-weight:700">В пратката</p>`,
-    `<ul style="margin:0 0 16px;padding-left:20px;font-size:14px;line-height:1.6;color:#3f3f46">${items
-      .map((i) => `<li>${esc(i.name)} (${esc(itemNum(i.item_num))})${i.quantity > 1 ? ` × ${i.quantity}` : ''}</li>`)
-      .join('')}</ul>`,
+    itemsList(items),
     small(`Имате въпрос? Отговорете на този имейл или пишете на <a href="mailto:${esc(shopEmail)}" style="color:#71717a">${esc(shopEmail)}</a>.`),
   ];
   return {
@@ -275,6 +313,25 @@ function customerShipped(order: Order, items: OrderItem[], settings: Settings, s
 }
 
 // ---- Sending ----
+
+/** Own photo first (used items), otherwise the Rebrickable catalog image — like Supabase.coverUrl() on the site.
+ *  A missing picture never blocks the e-mail. */
+async function attachImages(db: SupabaseClient, items: OrderItem[]): Promise<void> {
+  if (!items.length) return;
+  const { data, error } = await db
+    .from('catalog_listings')
+    .select('id, cover_path, catalog_img_url')
+    .in('id', items.map((i) => i.listing_id));
+  if (error) return console.error('order e-mail images:', error.message);
+  const storage = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/listing-images/`;
+  const byId = new Map(
+    (data as { id: number; cover_path: string | null; catalog_img_url: string | null }[]).map((l) => [
+      l.id,
+      l.cover_path ? storage + l.cover_path.split('/').map(encodeURIComponent).join('/') : l.catalog_img_url,
+    ]),
+  );
+  for (const i of items) i.image = byId.get(i.listing_id) ?? null;
+}
 
 async function send(apiKey: string, mail: Mail): Promise<void> {
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
@@ -315,9 +372,10 @@ Deno.serve(async (req) => {
     try {
       const [{ data: order, error: orderError }, { data: items, error: itemsError }] = await Promise.all([
         db.from('orders').select('*').eq('id', job.order_id).single(),
-        db.from('order_items').select('name, item_num, condition, unit_price, quantity').eq('order_id', job.order_id).order('id'),
+        db.from('order_items').select('listing_id, name, item_num, condition, unit_price, quantity').eq('order_id', job.order_id).order('id'),
       ]);
       if (orderError || itemsError) throw new Error((orderError ?? itemsError)!.message);
+      await attachImages(db, (items ?? []) as OrderItem[]);
 
       const args = [order as Order, (items ?? []) as OrderItem[], (settings ?? { pickup_address: null, pickup_hours: null }) as Settings, shopEmail as string] as const;
       const mails = job.kind === 'placed' ? [customerPlaced(...args), shopPlaced(...args)] : [customerShipped(...args)];
