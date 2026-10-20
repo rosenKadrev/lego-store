@@ -45,17 +45,57 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
       <p class="self-center text-sm text-fg-muted md:ml-auto">{{ store.total() }} обяви</p>
     </div>
 
-    <div class="mt-5 overflow-hidden rounded-2xl border border-line" [class.opacity-60]="store.loading()">
+    @let selected = store.selected().length;
+    <div class="mt-5 overflow-hidden rounded-2xl border border-line" [class.opacity-60]="store.loading() || store.bulkSaving()">
+      <!-- Bulk actions: tick the page (or every listing matching the filters), then publish / hide at once -->
+      <!-- min-h: as tall as with the buttons (38px + padding), so the bar does not jump when ticking -->
+      <div class="flex min-h-[3.625rem] flex-wrap items-center gap-x-4 gap-y-2 border-b border-line bg-surface-2 px-3 py-2.5 sm:px-4">
+        <label class="flex cursor-pointer items-center gap-2 text-sm font-medium">
+          <input
+            type="checkbox"
+            class="size-4 accent-brick-600"
+            [checked]="pageSelected() === 'all'"
+            [indeterminate]="pageSelected() === 'some'"
+            [disabled]="!store.items().length"
+            (change)="store.selectPage($any($event.target).checked)"
+          />
+          Цялата страница
+        </label>
+        @if (selected < store.total() && store.total() > store.items().length) {
+          <button type="button" class="text-sm text-accent underline hover:no-underline" (click)="store.selectAllMatching()">
+            Избери всички {{ store.total() }}
+          </button>
+        }
+        @if (selected) {
+          <span class="text-sm text-fg-muted">Избрани: <b class="text-fg">{{ selected }}</b></span>
+          <div class="flex flex-wrap gap-2 sm:ml-auto">
+            <button type="button" class="btn-primary px-4 py-2" [disabled]="store.bulkSaving()" (click)="store.setPublishedSelected(true)">
+              <app-icon name="eye" [size]="16" /> Публикувай
+            </button>
+            <button type="button" class="btn-outline px-4 py-2" [disabled]="store.bulkSaving()" (click)="store.setPublishedSelected(false)">
+              <app-icon name="eyeOff" [size]="16" /> Скрий
+            </button>
+            <button type="button" class="btn-ghost px-3 py-2" [disabled]="store.bulkSaving()" (click)="store.clearSelection()">Отказ</button>
+          </div>
+        }
+      </div>
       <ul class="divide-y divide-line-soft">
         @for (l of store.items(); track l.id) {
           <!-- Phones: photo + name / price, stock and actions on a second row; sm+: one row -->
-          <li class="flex flex-wrap items-center gap-x-4 gap-y-3 p-3 sm:flex-nowrap sm:p-4">
+          <li class="flex flex-wrap items-center gap-x-4 gap-y-3 p-3 sm:flex-nowrap sm:p-4" [class.bg-accent-soft]="isSelected(l.id!)">
+            <input
+              type="checkbox"
+              class="size-4 shrink-0 accent-brick-600"
+              [checked]="isSelected(l.id!)"
+              [attr.aria-label]="'Избери ' + l.name"
+              (change)="store.toggleSelected(l.id!)"
+            />
             <div class="size-14 shrink-0 overflow-hidden rounded-xl bg-well">
               @if (cover(l); as src) {
                 <img [src]="src" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" />
               }
             </div>
-            <div class="min-w-0 flex-1 basis-[calc(100%-4.5rem)] sm:basis-0">
+            <div class="min-w-0 flex-1 basis-[calc(100%-6.5rem)] sm:basis-0">
               <a [routerLink]="['/admin/listings', l.id]" class="line-clamp-2 sm:line-clamp-1 font-semibold hover:text-accent">
                 {{ l.name }}@if (l.color_name) { <span class="font-normal text-fg-muted">— {{ l.color_name }}</span> }
               </a>
@@ -116,6 +156,13 @@ export class AdminListings implements OnInit {
     { value: 'draft', label: 'Чернови' },
     { value: 'sold_out', label: 'Изчерпани' },
   ];
+  private readonly selectedIds = computed(() => new Set(this.store.selected()));
+  /** The "whole page" checkbox: ticked, half-ticked or empty */
+  protected readonly pageSelected = computed(() => {
+    const items = this.store.items();
+    const ticked = items.filter((i) => this.selectedIds().has(i.id!)).length;
+    return ticked && ticked === items.length ? 'all' : ticked ? 'some' : 'none';
+  });
   protected readonly pageCount = computed(() => Math.ceil(this.store.total() / this.store.pageSize()));
   private searchTimer?: ReturnType<typeof setTimeout>;
 
@@ -125,6 +172,10 @@ export class AdminListings implements OnInit {
 
   protected cover(l: Parameters<Supabase['coverUrl']>[0]): string | null {
     return this.supabase.coverUrl(l);
+  }
+
+  protected isSelected(id: number): boolean {
+    return this.selectedIds().has(id);
   }
 
   protected search(q: string): void {
