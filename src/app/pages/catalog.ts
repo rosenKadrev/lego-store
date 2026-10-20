@@ -240,11 +240,12 @@ function filtersFromParams(params: ParamMap): CatalogFilters {
               @if (sidebarColors().length) {
                 <fieldset>
                   <legend class="label">Цвят</legend>
-                  <div class="flex flex-wrap gap-2">
+                  <!-- p-1: room for the selection ring (ring + offset reach 4px outside), the scrolling sidebar clips it -->
+                  <div class="flex flex-wrap gap-2 p-1">
                     @for (c of sidebarColors(); track c.id) {
                       <button
                         type="button"
-                        class="grid size-9 place-items-center rounded-full ring-2 ring-offset-2 transition"
+                        class="grid size-9 place-items-center rounded-full ring-2 ring-offset-2 ring-offset-page transition max-lg:ring-offset-surface"
                         [class]="f.color === c.id ? 'ring-brick-600' : 'ring-transparent hover:ring-line-strong'"
                         [title]="c.name + ' (' + c.listing_count + ')'"
                         [attr.aria-label]="c.name"
