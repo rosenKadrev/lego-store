@@ -71,7 +71,7 @@ const MyOrdersStore = signalStore(
                         </a>
                         <span class="min-w-0 flex-1"
                           >{{ item.quantity }} × <span class="text-fg-muted">LEGO{{ isMagazineNum(item.item_num) ? '' : ' ' + itemNum(item.item_num) }}</span>
-                          <a [routerLink]="productLink(item)" class="hover:text-accent hover:underline">{{ item.name }}</a></span
+                          <a [routerLink]="productLink(item)" class="ml-1 hover:text-accent hover:underline">{{ item.name }}</a></span
                         >
                         <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
                       </li>

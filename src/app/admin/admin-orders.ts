@@ -91,7 +91,7 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
                       </a>
                       <span class="min-w-0 flex-1">
                         {{ item.quantity }} × <a [href]="productUrl(item)" target="_blank" class="hover:text-accent hover:underline">{{ item.name }}</a>
-                        <span class="text-fg-muted">({{ itemNum(item.item_num) }}, {{ item.condition === 'new' ? 'ново' : 'употр.' }})</span>
+                        <span class="ml-1 text-fg-muted">({{ itemNum(item.item_num) }}, {{ item.condition === 'new' ? 'ново' : 'употр.' }})</span>
                       </span>
                       <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
                     </li>
