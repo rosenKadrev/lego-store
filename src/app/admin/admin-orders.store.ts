@@ -24,6 +24,11 @@ export type StatusFilter = 'active' | OrderStatus | 'all';
 type State = {
   orders: AdminOrder[];
   filter: StatusFilter;
+  /** order number, customer name, phone or e-mail */
+  q: string;
+  page: number;
+  /** orders matching the filter and search, on all pages */
+  total: number;
   loading: boolean;
   expandedId: number | null;
   /** phone → number of past refused/returned orders, to flag risky COD customers */
@@ -34,9 +39,20 @@ type State = {
 };
 
 const ACTIVE: OrderStatus[] = ['new', 'confirmed', 'shipped', 'delivered'];
+export const ORDERS_PAGE_SIZE = 20;
+
+/** PostgREST `or` filter for the search box; phones are stored as typed (0888…, +359888…), so match the digits after 0 / 359 */
+function searchFilter(q: string): string | null {
+  const term = q.replace(/[,()*%]/g, ' ').trim();
+  if (!term) return null;
+  const filters = [`number.ilike.*${term}*`, `customer_name.ilike.*${term}*`, `email.ilike.*${term}*`];
+  const digits = term.replace(/\D/g, '').replace(/^(00359|359|0)/, '');
+  if (digits.length >= 4) filters.push(`phone.ilike.*${digits}*`);
+  return filters.join(',');
+}
 
 export const AdminOrdersStore = signalStore(
-  withState<State>({ orders: [], filter: 'active', loading: true, expandedId: null, riskByPhone: {}, imageByListing: {}, error: null }),
+  withState<State>({ orders: [], filter: 'active', q: '', page: 1, total: 0, loading: true, expandedId: null, riskByPhone: {}, imageByListing: {}, error: null }),
   withComputed(({ orders }) => ({
     newCount: computed(() => orders().filter((o) => o.status === 'new').length),
   })),
@@ -48,10 +64,16 @@ export const AdminOrdersStore = signalStore(
       const id = ++requestId;
       patchState(store, { loading: true, error: null });
       const f = store.filter();
-      let query = db.from('orders').select('*, order_items(*)');
+      let query = db.from('orders').select('*, order_items(*)', { count: 'exact' });
       if (f === 'active') query = query.in('status', ACTIVE);
       else if (f !== 'all') query = query.eq('status', f);
-      const { data, error } = await query.order('created_at', { ascending: false }).limit(200);
+      const search = searchFilter(store.q());
+      if (search) query = query.or(search);
+      const from = (store.page() - 1) * ORDERS_PAGE_SIZE;
+      const { data, count, error } = await query
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, from + ORDERS_PAGE_SIZE - 1);
       const orders = data ?? [];
 
       const phones = [...new Set(orders.map((o) => o.phone))];
@@ -67,23 +89,37 @@ export const AdminOrdersStore = signalStore(
         for (const l of listings ?? []) imageByListing[l.id!] = supabase.coverUrl(l);
       }
       if (id !== requestId) return; // a newer filter was picked meanwhile
-      patchState(store, { orders, riskByPhone, imageByListing, loading: false, error: error?.message ?? null });
+      patchState(store, { orders, total: count ?? 0, riskByPhone, imageByListing, loading: false, error: error?.message ?? null });
     }
 
     return {
       load,
 
       setFilter(filter: StatusFilter): void {
-        patchState(store, { filter, expandedId: null });
+        patchState(store, { filter, page: 1, expandedId: null });
         void load();
       },
 
-      /** Opened from the admin bell: reload (it may be brand new) and expand it, under "Всички" if the filter hides it */
+      setSearch(q: string): void {
+        patchState(store, { q, page: 1, expandedId: null });
+        void load();
+      },
+
+      setPage(page: number): void {
+        patchState(store, { page, expandedId: null });
+        void load();
+      },
+
+      /** Opened from the admin bell: reload (it may be brand new) and expand it; when the filter, search or
+       *  page hides it, search for its number under "Всички" */
       async openOrder(id: number): Promise<void> {
         await load();
         if (!store.orders().some((o) => o.id === id)) {
-          patchState(store, { filter: 'all' });
-          await load();
+          const { data } = await db.from('orders').select('number').eq('id', id).maybeSingle();
+          if (data) {
+            patchState(store, { filter: 'all', q: data.number, page: 1 });
+            await load();
+          }
         }
         patchState(store, { expandedId: id });
       },

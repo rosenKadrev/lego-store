@@ -11,28 +11,57 @@ import { ToastStore } from '../stores/toast.store';
 
 type OrderWithItems = Order & { order_items: OrderItem[] };
 
+/** Orders per "Покажи още" */
+const MY_ORDERS_PAGE = 10;
+
 const MyOrdersStore = signalStore(
-  withState({ orders: [] as OrderWithItems[], loading: true, imageByListing: {} as Record<number, string | null> }),
-  withMethods((store, supabase = inject(Supabase)) => ({
-    async load(userId: string | undefined): Promise<void> {
-      if (!userId) return patchState(store, { loading: false });
+  withState({
+    orders: [] as OrderWithItems[],
+    total: 0,
+    loading: true,
+    loadingMore: false,
+    imageByListing: {} as Record<number, string | null>,
+  }),
+  withMethods((store, supabase = inject(Supabase)) => {
+    let userId: string | undefined;
+
+    /** The next MY_ORDERS_PAGE orders, newest first, with their pictures */
+    async function fetchMore(): Promise<void> {
+      if (!userId) return;
+      const from = store.orders().length;
       // Filter by user explicitly: RLS lets the admin read every order
-      const { data } = await supabase.client
+      const { data, count } = await supabase.client
         .from('orders')
-        .select('*, order_items(*)')
+        .select('*, order_items(*)', { count: 'exact' })
         .eq('user_id', userId)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .order('id', { ascending: false })
+        .range(from, from + MY_ORDERS_PAGE - 1);
       const orders = data ?? [];
       // Pictures: own photo first, else the catalog image (as in the shop)
       const listingIds = [...new Set(orders.flatMap((o) => o.order_items.map((i) => i.listing_id)))];
-      const imageByListing: Record<number, string | null> = {};
+      const imageByListing = { ...store.imageByListing() };
       if (listingIds.length) {
         const { data: listings } = await supabase.client.from('catalog_listings').select('id, cover_path, catalog_img_url').in('id', listingIds);
         for (const l of listings ?? []) imageByListing[l.id!] = supabase.coverUrl(l);
       }
-      patchState(store, { orders, imageByListing, loading: false });
-    },
-  })),
+      patchState(store, { orders: [...store.orders(), ...orders], total: count ?? 0, imageByListing });
+    }
+
+    return {
+      async load(id: string | undefined): Promise<void> {
+        userId = id;
+        patchState(store, { orders: [], total: 0, loading: true });
+        await fetchMore();
+        patchState(store, { loading: false });
+      },
+      async loadMore(): Promise<void> {
+        patchState(store, { loadingMore: true });
+        await fetchMore();
+        patchState(store, { loadingMore: false });
+      },
+    };
+  }),
 );
 
 @Component({
@@ -93,6 +122,13 @@ const MyOrdersStore = signalStore(
                 <li class="rounded-2xl bg-surface-2 p-8 text-center text-sm text-fg-muted">Все още нямате поръчки.</li>
               }
             </ul>
+            @if (orders.orders().length < orders.total()) {
+              <div class="mt-4 text-center">
+                <button type="button" class="btn-outline" [disabled]="orders.loadingMore()" (click)="orders.loadMore()">
+                  {{ orders.loadingMore() ? 'Зареждане…' : 'Покажи още (' + (orders.total() - orders.orders().length) + ')' }}
+                </button>
+              </div>
+            }
           }
         </section>
 

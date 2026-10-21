@@ -1,12 +1,12 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, DestroyRef, inject, OnInit, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { COURIER_LABEL, DELIVERY_LABEL, displayItemNum, ORDER_STATUS_LABEL, OrderItem, OrderStatus, slugify } from '../core/models';
 import { Icon } from '../shared/icon';
 import { OrderStatusBadge } from '../shared/order-status-badge';
-import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './admin-orders.store';
+import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, ORDERS_PAGE_SIZE, StatusFilter } from './admin-orders.store';
 
 @Component({
   selector: 'app-admin-orders',
@@ -14,6 +14,17 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
   imports: [FormsModule, CurrencyPipe, DatePipe, Icon, OrderStatusBadge],
   providers: [AdminOrdersStore],
   template: `
+    <div class="mb-4 flex flex-wrap items-center gap-3">
+      <input
+        type="search"
+        class="input sm:max-w-xs"
+        placeholder="Търси по номер, име, телефон, имейл"
+        [ngModel]="store.q()"
+        (ngModelChange)="search($event)"
+      />
+      <p class="text-sm text-fg-muted sm:ml-auto">{{ store.total() }} {{ store.total() === 1 ? 'поръчка' : 'поръчки' }}</p>
+    </div>
+
     <div class="flex flex-wrap gap-2">
       @for (f of filters; track f.value) {
         <button
@@ -160,6 +171,14 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
         </li>
       }
     </ul>
+
+    @if (pageCount() > 1) {
+      <div class="mt-5 flex items-center justify-center gap-3 text-sm">
+        <button type="button" class="btn-outline" [disabled]="store.page() <= 1" (click)="goToPage(store.page() - 1)">Назад</button>
+        <span>{{ store.page() }} / {{ pageCount() }}</span>
+        <button type="button" class="btn-outline" [disabled]="store.page() >= pageCount()" (click)="goToPage(store.page() + 1)">Напред</button>
+      </div>
+    }
   `,
 })
 export class AdminOrders implements OnInit {
@@ -170,6 +189,8 @@ export class AdminOrders implements OnInit {
   protected readonly deliveryLabel = DELIVERY_LABEL;
   protected readonly itemNum = displayItemNum;
   protected readonly tracking: Record<number, string> = {};
+  protected readonly pageCount = computed(() => Math.ceil(this.store.total() / ORDERS_PAGE_SIZE));
+  private searchTimer?: ReturnType<typeof setTimeout>;
 
   protected readonly filters: { value: StatusFilter; label: string }[] = [
     { value: 'active', label: 'Активни' },
@@ -191,6 +212,16 @@ export class AdminOrders implements OnInit {
       await this.store.openOrder(orderId);
       setTimeout(() => document.getElementById(`order-${orderId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
     });
+  }
+
+  protected search(q: string): void {
+    clearTimeout(this.searchTimer);
+    this.searchTimer = setTimeout(() => this.store.setSearch(q), 300);
+  }
+
+  protected goToPage(page: number): void {
+    this.store.setPage(page);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   protected productUrl(item: OrderItem): string {
