@@ -118,7 +118,8 @@ const MyOrdersStore = signalStore(
                   </button>
                   @if (open) {
                     <div class="border-t border-line-soft px-5 pt-4 pb-5">
-                      <ul class="space-y-2 text-sm text-fg-2">
+                      <!-- Orders of many parts: the list scrolls (about 7 rows) instead of stretching the page -->
+                      <ul class="max-h-[26rem] space-y-2 overflow-y-auto overscroll-contain pr-1 text-sm text-fg-2 [scrollbar-width:thin]">
                         @for (item of order.order_items; track item.id) {
                           <li class="flex items-center justify-between gap-3">
                             <a [routerLink]="productLink(item)" class="size-12 shrink-0 overflow-hidden rounded-lg bg-well">
