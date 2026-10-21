@@ -285,13 +285,13 @@ isOneToOne: false
                   ]
                 },"profiles": {
                   Row: {
-                    "created_at": string,"full_name": string | null,"id": string,"phone": string | null,"role": Database["public"]['Enums']["user_role"]
+                    "created_at": string,"full_name": string | null,"id": string,"orders_seen_at": string | null,"phone": string | null,"role": Database["public"]['Enums']["user_role"]
                   }
                   Insert: {
-                    "created_at"?: string,"full_name"?: string | null,"id": string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "created_at"?: string,"full_name"?: string | null,"id": string,"orders_seen_at"?: string | null,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Update: {
-                    "created_at"?: string,"full_name"?: string | null,"id"?: string,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
+                    "created_at"?: string,"full_name"?: string | null,"id"?: string,"orders_seen_at"?: string | null,"phone"?: string | null,"role"?: Database["public"]['Enums']["user_role"]
                   }
                   Relationships: [
                     

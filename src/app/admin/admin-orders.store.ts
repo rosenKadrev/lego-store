@@ -78,6 +78,16 @@ export const AdminOrdersStore = signalStore(
         void load();
       },
 
+      /** Opened from the admin bell: reload (it may be brand new) and expand it, under "Всички" if the filter hides it */
+      async openOrder(id: number): Promise<void> {
+        await load();
+        if (!store.orders().some((o) => o.id === id)) {
+          patchState(store, { filter: 'all' });
+          await load();
+        }
+        patchState(store, { expandedId: id });
+      },
+
       toggle(id: number): void {
         patchState(store, { expandedId: store.expandedId() === id ? null : id });
       },

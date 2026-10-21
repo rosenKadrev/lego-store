@@ -1,6 +1,8 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, OnInit, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute } from '@angular/router';
 import { COURIER_LABEL, DELIVERY_LABEL, displayItemNum, ORDER_STATUS_LABEL, OrderItem, OrderStatus, slugify } from '../core/models';
 import { Icon } from '../shared/icon';
 import { OrderStatusBadge } from '../shared/order-status-badge';
@@ -33,7 +35,7 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
       @for (order of store.orders(); track order.id) {
         @let open = store.expandedId() === order.id;
         @let risk = store.riskByPhone()[order.phone] ?? 0;
-        <li class="card overflow-hidden">
+        <li class="card scroll-mt-28 overflow-hidden" [id]="'order-' + order.id">
           <!-- Phones: number + total / customer / badges + chevron; sm+: one row -->
           <button type="button" class="flex w-full flex-wrap items-center gap-x-4 gap-y-2 p-4 text-left hover:bg-surface-2" (click)="store.toggle(order.id)">
             <span class="min-w-28">
@@ -162,6 +164,8 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
 })
 export class AdminOrders implements OnInit {
   protected readonly store = inject(AdminOrdersStore);
+  private readonly route = inject(ActivatedRoute);
+  private readonly destroyRef = inject(DestroyRef);
   protected readonly courierLabel = COURIER_LABEL;
   protected readonly deliveryLabel = DELIVERY_LABEL;
   protected readonly itemNum = displayItemNum;
@@ -180,7 +184,13 @@ export class AdminOrders implements OnInit {
   ];
 
   ngOnInit(): void {
-    void this.store.load();
+    // ?order=<id> comes from the admin bell — also while this page is already open
+    this.route.queryParamMap.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(async (params) => {
+      const orderId = Number(params.get('order'));
+      if (!orderId) return void this.store.load();
+      await this.store.openOrder(orderId);
+      setTimeout(() => document.getElementById(`order-${orderId}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+    });
   }
 
   protected productUrl(item: OrderItem): string {

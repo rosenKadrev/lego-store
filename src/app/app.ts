@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Analytics } from './core/analytics';
+import { AdminBell } from './layout/admin-bell';
 import { CartDrawer } from './layout/cart-drawer';
 import { CookieBanner } from './layout/cookie-banner';
 import { Footer } from './layout/footer';
@@ -12,7 +13,7 @@ import { BusyOverlay } from './shared/busy-overlay';
 @Component({
   selector: 'app-root',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterOutlet, RouteProgress, Header, Footer, CartDrawer, Toaster, CookieBanner, BusyOverlay],
+  imports: [RouterOutlet, RouteProgress, Header, Footer, CartDrawer, Toaster, CookieBanner, BusyOverlay, AdminBell],
   host: { class: 'flex min-h-dvh flex-col' },
   template: `
     <app-route-progress />
@@ -24,6 +25,7 @@ import { BusyOverlay } from './shared/busy-overlay';
     <app-cart-drawer />
     <app-toaster />
     <app-cookie-banner />
+    <app-admin-bell />
     <app-busy-overlay />
   `,
 })
