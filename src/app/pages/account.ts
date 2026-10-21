@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, effect, inject, OnInit, signal } fr
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { displayItemNum, isMagazineNum, Order, OrderItem } from '../core/models';
+import { displayItemNum, isMagazineNum, Order, OrderItem, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { OrderStatusBadge } from '../shared/order-status-badge';
 import { AuthStore } from '../stores/auth.store';
@@ -12,14 +12,25 @@ import { ToastStore } from '../stores/toast.store';
 type OrderWithItems = Order & { order_items: OrderItem[] };
 
 const MyOrdersStore = signalStore(
-  withState({ orders: [] as OrderWithItems[], loading: true }),
+  withState({ orders: [] as OrderWithItems[], loading: true, imageByListing: {} as Record<number, string | null> }),
   withMethods((store, supabase = inject(Supabase)) => ({
-    async load(): Promise<void> {
+    async load(userId: string | undefined): Promise<void> {
+      if (!userId) return patchState(store, { loading: false });
+      // Filter by user explicitly: RLS lets the admin read every order
       const { data } = await supabase.client
         .from('orders')
         .select('*, order_items(*)')
+        .eq('user_id', userId)
         .order('created_at', { ascending: false });
-      patchState(store, { orders: data ?? [], loading: false });
+      const orders = data ?? [];
+      // Pictures: own photo first, else the catalog image (as in the shop)
+      const listingIds = [...new Set(orders.flatMap((o) => o.order_items.map((i) => i.listing_id)))];
+      const imageByListing: Record<number, string | null> = {};
+      if (listingIds.length) {
+        const { data: listings } = await supabase.client.from('catalog_listings').select('id, cover_path, catalog_img_url').in('id', listingIds);
+        for (const l of listings ?? []) imageByListing[l.id!] = supabase.coverUrl(l);
+      }
+      patchState(store, { orders, imageByListing, loading: false });
     },
   })),
 );
@@ -50,14 +61,19 @@ const MyOrdersStore = signalStore(
                     </div>
                     <app-order-status-badge [status]="order.status" />
                   </div>
-                  <ul class="mt-3 space-y-1 text-sm text-fg-2">
+                  <ul class="mt-3 space-y-2 text-sm text-fg-2">
                     @for (item of order.order_items; track item.id) {
-                      <li class="flex justify-between gap-4">
-                        <span class="truncate"
+                      <li class="flex items-center justify-between gap-3">
+                        <a [routerLink]="productLink(item)" class="size-12 shrink-0 overflow-hidden rounded-lg bg-well">
+                          @if (orders.imageByListing()[item.listing_id]; as src) {
+                            <img [src]="src" alt="" class="size-full object-contain p-0.5 mix-blend-multiply" loading="lazy" />
+                          }
+                        </a>
+                        <span class="min-w-0 flex-1"
                           >{{ item.quantity }} × <span class="text-fg-muted">LEGO{{ isMagazineNum(item.item_num) ? '' : ' ' + itemNum(item.item_num) }}</span>
-                          {{ item.name }}</span
+                          <a [routerLink]="productLink(item)" class="hover:text-accent hover:underline">{{ item.name }}</a></span
                         >
-                        <span>{{ item.unit_price * item.quantity | currency }}</span>
+                        <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
                       </li>
                     }
                   </ul>
@@ -122,7 +138,11 @@ export class Account implements OnInit {
   }
 
   ngOnInit(): void {
-    void this.orders.load();
+    void this.orders.load(this.auth.user()?.id);
+  }
+
+  protected productLink(item: OrderItem): string[] {
+    return ['/p', `${item.listing_id}-${slugify(item.name)}`];
   }
 
   protected async save(): Promise<void> {

@@ -1,7 +1,7 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { COURIER_LABEL, DELIVERY_LABEL, displayItemNum, ORDER_STATUS_LABEL, OrderStatus } from '../core/models';
+import { COURIER_LABEL, DELIVERY_LABEL, displayItemNum, ORDER_STATUS_LABEL, OrderItem, OrderStatus, slugify } from '../core/models';
 import { Icon } from '../shared/icon';
 import { OrderStatusBadge } from '../shared/order-status-badge';
 import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './admin-orders.store';
@@ -80,8 +80,17 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, StatusFilter } from './adm
                 <h3 class="font-bold">Продукти</h3>
                 <ul class="space-y-1">
                   @for (item of order.order_items; track item.id) {
-                    <li class="flex justify-between gap-3">
-                      <span>{{ item.quantity }} × {{ item.name }} <span class="text-fg-muted">({{ itemNum(item.item_num) }}, {{ item.condition === 'new' ? 'ново' : 'употр.' }})</span></span>
+                    <li class="flex items-center justify-between gap-3">
+                      <!-- Picture + name open the product page in a new tab (the order stays open here) -->
+                      <a [href]="productUrl(item)" target="_blank" class="size-12 shrink-0 overflow-hidden rounded-lg bg-well">
+                        @if (store.imageByListing()[item.listing_id]; as src) {
+                          <img [src]="src" alt="" class="size-full object-contain p-0.5 mix-blend-multiply" loading="lazy" />
+                        }
+                      </a>
+                      <span class="min-w-0 flex-1">
+                        {{ item.quantity }} × <a [href]="productUrl(item)" target="_blank" class="hover:text-accent hover:underline">{{ item.name }}</a>
+                        <span class="text-fg-muted">({{ itemNum(item.item_num) }}, {{ item.condition === 'new' ? 'ново' : 'употр.' }})</span>
+                      </span>
                       <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
                     </li>
                   }
@@ -172,6 +181,10 @@ export class AdminOrders implements OnInit {
 
   ngOnInit(): void {
     void this.store.load();
+  }
+
+  protected productUrl(item: OrderItem): string {
+    return `/p/${item.listing_id}-${slugify(item.name)}`;
   }
 
   protected next(status: OrderStatus): OrderStatus[] {

@@ -28,13 +28,15 @@ type State = {
   expandedId: number | null;
   /** phone → number of past refused/returned orders, to flag risky COD customers */
   riskByPhone: Record<string, number>;
+  /** listing id → picture (own photo, else catalog image) for the ordered items */
+  imageByListing: Record<number, string | null>;
   error: string | null;
 };
 
 const ACTIVE: OrderStatus[] = ['new', 'confirmed', 'shipped', 'delivered'];
 
 export const AdminOrdersStore = signalStore(
-  withState<State>({ orders: [], filter: 'active', loading: true, expandedId: null, riskByPhone: {}, error: null }),
+  withState<State>({ orders: [], filter: 'active', loading: true, expandedId: null, riskByPhone: {}, imageByListing: {}, error: null }),
   withComputed(({ orders }) => ({
     newCount: computed(() => orders().filter((o) => o.status === 'new').length),
   })),
@@ -58,8 +60,14 @@ export const AdminOrdersStore = signalStore(
         const { data: risky } = await db.from('orders').select('phone').in('phone', phones).in('status', ['refused', 'returned']);
         for (const r of risky ?? []) riskByPhone[r.phone] = (riskByPhone[r.phone] ?? 0) + 1;
       }
+      const listingIds = [...new Set(orders.flatMap((o) => o.order_items.map((i) => i.listing_id)))];
+      const imageByListing: Record<number, string | null> = {};
+      if (listingIds.length) {
+        const { data: listings } = await db.from('catalog_listings').select('id, cover_path, catalog_img_url').in('id', listingIds);
+        for (const l of listings ?? []) imageByListing[l.id!] = supabase.coverUrl(l);
+      }
       if (id !== requestId) return; // a newer filter was picked meanwhile
-      patchState(store, { orders, riskByPhone, loading: false, error: error?.message ?? null });
+      patchState(store, { orders, riskByPhone, imageByListing, loading: false, error: error?.message ?? null });
     }
 
     return {
