@@ -146,7 +146,13 @@ export class AdminBell {
     const newest = this.unseen()[0]?.created_at;
     const userId = this.auth.user()?.id;
     if (!newest || !userId) return;
+    const before = this.unseen();
     this.unseen.set([]);
-    await this.db.from('profiles').update({ orders_seen_at: newest }).eq('id', userId);
+    const { error } = await this.db.from('profiles').update({ orders_seen_at: newest }).eq('id', userId);
+    if (error) {
+      // Not saved: keep the badge, or it would silently come back on the next reload
+      console.error('admin bell: marking orders seen failed', error.message);
+      this.unseen.set(before);
+    }
   }
 }
