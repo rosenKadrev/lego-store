@@ -169,7 +169,9 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
 
           <aside class="h-fit space-y-4 rounded-3xl bg-surface-2 p-6 lg:sticky lg:top-32">
             <h2 class="text-lg font-bold">Вашата поръчка</h2>
-            <ul class="space-y-3">
+            <!-- Many parts: the list scrolls (about 6 rows) so the totals and the order button stay close.
+                 -m-1.5 p-1.5: room for the quantity badges, which stick out of the pictures -->
+            <ul class="-m-1.5 max-h-[27rem] space-y-3 overflow-y-auto overscroll-contain p-1.5 [scrollbar-width:thin]">
               @for (item of cart.items(); track item.listingId) {
                 <li class="flex items-center gap-3 text-sm">
                   <span class="relative size-14 shrink-0 rounded-xl bg-well">
