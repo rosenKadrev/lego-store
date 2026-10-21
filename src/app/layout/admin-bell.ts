@@ -15,7 +15,7 @@ const COLUMNS = 'id, number, customer_name, total, created_at, status';
 /**
  * Admin only: floating bell with the orders placed since the admin last looked (profiles.orders_seen_at,
  * so every device agrees). New orders arrive live over Supabase Realtime. Opening the bell or the
- * orders page marks them seen. See migration 20261021120000_admin_order_bell.sql.
+ * orders page marks them seen — on the other devices too, live. See migration 20261021120000_admin_order_bell.sql.
  */
 @Component({
   selector: 'app-admin-bell',
@@ -125,6 +125,11 @@ export class AdminBell {
         this.unseen.update((list) => [order, ...list]);
         if (this.open()) this.shown.update((list) => [order, ...list]);
         if (this.open() || this.onOrdersPage()) void this.markSeen();
+      })
+      // Seen on another device: drop what it saw
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${adminId}` }, (payload) => {
+        const seenAt = (payload.new as { orders_seen_at: string | null }).orders_seen_at;
+        if (seenAt) this.unseen.update((list) => list.filter((o) => Date.parse(o.created_at) > Date.parse(seenAt)));
       })
       .subscribe();
   }

@@ -3,7 +3,10 @@
 --     (or the orders page). Stored in the database so every device agrees.
 --   * orders in the Realtime publication — the bell gets new orders live. Realtime applies the table's RLS
 --     per subscriber, so a customer would only ever receive their own orders (and only the admin subscribes).
+--   * profiles in the Realtime publication — opening the bell on one device clears it on the others.
+--     The bell subscribes to its own row only (filter id=eq.<uid>); RLS lets nobody else read a profile anyway.
 
 alter table public.profiles add column orders_seen_at timestamptz;
 
 alter publication supabase_realtime add table public.orders;
+alter publication supabase_realtime add table public.profiles;
