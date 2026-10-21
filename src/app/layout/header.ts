@@ -45,7 +45,7 @@ type NavMenu = {
     </div>
 
     <div class="border-b border-line bg-page/90 backdrop-blur-lg">
-      <div class="container-page flex h-16 items-center gap-1.5 sm:gap-3 lg:h-20 lg:gap-5 xl:gap-8">
+      <div class="container-page flex h-16 items-center gap-1.5 sm:gap-3 lg:h-20 lg:gap-5 xl:gap-6">
         <button type="button" class="btn-ghost -ml-2 size-9 p-0 sm:size-10 lg:hidden" aria-label="Меню" (click)="menuOpen.set(true)">
           <app-icon name="menu" [size]="22" />
         </button>
@@ -188,7 +188,8 @@ type NavMenu = {
           </div>
         </nav>
 
-        <app-search-box class="ml-auto hidden max-w-xs flex-1 md:block lg:hidden xl:block" />
+        <!-- min-w: the whole "Търси…" stays readable next to "Здравей, …" (2xl) -->
+        <app-search-box class="ml-auto hidden max-w-xs min-w-36 flex-1 md:block lg:hidden xl:block" />
 
         <div class="ml-auto flex shrink-0 items-center sm:gap-1 md:ml-0">
           <button
