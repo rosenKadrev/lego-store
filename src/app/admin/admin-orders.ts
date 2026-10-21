@@ -92,21 +92,26 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, ORDERS_PAGE_SIZE, StatusFi
               <div class="space-y-3 text-sm">
                 <h3 class="font-bold">Продукти</h3>
                 <ul class="space-y-1">
-                  @for (item of order.order_items; track item.id) {
-                    <li class="flex items-center justify-between gap-3">
-                      <!-- Picture + name open the product page in a new tab (the order stays open here) -->
-                      <a [href]="productUrl(item)" target="_blank" class="size-12 shrink-0 overflow-hidden rounded-lg bg-well">
-                        @if (store.imageByListing()[item.listing_id]; as src) {
-                          <img [src]="src" alt="" class="size-full object-contain p-0.5 mix-blend-multiply" loading="lazy" />
-                        }
-                      </a>
-                      <span class="min-w-0 flex-1">
-                        {{ item.quantity }} × <a [href]="productUrl(item)" target="_blank" class="hover:text-accent hover:underline">{{ item.name }}</a>
-                        <span class="ml-1 text-fg-muted">({{ itemNum(item.item_num) }}, {{ item.condition === 'new' ? 'ново' : 'употр.' }})</span>
-                      </span>
-                      <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
-                    </li>
-                  }
+                  <!-- Orders of many parts: the items scroll (about 7 rows); delivery and total stay in view -->
+                  <li>
+                    <ul class="max-h-[26rem] space-y-1 overflow-y-auto overscroll-contain pr-1 [scrollbar-width:thin]">
+                      @for (item of order.order_items; track item.id) {
+                        <li class="flex items-center justify-between gap-3">
+                          <!-- Picture + name open the product page in a new tab (the order stays open here) -->
+                          <a [href]="productUrl(item)" target="_blank" class="size-12 shrink-0 overflow-hidden rounded-lg bg-well">
+                            @if (store.imageByListing()[item.listing_id]; as src) {
+                              <img [src]="src" alt="" class="size-full object-contain p-0.5 mix-blend-multiply" loading="lazy" />
+                            }
+                          </a>
+                          <span class="min-w-0 flex-1">
+                            {{ item.quantity }} × <a [href]="productUrl(item)" target="_blank" class="hover:text-accent hover:underline">{{ item.name }}</a>
+                            <span class="ml-1 text-fg-muted">({{ itemNum(item.item_num) }}, {{ item.condition === 'new' ? 'ново' : 'употр.' }})</span>
+                          </span>
+                          <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
+                        </li>
+                      }
+                    </ul>
+                  </li>
                   @if (order.delivery_type === 'pickup') {
                     <li class="flex justify-between text-fg-muted"><span>Лично взимане</span><span>{{ 0 | currency }}</span></li>
                   } @else {
