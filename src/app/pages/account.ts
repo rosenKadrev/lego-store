@@ -141,8 +141,10 @@ const MyOrdersStore = signalStore(
                         </span>
                         <b>
                           Общо {{ order.total | currency }}
-                          @if (order.shipping_price == null && order.delivery_type !== 'pickup') {
-                            <span class="font-normal text-fg-muted">+ доставка (уточнява се)</span>
+                          @if (order.delivery_type !== 'pickup') {
+                            <span class="font-normal text-fg-muted"
+                              >+ доставка {{ order.shipping_price == null ? '(уточнява се)' : (order.shipping_price | currency) + ', плаща се на куриера' }}</span
+                            >
                           }
                         </b>
                       </div>

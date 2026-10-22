@@ -186,12 +186,12 @@ function itemsTable(order: Order, items: OrderItem[]): string {
       <td colspan="3" style="padding:6px 8px 0 0;font-size:14px;color:${bold ? '#16161d' : '#71717a'};${bold ? 'font-weight:700;' : ''}">${label}</td>
       <td style="padding:6px 0 0 8px;font-size:14px;text-align:right;white-space:nowrap;${bold ? 'font-weight:700;' : ''}">${value}</td>
     </tr>`;
-  const shippingKnown = order.delivery_type === 'pickup' || order.shipping_price != null;
+  // Shipping is paid straight to the courier, so the total (наложен платеж) is the products only
+  const pickup = order.delivery_type === 'pickup';
   return `<table role="presentation" cellpadding="0" cellspacing="0" style="margin:0 0 24px;width:100%">
       ${rows}
-      ${sum('Продукти', money.format(order.subtotal))}
-      ${sum('Доставка', esc(shippingText(order)))}
-      ${sum(shippingKnown ? 'Общо за плащане' : 'Общо без доставката', money.format(order.total), true)}
+      ${sum(pickup ? 'Общо за плащане' : 'Наложен платеж (продукти)', money.format(order.total), true)}
+      ${sum(pickup ? 'Лично взимане' : 'Доставка — плаща се отделно на куриера', esc(shippingText(order)))}
     </table>`;
 }
 
@@ -212,7 +212,7 @@ function customerPlaced(order: Order, items: OrderItem[], settings: Settings, sh
     itemsTable(order, items),
     infoTable([
       ['Доставка', esc(deliveryText(order, settings))],
-      ['Плащане', pickup ? 'В брой на място' : 'Наложен платеж при получаване'],
+      ...(pickup ? [] : ([['Плащане', 'Наложен платеж при получаване']] as [string, string][])),
       ['Телефон', esc(order.phone)],
       ...(order.note ? ([['Бележка', esc(order.note)]] as [string, string][]) : []),
     ]),
@@ -261,7 +261,7 @@ function customerReadyForPickup(order: Order, items: OrderItem[], settings: Sett
     infoTable([
       ['Къде', esc(settings.pickup_address ?? 'ще ви кажем по телефона')],
       ...(settings.pickup_hours ? ([['Кога', esc(settings.pickup_hours)]] as [string, string][]) : []),
-      ['За плащане', `<b>${money.format(order.total)}</b> в брой на място`],
+      ['За плащане', `<b>${money.format(order.total)}</b>`],
     ]),
     p('Можете да прегледате поръчката, преди да платите.'),
     itemsList(items),
@@ -287,11 +287,11 @@ function customerShipped(order: Order, items: OrderItem[], settings: Settings, s
       ? infoTable([
           ['Товарителница', `<b style="font-size:16px">${esc(order.tracking_number)}</b>`],
           ['Доставка', esc(deliveryText(order, settings))],
-          ['За плащане', `<b>${money.format(order.total)}</b> при получаване`],
+          ['За плащане', `<b>${money.format(order.total)}</b> при получаване${order.shipping_price != null ? ` + доставка ${money.format(order.shipping_price)} на куриера` : ''}`],
         ])
       : infoTable([
           ['Доставка', esc(deliveryText(order, settings))],
-          ['За плащане', `<b>${money.format(order.total)}</b> при получаване`],
+          ['За плащане', `<b>${money.format(order.total)}</b> при получаване${order.shipping_price != null ? ` + доставка ${money.format(order.shipping_price)} на куриера` : ''}`],
         ]),
     url ? button(url, 'Проследи пратката') : '',
     p(

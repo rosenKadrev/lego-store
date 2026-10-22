@@ -21,7 +21,7 @@ type OrderState = { total?: number; email?: string; phone?: string; pickup?: boo
         Номер на поръчката: <b class="text-fg">{{ number() }}</b>
         @if (state.total != null) {
           @if (state.pickup) {
-            <br />Сума за плащане при взимане: <b class="text-fg">{{ state.total | currency }}</b>
+            <br />Сума за плащане: <b class="text-fg">{{ state.total | currency }}</b>
           } @else {
             <br />Сума за продуктите: <b class="text-fg">{{ state.total | currency }}</b> + доставка (ще ви я кажем по телефона)
           }

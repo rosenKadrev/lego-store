@@ -140,7 +140,7 @@ export const AdminOrdersStore = signalStore(
           const shipping = Math.round(price * 100) / 100;
           patchState(store, {
             orders: store.orders().map((o) =>
-              o.id === order.id ? { ...o, shipping_price: shipping, total: Math.round((o.subtotal + shipping) * 100) / 100 } : o,
+              o.id === order.id ? { ...o, shipping_price: shipping } : o,
             ),
           });
           return true;

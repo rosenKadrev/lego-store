@@ -7,6 +7,7 @@ import { COURIER_LABEL, DELIVERY_LABEL, displayItemNum, ORDER_STATUS_LABEL, Orde
 import { Icon } from '../shared/icon';
 import { OrderStatusBadge } from '../shared/order-status-badge';
 import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, ORDERS_PAGE_SIZE, StatusFilter } from './admin-orders.store';
+import { printSaleDocument } from './sale-document';
 
 @Component({
   selector: 'app-admin-orders',
@@ -116,7 +117,7 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, ORDERS_PAGE_SIZE, StatusFi
                     <li class="flex justify-between text-fg-muted"><span>Лично взимане</span><span>{{ 0 | currency }}</span></li>
                   } @else {
                     <li class="flex items-center justify-between gap-3 text-fg-muted">
-                      <span>Доставка</span>
+                      <span>Доставка (плаща се на куриера)</span>
                       @if (order.shipping_price != null && editingShipping() !== order.id) {
                         <button type="button" class="hover:text-fg hover:underline" title="Промени" (click)="startShippingEdit(order)">
                           {{ order.shipping_price | currency }}
@@ -142,10 +143,11 @@ import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, ORDERS_PAGE_SIZE, StatusFi
                     }
                   }
                   <li class="flex justify-between border-t border-line pt-1 font-bold">
-                    <span>{{ order.delivery_type === 'pickup' ? 'Общо (в брой при взимане)' : 'Общо (наложен платеж)' }}</span>
-                    <span>{{ order.total | currency }}{{ order.shipping_price == null && order.delivery_type !== 'pickup' ? ' + доставка' : '' }}</span>
+                    <span>{{ order.delivery_type === 'pickup' ? 'Общо' : 'Наложен платеж (без доставката)' }}</span>
+                    <span>{{ order.total | currency }}</span>
                   </li>
                 </ul>
+                <button type="button" class="btn-outline px-3 py-1.5 text-xs" (click)="printSaleDocument(order)">Документ за продажба</button>
               </div>
 
               @if (next(order.status).length) {
@@ -193,6 +195,7 @@ export class AdminOrders implements OnInit {
   protected readonly courierLabel = COURIER_LABEL;
   protected readonly deliveryLabel = DELIVERY_LABEL;
   protected readonly itemNum = displayItemNum;
+  protected readonly printSaleDocument = printSaleDocument;
   protected readonly tracking: Record<number, string> = {};
   protected readonly pageCount = computed(() => Math.ceil(this.store.total() / ORDERS_PAGE_SIZE));
   private searchTimer?: ReturnType<typeof setTimeout>;

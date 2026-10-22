@@ -102,7 +102,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
                   <app-icon name="truck" class="mt-0.5 shrink-0 text-fg" />
                   <p>
                     <b>Цената на доставката се уточнява от служител.</b>
-                    Ще ви се обадим, за да потвърдим поръчката и да ви кажем точната цена според куриера и размера на пратката.
+                    Ще ви се обадим, за да потвърдим поръчката и да ви кажем точната цена според куриера и размера на пратката. Доставката се плаща отделно, директно на куриера.
                   </p>
                 </div>
                 <p class="label mt-5">Куриер</p>
@@ -154,10 +154,10 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
               <label class="mt-5 flex items-center gap-3 rounded-2xl border-2 border-brick-600 bg-accent-soft p-4">
                 <app-icon name="cash" class="text-accent" />
                 <span>
-                  <span class="block font-semibold">{{ deliveryType() === 'pickup' ? 'В брой при взимане' : 'Наложен платеж' }}</span>
+                  <span class="block font-semibold">{{ deliveryType() === 'pickup' ? 'Лично взимане' : 'Наложен платеж' }}</span>
                   <span class="text-sm text-fg-3">
                     @if (deliveryType() === 'pickup') {
-                      Плащате в брой, когато вземете поръчката. Можете да я прегледате на място.
+                      Можете да прегледате поръчката на място.
                     } @else {
                       Плащате на куриера при получаване. Можете да прегледате пратката преди плащане.
                     }
