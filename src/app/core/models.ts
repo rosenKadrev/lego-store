@@ -34,10 +34,11 @@ export const SHOP_PHONE = { display: '0885 621 924', href: 'tel:+359885621924'
 
 /** The legal entity behind the shop (seller in the terms, data controller in the privacy policy). `vat` is '' when not VAT-registered. */
 export const SHOP_COMPANY = {
-  name: '„Чистач вредители“ ЕООД',
-  eik: '203010585',
-  vat: 'BG203010585',
-  address: 'гр. София 1680, р-н Искър, жк. Дружба, бл. 410, вх. Б, ет. 1, ап. 33',
+  name: '„РОСЕН МИЛЧЕВ КЪДРЕВ“ ЕТ',
+  // TODO: placeholder until the ЕТ registration goes through — replace with the real ЕИК.
+  eik: '206418537',
+  vat: '',
+  address: 'гр. София 1582, жк. Дружба 2, бл. 408, вх. А, ет. 6, ап. 18',
 };
 
 export const CONDITION_LABEL: Record<ItemCondition, string> = {
