@@ -271,7 +271,7 @@ import { ThemesStore } from '../stores/themes.store';
             <div class="mt-5 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8">
               @for (fig of store.minifigs(); track fig.fig_num) {
                 <div class="rounded-2xl border border-line p-2 text-center">
-                  <div class="relative aspect-square rounded-xl dark:bg-well">
+                  <div class="relative aspect-square overflow-hidden rounded-xl border border-line-soft dark:bg-well">
                     @if (fig.img_url && !failedFigImages().has(fig.fig_num)) {
                       <img
                         [src]="fig.img_url"
