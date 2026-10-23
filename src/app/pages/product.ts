@@ -73,12 +73,14 @@ import { ThemesStore } from '../stores/themes.store';
           <div class="lg:sticky lg:top-32 lg:self-start">
             <div class="relative aspect-square overflow-hidden rounded-3xl bg-well">
               @if (activeImage(); as src) {
-                <img
-                  [src]="src"
-                  [alt]="l.name"
-                  class="absolute inset-0 size-full object-contain p-6 mix-blend-multiply sm:p-10"
-                  (error)="galleryImageFailed(src)"
-                />
+                <button type="button" class="absolute inset-0 cursor-zoom-in" aria-label="Отвори снимката на цял екран" (click)="openLightbox()">
+                  <img
+                    [src]="src"
+                    [alt]="l.name"
+                    class="size-full object-contain p-6 mix-blend-multiply sm:p-10"
+                    (error)="galleryImageFailed(src)"
+                  />
+                </button>
               } @else {
                 <div class="absolute inset-0 grid place-items-center text-fg-ghost"><app-icon name="image" [size]="64" /></div>
               }
@@ -107,6 +109,37 @@ import { ThemesStore } from '../stores/themes.store';
               </div>
             }
           </div>
+
+          <!-- Full-screen photo: Esc, ✕ or a click beside the photo closes it; arrows / swipe change it -->
+          <dialog
+            #lightbox
+            class="m-0 size-full max-h-none max-w-none cursor-zoom-out bg-black/60 p-0 text-white backdrop:bg-transparent"
+            aria-label="Снимка на цял екран"
+            (close)="lightboxClosed()"
+            (click)="lightboxClick($event)"
+            (keydown.arrowLeft)="step(-1)"
+            (keydown.arrowRight)="step(1)"
+            (touchstart)="touchX = $event.touches[0].clientX"
+            (touchend)="swipe($event.changedTouches[0].clientX)"
+          >
+            @if (activeImage(); as src) {
+              <div class="grid size-full place-items-center p-4 sm:p-12" data-lightbox-backdrop>
+                <img [src]="src" [alt]="l.name" class="max-h-full max-w-full cursor-default rounded-2xl bg-white object-contain p-3 shadow-2xl sm:p-6" />
+              </div>
+            }
+            <button type="button" class="absolute top-3 right-3 grid size-11 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Затвори" (click)="lightbox.close()">
+              <app-icon name="x" [size]="22" />
+            </button>
+            @if (gallery().length > 1) {
+              <button type="button" class="absolute top-1/2 left-2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 hover:bg-white/20 sm:left-4" aria-label="Предишна снимка" (click)="step(-1)">
+                <app-icon name="chevronLeft" [size]="24" />
+              </button>
+              <button type="button" class="absolute top-1/2 right-2 grid size-11 -translate-y-1/2 place-items-center rounded-full bg-white/10 hover:bg-white/20 sm:right-4" aria-label="Следваща снимка" (click)="step(1)">
+                <app-icon name="chevronRight" [size]="24" />
+              </button>
+              <p class="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-white/10 px-3 py-1 text-sm">{{ activeNumber() }} / {{ gallery().length }}</p>
+            }
+          </dialog>
 
           <!-- Details -->
           <div>
@@ -493,7 +526,39 @@ export class Product {
     inject(DestroyRef).onDestroy(() => {
       this.seo.setCanonical(null);
       this.seo.setJsonLd('product-jsonld', null);
+      this.lightboxClosed(); // leaving the page with the photo open
     });
+  }
+
+  private readonly lightbox = viewChild<ElementRef<HTMLDialogElement>>('lightbox');
+  protected touchX = 0;
+  /** 1-based, as shown in the lightbox ("2 / 5") */
+  protected readonly activeNumber = computed(() => Math.min(this.activeIndex(), this.gallery().length - 1) + 1);
+
+  protected openLightbox(): void {
+    this.lightbox()?.nativeElement.showModal();
+    document.documentElement.style.overflow = 'hidden'; // the page behind doesn't scroll
+  }
+
+  protected lightboxClosed(): void {
+    document.documentElement.style.overflow = '';
+  }
+
+  /** A click beside the photo (not on it or a button) closes it */
+  protected lightboxClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (target === this.lightbox()?.nativeElement || target.hasAttribute('data-lightbox-backdrop')) this.lightbox()?.nativeElement.close();
+  }
+
+  /** Previous / next photo, wrapping around */
+  protected step(delta: number): void {
+    const count = this.gallery().length;
+    if (count > 1) this.activeIndex.set((this.activeNumber() - 1 + delta + count) % count);
+  }
+
+  protected swipe(endX: number): void {
+    const dx = endX - this.touchX;
+    if (Math.abs(dx) > 50) this.step(dx < 0 ? 1 : -1);
   }
 
   protected galleryImageFailed(src: string): void {
