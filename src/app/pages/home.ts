@@ -35,6 +35,7 @@ import { ThemesStore } from '../stores/themes.store';
                 [src]="src"
                 alt=""
                 class="pointer-events-none w-[82%] object-contain mix-blend-multiply transition duration-500 group-hover:scale-110 group-hover:-rotate-3"
+                (error)="heroImage.set(null)"
               />
             </div>
           }
@@ -88,7 +89,7 @@ import { ThemesStore } from '../stores/themes.store';
                 class="absolute grid size-10.5 place-items-center rounded-[0.875rem] bg-white shadow-[0_8px_22px_rgb(0_0_0/0.2)] transition duration-300 sm:size-18.5 sm:rounded-[1.25rem]"
                 [class]="fanSlot[i]"
               >
-                <img [src]="src" alt="" class="size-4/5 object-contain mix-blend-multiply" />
+                <img [src]="src" alt="" class="size-4/5 object-contain mix-blend-multiply" (error)="photoFailed(src)" />
               </span>
             }
           </span>
@@ -225,11 +226,19 @@ export class Home implements OnInit {
     this.loading.set(false);
   }
 
-  /** Catalog photos first (white background, blends into the white tiles), then the listings' own */
+  /** Catalog photos first (white background, blends into the white tiles), then the listings' own; ones that don't load are skipped */
   private photos(items: CatalogListing[]): string[] {
     const catalog = items.map((l) => l.catalog_img_url);
     const own = items.map((l) => this.supabase.coverUrl(l));
-    return [...new Set([...catalog, ...own].filter((src): src is string => !!src))].slice(0, 3);
+    const failed = this.failedPhotos();
+    return [...new Set([...catalog, ...own])].filter((src): src is string => !!src && !failed.has(src)).slice(0, 3);
+  }
+
+  /** Rebrickable removes some images: the next product's photo takes the place */
+  private readonly failedPhotos = signal<ReadonlySet<string>>(new Set());
+
+  protected photoFailed(src: string): void {
+    this.failedPhotos.update((failed) => new Set(failed).add(src));
   }
 
   private async fetch(condition: ItemCondition | null, type: ItemType): Promise<CatalogListing[]> {
