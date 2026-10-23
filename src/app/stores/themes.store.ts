@@ -17,6 +17,8 @@ export type ListedTheme = {
   minifig_img_url: string | null;
   /** The newest magazine of the theme: the shop's own photo, a path in the listing-images bucket */
   magazine_cover_path: string | null;
+  /** The newest minifig of the theme with the shop's own photo — for figures without (or with a broken) Rebrickable image */
+  minifig_cover_path: string | null;
 };
 
 /** A theme's picture; `photo` is the shop's own photo (not a cut-out on white, so no blend) */
@@ -83,14 +85,19 @@ export const ThemesStore = signalStore(
         .sort((a, b) => b.listing_count - a.listing_count || a.name.localeCompare(b.name));
     },
 
-    /** Picture for a theme card: a minifig / magazine of the theme on those pages, otherwise a set (or whatever there is) */
-    image(theme: ListedTheme, kind: ItemType | null = null): ThemeImage | null {
+    /**
+     * Pictures for a theme card, best first (ThemeThumb shows the first one that loads): a minifig / magazine
+     * of the theme on those pages, otherwise a set (or whatever there is).
+     */
+    images(theme: ListedTheme, kind: ItemType | null = null): ThemeImage[] {
+      const own = (path: string | null) => (path ? { src: supabase.listingImageUrl(path), photo: true } : null);
       const set = theme.sample_img_url ? { src: theme.sample_img_url, photo: false } : null;
       const minifig = theme.minifig_img_url ? { src: theme.minifig_img_url, photo: false } : null;
-      const magazine = theme.magazine_cover_path ? { src: supabase.listingImageUrl(theme.magazine_cover_path), photo: true } : null;
-      if (kind === 'minifig') return minifig ?? set;
-      if (kind === 'magazine') return magazine ?? set;
-      return set ?? minifig ?? magazine;
+      const minifigPhoto = own(theme.minifig_cover_path);
+      const magazine = own(theme.magazine_cover_path);
+      const order =
+        kind === 'minifig' ? [minifig, minifigPhoto, set] : kind === 'magazine' ? [magazine, set] : [set, minifig, minifigPhoto, magazine];
+      return order.filter((img): img is ThemeImage => !!img);
     },
 
     /** The theme itself plus all nested sub-themes, for filtering. */

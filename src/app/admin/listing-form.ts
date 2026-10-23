@@ -67,8 +67,10 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
             } @else if (store.item(); as item) {
               <div class="mt-4 flex flex-wrap items-center gap-3 rounded-2xl bg-surface-2 p-3 sm:gap-4">
                 <div class="size-16 shrink-0 rounded-xl bg-well sm:size-20">
-                  @if (item.img_url) {
-                    <img [src]="item.img_url" alt="" class="size-full object-contain p-1" />
+                  @if (item.img_url && !failedImages().has(item.img_url)) {
+                    <img [src]="item.img_url" alt="" class="size-full object-contain p-1" (error)="imageFailed(item.img_url)" />
+                  } @else {
+                    <span class="grid size-full place-items-center text-fg-ghost" title="Няма снимка"><app-icon name="image" [size]="28" /></span>
                   }
                 </div>
                 <div class="min-w-0 flex-1 basis-36">
@@ -159,8 +161,8 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                           (click)="chooseColor(c)"
                         >
                           <span class="grid aspect-square w-full place-items-center rounded-lg bg-well">
-                            @if (c.img_url) {
-                              <img [src]="c.img_url" alt="" loading="lazy" class="size-full object-contain p-1 mix-blend-multiply" />
+                            @if (c.img_url && !failedImages().has(c.img_url)) {
+                              <img [src]="c.img_url" alt="" loading="lazy" class="size-full object-contain p-1 mix-blend-multiply" (error)="imageFailed(c.img_url)" />
                             } @else {
                               <app-color-swatch [rgb]="c.rgb" [trans]="c.is_trans" [size]="28" />
                             }
@@ -237,8 +239,10 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                   <li>
                     <button type="button" class="flex w-full items-center gap-3 rounded-xl p-2 text-left hover:bg-surface-2" (click)="choose(r)">
                       <span class="size-14 shrink-0 rounded-lg bg-well">
-                        @if (r.img_url) {
-                          <img [src]="r.img_url" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" (error)="$any($event.target).hidden = true" />
+                        @if (r.img_url && !failedImages().has(r.img_url)) {
+                          <img [src]="r.img_url" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" (error)="imageFailed(r.img_url)" />
+                        } @else {
+                          <span class="grid size-full place-items-center text-fg-ghost" title="Няма снимка"><app-icon name="image" [size]="22" /></span>
                         }
                       </span>
                       <span class="min-w-0">
@@ -455,6 +459,8 @@ export class ListingForm {
   protected readonly conditionLabel = CONDITION_LABEL;
   protected readonly itemNum = displayItemNum;
   protected readonly isCustomFig = isCustomFigNum;
+  /** Catalog images that don't load (Rebrickable removes some) — shown as the "no photo" icon instead */
+  protected readonly failedImages = signal<ReadonlySet<string>>(new Set());
   protected readonly conditions: ItemCondition[] = ['new', 'used'];
   protected readonly types: { value: ItemType; label: string }[] = [
     { value: 'set', label: 'Сет' },
@@ -598,6 +604,10 @@ export class ListingForm {
   protected chooseOtherColor(id: number | null): void {
     const color = this.store.allColors().find((c) => c.id === id);
     if (color) void this.store.chooseColor(color);
+  }
+
+  protected imageFailed(src: string): void {
+    this.failedImages.update((failed) => new Set(failed).add(src));
   }
 
   protected imageUrl(path: string): string {

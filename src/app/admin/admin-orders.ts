@@ -6,13 +6,14 @@ import { ActivatedRoute } from '@angular/router';
 import { COURIER_LABEL, DELIVERY_LABEL, displayItemNum, ORDER_STATUS_LABEL, OrderItem, OrderStatus, slugify } from '../core/models';
 import { Icon } from '../shared/icon';
 import { OrderStatusBadge } from '../shared/order-status-badge';
+import { Thumb } from '../shared/thumb';
 import { AdminOrder, AdminOrdersStore, NEXT_STATUSES, ORDERS_PAGE_SIZE, StatusFilter } from './admin-orders.store';
 import { printSaleDocument } from './sale-document';
 
 @Component({
   selector: 'app-admin-orders',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, CurrencyPipe, DatePipe, Icon, OrderStatusBadge],
+  imports: [FormsModule, CurrencyPipe, DatePipe, Icon, OrderStatusBadge, Thumb],
   providers: [AdminOrdersStore],
   template: `
     <div class="mb-4 flex flex-wrap items-center gap-3">
@@ -100,9 +101,7 @@ import { printSaleDocument } from './sale-document';
                         <li class="flex items-center justify-between gap-3">
                           <!-- Picture + name open the product page in a new tab (the order stays open here) -->
                           <a [href]="productUrl(item)" target="_blank" class="size-12 shrink-0 overflow-hidden rounded-lg bg-well">
-                            @if (store.imageByListing()[item.listing_id]; as src) {
-                              <img [src]="src" alt="" class="size-full object-contain p-0.5 mix-blend-multiply" loading="lazy" />
-                            }
+                            <app-thumb [src]="store.imageByListing()[item.listing_id]" imgClass="size-full object-contain p-0.5 mix-blend-multiply" />
                           </a>
                           <span class="min-w-0 flex-1">
                             {{ item.quantity }} × <a [href]="productUrl(item)" target="_blank" class="hover:text-accent hover:underline">{{ item.name }}</a>

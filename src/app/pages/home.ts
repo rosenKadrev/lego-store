@@ -7,12 +7,13 @@ import { Supabase } from '../core/supabase';
 import { BackToTop } from '../shared/back-to-top';
 import { Icon } from '../shared/icon';
 import { ProductRail } from '../shared/product-rail';
+import { ThemeThumb } from '../shared/theme-thumb';
 import { ThemesStore } from '../stores/themes.store';
 
 @Component({
   selector: 'app-home',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, NgTemplateOutlet, ProductRail, Icon, BackToTop],
+  imports: [RouterLink, NgTemplateOutlet, ProductRail, Icon, BackToTop, ThemeThumb],
   template: `
     <!-- Hero -->
     <section class="container-page pt-6 lg:pt-8">
@@ -138,15 +139,7 @@ import { ThemesStore } from '../stores/themes.store';
               class="group flex flex-col items-center gap-2 rounded-2xl border border-line p-4 text-center transition hover:border-brick-600 hover:shadow-lg"
             >
               <span class="grid aspect-square w-full place-items-center overflow-hidden rounded-xl dark:bg-well">
-                @if (themes.image(theme); as img) {
-                  <img
-                    [src]="img.src"
-                    alt=""
-                    loading="lazy"
-                    class="size-full transition group-hover:scale-105"
-                    [class]="img.photo ? 'object-cover' : 'object-contain mix-blend-multiply'"
-                  />
-                }
+                <app-theme-thumb [images]="themes.images(theme)" imgClass="size-full transition group-hover:scale-105" />
               </span>
               <span class="text-sm font-bold">{{ theme.name }}</span>
               <span class="text-xs text-fg-muted">{{ theme.listing_count }} продукта</span>

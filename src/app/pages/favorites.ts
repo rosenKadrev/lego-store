@@ -5,6 +5,7 @@ import { PageLoading } from '../core/page-loading';
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
 import { ProductCard } from '../shared/product-card';
+import { Thumb } from '../shared/thumb';
 import { Favorite, favoriteKey, FavoritesStore } from '../stores/favorites.store';
 
 /**
@@ -14,7 +15,7 @@ import { Favorite, favoriteKey, FavoritesStore } from '../stores/favorites.store
 @Component({
   selector: 'app-favorites',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Icon, ProductCard],
+  imports: [RouterLink, Icon, ProductCard, Thumb],
   template: `
     <div class="container-page pt-8">
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Любими</h1>
@@ -51,9 +52,7 @@ import { Favorite, favoriteKey, FavoritesStore } from '../stores/favorites.store
               @for (fav of soldOut(); track fav.key) {
                 <li class="card flex items-center gap-3 p-3">
                   <span class="grid size-16 shrink-0 place-items-center overflow-hidden rounded-xl bg-well">
-                    @if (fav.imageUrl) {
-                      <img [src]="fav.imageUrl" alt="" loading="lazy" class="size-full object-contain p-1.5 opacity-70 mix-blend-multiply grayscale" />
-                    }
+                    <app-thumb [src]="fav.imageUrl" imgClass="size-full object-contain p-1.5 opacity-70 mix-blend-multiply grayscale" [iconSize]="24" />
                   </span>
                   <span class="min-w-0 flex-1">
                     <span class="line-clamp-2 text-sm font-semibold">{{ fav.name }}</span>

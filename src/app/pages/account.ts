@@ -7,6 +7,7 @@ import { displayItemNum, isMagazineNum, Order, OrderItem, slugify } from '../cor
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
 import { OrderStatusBadge } from '../shared/order-status-badge';
+import { Thumb } from '../shared/thumb';
 import { AuthStore } from '../stores/auth.store';
 import { ToastStore } from '../stores/toast.store';
 
@@ -74,7 +75,7 @@ const MyOrdersStore = signalStore(
 @Component({
   selector: 'app-account',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, DatePipe, Icon, OrderStatusBadge],
+  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, DatePipe, Icon, OrderStatusBadge, Thumb],
   providers: [MyOrdersStore],
   template: `
     <div class="container-page pt-8">
@@ -108,9 +109,7 @@ const MyOrdersStore = signalStore(
                       <span class="order-1 flex basis-full items-center gap-1.5 sm:order-none sm:basis-auto">
                         @for (item of order.order_items.slice(0, 4); track item.id) {
                           <span class="size-9 overflow-hidden rounded-md bg-well">
-                            @if (orders.imageByListing()[item.listing_id]; as src) {
-                              <img [src]="src" alt="" class="size-full object-contain p-0.5 mix-blend-multiply" loading="lazy" />
-                            }
+                            <app-thumb [src]="orders.imageByListing()[item.listing_id]" imgClass="size-full object-contain p-0.5 mix-blend-multiply" [iconSize]="14" />
                           </span>
                         }
                         @if (order.order_items.length > 4) {
@@ -129,9 +128,7 @@ const MyOrdersStore = signalStore(
                         @for (item of order.order_items; track item.id) {
                           <li class="flex items-center justify-between gap-3">
                             <a [routerLink]="productLink(item)" class="size-12 shrink-0 overflow-hidden rounded-lg bg-well">
-                              @if (orders.imageByListing()[item.listing_id]; as src) {
-                                <img [src]="src" alt="" class="size-full object-contain p-0.5 mix-blend-multiply" loading="lazy" />
-                              }
+                              <app-thumb [src]="orders.imageByListing()[item.listing_id]" imgClass="size-full object-contain p-0.5 mix-blend-multiply" />
                             </a>
                             <span class="min-w-0 flex-1"
                               >{{ item.quantity }} × <span class="text-fg-muted">LEGO{{ isMagazineNum(item.item_num) ? '' : ' ' + (orders.blNumByListing()[item.listing_id] || itemNum(item.item_num)) }}</span>

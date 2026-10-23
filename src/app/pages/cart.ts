@@ -4,12 +4,13 @@ import { RouterLink } from '@angular/router';
 import { CONDITION_LABEL, displayItemNum } from '../core/models';
 import { Icon } from '../shared/icon';
 import { QuantityStepper } from '../shared/quantity-stepper';
+import { Thumb } from '../shared/thumb';
 import { CartStore } from '../stores/cart.store';
 
 @Component({
   selector: 'app-cart',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper],
+  imports: [RouterLink, CurrencyPipe, Icon, QuantityStepper, Thumb],
   template: `
     <div class="container-page pt-8">
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Количка</h1>
@@ -24,9 +25,7 @@ import { CartStore } from '../stores/cart.store';
             @for (item of cart.items(); track item.listingId) {
               <li class="flex gap-4 py-5">
                 <div class="size-24 shrink-0 overflow-hidden rounded-2xl bg-well sm:size-28">
-                  @if (item.imageUrl) {
-                    <img [src]="item.imageUrl" [alt]="item.name" class="size-full object-contain p-2 mix-blend-multiply" />
-                  }
+                  <app-thumb [src]="item.imageUrl" [alt]="item.name" imgClass="size-full object-contain p-2 mix-blend-multiply" [iconSize]="32" [lazy]="false" />
                 </div>
                 <div class="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:items-center sm:gap-6">
                   <div class="min-w-0 flex-1">

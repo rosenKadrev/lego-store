@@ -8,6 +8,7 @@ import { Busy } from '../core/busy';
 import { Courier, DeliveryType } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
+import { Thumb } from '../shared/thumb';
 import { AuthStore } from '../stores/auth.store';
 import { CartStore } from '../stores/cart.store';
 
@@ -16,7 +17,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
 @Component({
   selector: 'app-checkout',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, Icon],
+  imports: [ReactiveFormsModule, RouterLink, CurrencyPipe, Icon, Thumb],
   template: `
     <div class="container-page pt-8">
       <h1 class="text-3xl font-extrabold tracking-tight sm:text-4xl">Поръчка</h1>
@@ -175,9 +176,7 @@ const PHONE_PATTERN = /^(\+359|0)[\d\s-]{8,12}$/;
               @for (item of cart.items(); track item.listingId) {
                 <li class="flex items-center gap-3 text-sm">
                   <span class="relative size-14 shrink-0 rounded-xl bg-well">
-                    @if (item.imageUrl) {
-                      <img [src]="item.imageUrl" alt="" class="size-full object-contain p-1" />
-                    }
+                    <app-thumb [src]="item.imageUrl" imgClass="size-full object-contain p-1" [iconSize]="22" [lazy]="false" />
                     <span class="absolute -top-1.5 -right-1.5 grid size-5 place-items-center rounded-full bg-ink-900 text-[11px] font-bold text-white">{{ item.quantity }}</span>
                   </span>
                   <span class="line-clamp-2 flex-1">{{ item.name }}</span>

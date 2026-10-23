@@ -6,6 +6,7 @@ import { SHOP_NAME } from '../core/models';
 import { ThemeService } from '../core/theme';
 import { Icon } from '../shared/icon';
 import { Logo } from '../shared/logo';
+import { ThemeThumb } from '../shared/theme-thumb';
 import { SearchBox } from './search-box';
 import { AuthStore } from '../stores/auth.store';
 import { CartStore } from '../stores/cart.store';
@@ -29,7 +30,7 @@ type NavMenu = {
 @Component({
   selector: 'app-header',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, RouterLinkActive, Icon, Logo, SearchBox],
+  imports: [RouterLink, RouterLinkActive, Icon, Logo, SearchBox, ThemeThumb],
   host: {
     class: 'sticky top-0 z-40 block',
     '(document:mousedown)': 'onDocumentMouseDown($event)',
@@ -164,9 +165,7 @@ type NavMenu = {
                       class="flex items-center gap-3 rounded-xl p-2 text-sm hover:bg-surface-2"
                     >
                       <span class="grid size-10 shrink-0 place-items-center overflow-hidden rounded-lg bg-well">
-                        @if (themes.image(theme); as img) {
-                          <img [src]="img.src" alt="" class="size-full" [class]="img.photo ? 'object-cover' : 'object-contain mix-blend-multiply'" />
-                        }
+                        <app-theme-thumb [images]="themes.images(theme)" [lazy]="false" />
                       </span>
                       <span class="font-medium">{{ theme.name }}</span>
                       <span class="ml-auto text-xs text-fg-faint">{{ theme.listing_count }}</span>

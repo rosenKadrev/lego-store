@@ -4,6 +4,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { map } from 'rxjs';
 import { Icon } from '../shared/icon';
 import { Pager, pagedList } from '../shared/pager';
+import { ThemeThumb } from '../shared/theme-thumb';
 import { ThemesStore } from '../stores/themes.store';
 
 /** Whose themes the page lists: sets by default ("Теми ▾"), minifigs / magazines with ?type= (their menus) */
@@ -18,7 +19,7 @@ type Kind = keyof typeof KINDS;
 @Component({
   selector: 'app-themes',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, Icon, Pager],
+  imports: [RouterLink, Icon, Pager, ThemeThumb],
   template: `
     <div class="container-page pt-8">
       <div class="flex flex-wrap items-end justify-between gap-4">
@@ -53,15 +54,7 @@ type Kind = keyof typeof KINDS;
             class="group flex flex-col items-center gap-2 rounded-2xl border border-line p-4 text-center transition hover:border-brick-600 hover:shadow-lg"
           >
             <span class="grid aspect-square w-full place-items-center overflow-hidden rounded-xl dark:bg-well">
-              @if (themes.image(theme, kind()); as img) {
-                <img
-                  [src]="img.src"
-                  alt=""
-                  loading="lazy"
-                  class="size-full transition group-hover:scale-105"
-                  [class]="img.photo ? 'object-cover' : 'object-contain mix-blend-multiply'"
-                />
-              }
+              <app-theme-thumb [images]="themes.images(theme, kind())" imgClass="size-full transition group-hover:scale-105" />
             </span>
             <span class="text-sm font-bold">{{ theme.name }}</span>
             <span class="text-xs text-fg-muted">{{ theme.listing_count }} {{ kinds[kind()].products }}</span>

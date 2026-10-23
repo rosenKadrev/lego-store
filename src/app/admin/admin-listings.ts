@@ -6,12 +6,13 @@ import { CONDITION_LABEL, listingNum } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
 import { QuantityStepper } from '../shared/quantity-stepper';
+import { Thumb } from '../shared/thumb';
 import { AdminListingFilters, AdminListingsStore } from './admin-listings.store';
 
 @Component({
   selector: 'app-admin-listings',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, RouterLink, CurrencyPipe, Icon, QuantityStepper],
+  imports: [FormsModule, RouterLink, CurrencyPipe, Icon, QuantityStepper, Thumb],
   providers: [AdminListingsStore],
   template: `
     @let f = store.filters();
@@ -91,9 +92,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
               (change)="store.toggleSelected(l.id!)"
             />
             <div class="size-14 shrink-0 overflow-hidden rounded-xl bg-well">
-              @if (cover(l); as src) {
-                <img [src]="src" alt="" class="size-full object-contain p-1 mix-blend-multiply" loading="lazy" />
-              }
+              <app-thumb [src]="cover(l)" [iconSize]="22" />
             </div>
             <div class="min-w-0 flex-1 basis-[calc(100%-6.5rem)] sm:basis-0">
               <a [routerLink]="['/admin/listings', l.id]" class="line-clamp-2 sm:line-clamp-1 font-semibold hover:text-accent">

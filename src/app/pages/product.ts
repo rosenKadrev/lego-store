@@ -72,12 +72,12 @@ import { ThemesStore } from '../stores/themes.store';
           <!-- Gallery -->
           <div class="lg:sticky lg:top-32 lg:self-start">
             <div class="relative aspect-square overflow-hidden rounded-3xl bg-well">
-              @if (!activeImageFailed() && activeImage(); as src) {
+              @if (activeImage(); as src) {
                 <img
                   [src]="src"
                   [alt]="l.name"
                   class="absolute inset-0 size-full object-contain p-6 mix-blend-multiply sm:p-10"
-                  (error)="activeImageFailed.set(true)"
+                  (error)="galleryImageFailed(src)"
                 />
               } @else {
                 <div class="absolute inset-0 grid place-items-center text-fg-ghost"><app-icon name="image" [size]="64" /></div>
@@ -91,9 +91,9 @@ import { ThemesStore } from '../stores/themes.store';
                 }
               </div>
             </div>
-            @if (store.gallery().length > 1) {
+            @if (gallery().length > 1) {
               <div class="mt-3 flex gap-2 overflow-x-auto pb-1">
-                @for (src of store.gallery(); track src; let i = $index) {
+                @for (src of gallery(); track src; let i = $index) {
                   <button
                     type="button"
                     class="size-20 shrink-0 overflow-hidden rounded-xl border-2 bg-well transition"
@@ -101,7 +101,7 @@ import { ThemesStore } from '../stores/themes.store';
                     [attr.aria-label]="'Снимка ' + (i + 1)"
                     (click)="activeIndex.set(i)"
                   >
-                    <img [src]="src" alt="" class="size-full object-contain p-1 mix-blend-multiply" />
+                    <img [src]="src" alt="" class="size-full object-contain p-1 mix-blend-multiply" (error)="galleryImageFailed(src)" />
                   </button>
                 }
               </div>
@@ -357,8 +357,10 @@ export class Product {
   protected readonly failedFigImages = signal<ReadonlySet<string>>(new Set());
 
   private readonly id = computed(() => Number.parseInt(this.slugParam(), 10));
-  protected readonly activeImage = computed(() => this.store.gallery()[this.activeIndex()] ?? null);
-  protected readonly activeImageFailed = linkedSignal({ source: this.activeImage, computation: () => false });
+  /** Gallery pictures that don't load (e.g. a Rebrickable image that was removed) — left out, not shown broken */
+  private readonly failedGalleryImages = linkedSignal<string[], ReadonlySet<string>>({ source: this.store.gallery, computation: () => new Set() });
+  protected readonly gallery = computed(() => this.store.gallery().filter((src) => !this.failedGalleryImages().has(src)));
+  protected readonly activeImage = computed(() => this.gallery()[Math.min(this.activeIndex(), this.gallery().length - 1)] ?? null);
   protected readonly itemNum = computed(() => {
     const l = this.store.listing();
     return l ? listingNum(l) : '';
@@ -466,7 +468,7 @@ export class Product {
         name: l.name,
         ...(num ? { sku: num, mpn: num } : {}),
         ...(l.item_type !== 'magazine' ? { brand: { '@type': 'Brand', name: 'LEGO' } } : {}),
-        image: this.store.gallery().map((src) => new URL(src, location.origin).href),
+        image: this.gallery().map((src) => new URL(src, location.origin).href),
         description: l.description || `${l.name}${num ? ` ${num}` : ''} — ${CONDITION_LABEL[l.condition!].toLowerCase()}.`,
         offers: {
           '@type': 'Offer',
@@ -494,6 +496,10 @@ export class Product {
     });
   }
 
+  protected galleryImageFailed(src: string): void {
+    this.failedGalleryImages.update((failed) => new Set(failed).add(src));
+  }
+
   protected figImageFailed(figNum: string): void {
     this.failedFigImages.update((failed) => new Set(failed).add(figNum));
   }
@@ -501,7 +507,7 @@ export class Product {
   protected addToCart(): void {
     const l = this.store.listing();
     if (!l) return;
-    this.cart.add(l, this.store.gallery()[0] ?? null, this.quantity());
+    this.cart.add(l, this.gallery()[0] ?? null, this.quantity());
     this.quantity.set(1);
   }
 }
