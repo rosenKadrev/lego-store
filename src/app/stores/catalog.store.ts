@@ -62,6 +62,12 @@ export const EMPTY_FILTERS: CatalogFilters = {
 };
 
 export const PAGE_SIZE = 24;
+/** Parts fill up to 5 columns (catalog.ts): 60 makes full rows at 2, 3, 4 and 5 */
+export const PARTS_PAGE_SIZE = 60;
+
+export function pageSizeFor(filters: Pick<CatalogFilters, 'type'>): number {
+  return filters.type === 'part' ? PARTS_PAGE_SIZE : PAGE_SIZE;
+}
 
 /** Sidebar counts for the current filters — each facet applies every filter but its own (catalog_facet_counts) */
 export type CatalogFacets = Record<'theme' | 'category' | 'color', Map<number, number>>;
@@ -80,7 +86,7 @@ export const CatalogStore = signalStore(
   { providedIn: 'root' },
   withState<CatalogState>({ filters: EMPTY_FILTERS, items: [], total: 0, loading: false, error: null, facets: null }),
   withComputed(({ total, filters }) => ({
-    pageCount: computed(() => Math.max(1, Math.ceil(total() / PAGE_SIZE))),
+    pageCount: computed(() => Math.max(1, Math.ceil(total() / pageSizeFor(filters())))),
     hasFilters: computed(() => {
       const f = filters();
       return !!(f.condition || f.type || f.theme || f.color || f.category || f.q || f.minPrice != null || f.maxPrice != null);
@@ -137,9 +143,10 @@ export const CatalogStore = signalStore(
           query = query.order(column, { ascending, nullsFirst: false });
         }
 
-        const from = (filters.page - 1) * PAGE_SIZE;
+        const pageSize = pageSizeFor(filters);
+        const from = (filters.page - 1) * pageSize;
         const [{ data, count, error }, facets] = await pageLoading.track(
-          Promise.all([query.order('id').range(from, from + PAGE_SIZE - 1), loadFacets(filters, q)]),
+          Promise.all([query.order('id').range(from, from + pageSize - 1), loadFacets(filters, q)]),
         );
 
         if (id !== requestId) return; // a newer request already started
