@@ -97,7 +97,7 @@ export function slugify(text: string): string {
  */
 export function searchFilter(term: string): string {
   // name is Bulgarian when the set has a Bulgarian name; name_en keeps the original English one searchable
-  const filters = [`name.ilike.*${term}*`, `name_en.ilike.*${term}*`, `item_num.ilike.${term}*`];
+  const filters = [`name.ilike.*${term}*`, `name_en.ilike.*${term}*`, `item_num.ilike.${term}*`, `bl_num.ilike.${term}*`];
   if (/^\d{4,8}$/.test(term)) filters.push(`element_ids.cs.{${term}}`);
   return filters.join(',');
 }
@@ -122,4 +122,9 @@ export function displayItemNum(itemNum: string | null | undefined): string {
   if (isMagazineNum(itemNum)) return ITEM_TYPE_LABEL.magazine;
   if (isCustomFigNum(itemNum)) return 'Къстъм фигурка';
   return (itemNum ?? '').replace(/-1$/, '');
+}
+
+/** The number shown for a listing: a minifig's BrickLink number (sw1094) when known — what buyers search for — else displayItemNum(). */
+export function listingNum(l: Pick<CatalogListing, 'item_num' | 'bl_num'>): string {
+  return l.bl_num || displayItemNum(l.item_num);
 }

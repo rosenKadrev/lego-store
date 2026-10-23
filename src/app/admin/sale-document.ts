@@ -13,7 +13,7 @@ function esc(text: string): string {
  * and ЕИК; goods with quantity and value; total; payment method). Not a фискален бон and not a фактура.
  * Opens in a new tab and starts printing — print it for the parcel or "Save as PDF" to e-mail it.
  */
-export function printSaleDocument(order: AdminOrder): void {
+export function printSaleDocument(order: AdminOrder, blNumByListing: Record<number, string> = {}): void {
   const pickup = order.delivery_type === 'pickup';
   const payment = pickup
     ? 'Лично взимане'
@@ -22,7 +22,7 @@ export function printSaleDocument(order: AdminOrder): void {
     .map(
       (item, i) => `<tr>
         <td>${i + 1}</td>
-        <td>${esc(item.name)} <span class="muted">(${esc(displayItemNum(item.item_num))}, ${item.condition === 'new' ? 'ново' : 'употребявано'})</span></td>
+        <td>${esc(item.name)} <span class="muted">(${esc(blNumByListing[item.listing_id] || displayItemNum(item.item_num))}, ${item.condition === 'new' ? 'ново' : 'употребявано'})</span></td>
         <td class="num">${item.quantity} бр.</td>
         <td class="num">${money.format(item.unit_price)}</td>
         <td class="num">${money.format(item.unit_price * item.quantity)}</td>

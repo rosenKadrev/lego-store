@@ -41,7 +41,7 @@ async function supabaseConfig() {
 }
 
 async function fetchProducts({ url, key }) {
-  const columns = 'id,name,item_num,item_type,condition,price,stock,description,color_name,box_damaged,cover_path,catalog_img_url';
+  const columns = 'id,name,item_num,bl_num,item_type,condition,price,stock,description,color_name,box_damaged,cover_path,catalog_img_url';
   const products = [];
   for (let from = 0; ; from += 1000) {
     const res = await fetch(`${url}/rest/v1/catalog_listings?select=${columns}&is_published=eq.true&stock=gt.0&order=id`, {
@@ -57,7 +57,7 @@ async function fetchProducts({ url, key }) {
 /** Same title / description / JSON-LD as the product page (src/app/pages/product.ts) */
 function productHead(p, imageBase) {
   const url = `${SITE_URL}/p/${p.id}-${slugify(p.name ?? '')}`;
-  const num = p.item_type === 'magazine' || isCustomFigNum(p.item_num) ? '' : displayItemNum(p.item_num);
+  const num = p.item_type === 'magazine' || isCustomFigNum(p.item_num) ? '' : p.bl_num || displayItemNum(p.item_num);
   const color = p.color_name ? `, ${p.color_name}` : p.box_damaged ? `, ${BOX_DAMAGED_LABEL.toLowerCase()}` : '';
   const condition = CONDITION_LABEL[p.condition];
   const title = `${p.name}${color}${num ? ` (${num})` : ''} — ${condition} | ${SHOP_NAME}`;

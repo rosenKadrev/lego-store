@@ -2,7 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, ElementRef, inject, input, signal, viewChild } from '@angular/core';
 import { Router } from '@angular/router';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
-import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, searchFilter, slugify } from '../core/models';
+import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, listingNum, searchFilter, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { ColorSwatch } from '../shared/color-swatch';
 import { Icon } from '../shared/icon';
@@ -114,7 +114,7 @@ const SearchStore = signalStore(
             <span class="min-w-0 flex-1">
               <span class="block truncate text-sm font-semibold">{{ item.name }}</span>
               <span class="flex items-center gap-1.5 text-xs text-fg-muted">
-                {{ itemNum(item.item_num) }}
+                {{ itemNum(item) }}
                 @if (item.color_name) {
                   · <app-color-swatch [rgb]="item.color_rgb" [size]="10" /> {{ item.color_name }}
                 }
@@ -153,7 +153,7 @@ export class SearchBox {
 
   protected readonly conditionLabel = CONDITION_LABEL;
   protected readonly boxDamaged = BOX_DAMAGED_LABEL.toLowerCase();
-  protected readonly itemNum = displayItemNum;
+  protected readonly itemNum = listingNum;
   protected readonly query = signal('');
   protected readonly open = signal(false);
   protected readonly activeIndex = signal(-1);

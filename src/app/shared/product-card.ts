@@ -1,7 +1,7 @@
 import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, input, linkedSignal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, displayItemNum, isCustomFigNum, slugify } from '../core/models';
+import { BOX_DAMAGED_LABEL, CatalogListing, CONDITION_LABEL, isCustomFigNum, listingNum, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { CartStore } from '../stores/cart.store';
 import { LiveStockStore } from '../stores/live-stock.store';
@@ -101,7 +101,7 @@ export class ProductCard {
   protected readonly image = computed(() => this.supabase.coverUrl(this.listing()));
   /** The URL exists but nothing loads (e.g. a Rebrickable image that was removed) → placeholder icon */
   protected readonly imageFailed = linkedSignal({ source: this.image, computation: () => false });
-  protected readonly itemNum = computed(() => displayItemNum(this.listing().item_num));
+  protected readonly itemNum = computed(() => listingNum(this.listing()));
   protected readonly isCustom = computed(() => isCustomFigNum(this.listing().item_num));
   protected readonly conditionLabel = computed(() => CONDITION_LABEL[this.listing().condition ?? 'new']);
   protected readonly link = computed(() => ['/p', `${this.listing().id}-${slugify(this.listing().name ?? '')}`]);

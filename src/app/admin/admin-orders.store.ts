@@ -35,6 +35,8 @@ type State = {
   riskByPhone: Record<string, number>;
   /** listing id → picture (own photo, else catalog image) for the ordered items */
   imageByListing: Record<number, string | null>;
+  /** minifigs' BrickLink numbers (sw1094), shown instead of the stored fig-… — also on older orders */
+  blNumByListing: Record<number, string>;
   error: string | null;
 };
 
@@ -52,7 +54,7 @@ function searchFilter(q: string): string | null {
 }
 
 export const AdminOrdersStore = signalStore(
-  withState<State>({ orders: [], filter: 'active', q: '', page: 1, total: 0, loading: true, expandedId: null, riskByPhone: {}, imageByListing: {}, error: null }),
+  withState<State>({ orders: [], filter: 'active', q: '', page: 1, total: 0, loading: true, expandedId: null, riskByPhone: {}, imageByListing: {}, blNumByListing: {}, error: null }),
   withComputed(({ orders }) => ({
     newCount: computed(() => orders().filter((o) => o.status === 'new').length),
   })),
@@ -84,12 +86,16 @@ export const AdminOrdersStore = signalStore(
       }
       const listingIds = [...new Set(orders.flatMap((o) => o.order_items.map((i) => i.listing_id)))];
       const imageByListing: Record<number, string | null> = {};
+      const blNumByListing: Record<number, string> = {};
       if (listingIds.length) {
-        const { data: listings } = await db.from('catalog_listings').select('id, cover_path, catalog_img_url').in('id', listingIds);
-        for (const l of listings ?? []) imageByListing[l.id!] = supabase.coverUrl(l);
+        const { data: listings } = await db.from('catalog_listings').select('id, cover_path, catalog_img_url, bl_num').in('id', listingIds);
+        for (const l of listings ?? []) {
+          imageByListing[l.id!] = supabase.coverUrl(l);
+          if (l.bl_num) blNumByListing[l.id!] = l.bl_num;
+        }
       }
       if (id !== requestId) return; // a newer filter was picked meanwhile
-      patchState(store, { orders, total: count ?? 0, riskByPhone, imageByListing, loading: false, error: error?.message ?? null });
+      patchState(store, { orders, total: count ?? 0, riskByPhone, imageByListing, blNumByListing, loading: false, error: error?.message ?? null });
     }
 
     return {

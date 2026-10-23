@@ -4,7 +4,7 @@ import { Meta, Title } from '@angular/platform-browser';
 import { RouterLink } from '@angular/router';
 import { Analytics } from '../core/analytics';
 import { Seo } from '../core/seo';
-import { BOX_DAMAGED_LABEL, CONDITION_LABEL, displayItemNum, isCustomFigNum, SHOP_NAME, slugify } from '../core/models';
+import { BOX_DAMAGED_LABEL, CONDITION_LABEL, isCustomFigNum, listingNum, SHOP_NAME, slugify } from '../core/models';
 import { BackToTop } from '../shared/back-to-top';
 import { ColorSwatch } from '../shared/color-swatch';
 import { FavoriteButton } from '../shared/favorite-button';
@@ -359,7 +359,10 @@ export class Product {
   private readonly id = computed(() => Number.parseInt(this.slugParam(), 10));
   protected readonly activeImage = computed(() => this.store.gallery()[this.activeIndex()] ?? null);
   protected readonly activeImageFailed = linkedSignal({ source: this.activeImage, computation: () => false });
-  protected readonly itemNum = computed(() => displayItemNum(this.store.listing()?.item_num));
+  protected readonly itemNum = computed(() => {
+    const l = this.store.listing();
+    return l ? listingNum(l) : '';
+  });
   protected readonly isCustom = computed(() => isCustomFigNum(this.store.listing()?.item_num));
   protected readonly slug = computed(() => slugify(this.store.listing()?.name ?? ''));
   protected readonly themePath = computed(() => this.themes.path(this.store.listing()?.theme_id));
@@ -438,7 +441,7 @@ export class Product {
       if (!l) return;
       const color = l.color_name ? `, ${l.color_name}` : l.box_damaged ? `, ${BOX_DAMAGED_LABEL.toLowerCase()}` : '';
       // Magazines and custom minifigs have no official LEGO number
-      const num = l.item_type === 'magazine' || isCustomFigNum(l.item_num) ? '' : displayItemNum(l.item_num);
+      const num = l.item_type === 'magazine' || isCustomFigNum(l.item_num) ? '' : listingNum(l);
       this.title.setTitle(`${l.name}${color}${num ? ` (${num})` : ''} — ${CONDITION_LABEL[l.condition!]} | ${SHOP_NAME}`);
       this.meta.updateTag({
         name: 'description',
@@ -455,7 +458,7 @@ export class Product {
       if (!l) return;
       const url = `${location.origin}/p/${l.id}-${slugify(l.name ?? '')}`;
       // Magazines and custom minifigs have no official LEGO number
-      const num = l.item_type === 'magazine' || isCustomFigNum(l.item_num) ? '' : displayItemNum(l.item_num);
+      const num = l.item_type === 'magazine' || isCustomFigNum(l.item_num) ? '' : listingNum(l);
       this.seo.setCanonical(url);
       this.seo.setJsonLd('product-jsonld', {
         '@context': 'https://schema.org',

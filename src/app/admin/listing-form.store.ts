@@ -1,7 +1,7 @@
 import { inject } from '@angular/core';
 import { patchState, signalStore, withMethods, withState } from '@ngrx/signals';
 import { Busy } from '../core/busy';
-import { CatalogListing, CUSTOM_FIG_PREFIX, ItemType, Listing, ListingImage } from '../core/models';
+import { CatalogListing, CUSTOM_FIG_PREFIX, isCustomFigNum, ItemType, Listing, ListingImage } from '../core/models';
 import { LISTING_IMAGES_BUCKET, Supabase } from '../core/supabase';
 
 /**
@@ -25,6 +25,11 @@ export type CatalogItem = {
   /** sets: Bulgarian name shown in the shop instead of `name`; `name_bg_saved` is what the catalog has */
   name_bg?: string | null;
   name_bg_saved?: string | null;
+  /** minifigs: BrickLink number (sw1094) shown and searchable in the shop; `bl_num_saved` is what the catalog has */
+  bl_num?: string | null;
+  bl_num_saved?: string | null;
+  /** custom minifigs: what the catalog has for num_parts (the admin types it in) */
+  num_parts_saved?: number;
 };
 
 export type SeriesOption = { id: number; name: string };
@@ -95,6 +100,28 @@ export const ListingFormStore = signalStore(
       else patchState(store, { item: { ...item, name_bg: name, name_bg_saved: name } });
     }
 
+    /** Like the Bulgarian name: the BrickLink number belongs to the minifig in the catalog, not to one listing. */
+    async function saveBlNum(): Promise<void> {
+      const item = store.item();
+      if (item?.type !== 'minifig') return;
+      const num = item.bl_num?.trim() || null;
+      if (num === (item.bl_num_saved ?? null)) return;
+      const { error } = await db.from('minifigs').update({ bl_num: num }).eq('fig_num', item.num);
+      if (error) {
+        const taken = error.code === '23505' ? `${num} вече е записан на друга фигурка` : error.message;
+        patchState(store, { error: `Обявата е записана, но номерът от BrickLink не беше: ${taken}` });
+      } else patchState(store, { item: { ...item, bl_num: num, bl_num_saved: num } });
+    }
+
+    /** A custom minifig isn't in Rebrickable, so its number of parts is typed in — kept on the catalog row too. */
+    async function saveCustomFigParts(): Promise<void> {
+      const item = store.item();
+      if (item?.type !== 'minifig' || !isCustomFigNum(item.num) || item.num_parts === item.num_parts_saved) return;
+      const { error } = await db.from('minifigs').update({ num_parts: item.num_parts }).eq('fig_num', item.num);
+      if (error) patchState(store, { error: `Обявата е записана, но броят части не беше: ${error.message}` });
+      else patchState(store, { item: { ...item, num_parts_saved: item.num_parts } });
+    }
+
     async function loadItem(type: ItemType, num: string, colorId?: number | null): Promise<CatalogItem | null> {
       if (type === 'part') {
         const { data } = await db.from('parts').select('*, part_categories(name, name_bg)').eq('part_num', num).maybeSingle();
@@ -119,7 +146,12 @@ export const ListingFormStore = signalStore(
           : null;
       }
       const { data } = await db.from('minifigs').select('*').eq('fig_num', num).maybeSingle();
-      return data ? { type, num, name: data.name, img_url: data.img_url, year: null, num_parts: data.num_parts, theme_name: null } : null;
+      return data
+        ? {
+            type, num, name: data.name, img_url: data.img_url, year: null, num_parts: data.num_parts, theme_name: null,
+            bl_num: data.bl_num, bl_num_saved: data.bl_num, num_parts_saved: data.num_parts,
+          }
+        : null;
     }
 
     async function loadExistingOffers(num: string, exceptId?: number, colorId?: number | null): Promise<void> {
@@ -206,7 +238,7 @@ export const ListingFormStore = signalStore(
           // own number is only known on BrickLink (twn542), which Rebrickable's data doesn't carry
           const setNum = /^\d{3,}(-\d+)?$/.test(term) ? term : null;
           const [byName, bySet] = await Promise.all([
-            db.from('minifigs').select('*').or(`fig_num.ilike.*${term}*,name.ilike.*${term}*`).limit(15),
+            db.from('minifigs').select('*').or(`fig_num.ilike.*${term}*,name.ilike.*${term}*,bl_num.ilike.${term}*`).limit(15),
             setNum
               ? db
                   .from('set_minifigs')
@@ -220,11 +252,13 @@ export const ListingFormStore = signalStore(
               ? [{
                   type, num: row.minifigs.fig_num, name: row.minifigs.name, img_url: row.minifigs.img_url, year: null,
                   num_parts: row.minifigs.num_parts, theme_name: `в ${row.set_num} ${row.sets?.name ?? ''}`.trim(),
+                  bl_num: row.minifigs.bl_num, bl_num_saved: row.minifigs.bl_num,
                 }]
               : [],
           );
           const named: CatalogItem[] = (byName.data ?? []).map((m) => ({
             type, num: m.fig_num, name: m.name, img_url: m.img_url, year: null, num_parts: m.num_parts, theme_name: null,
+            bl_num: m.bl_num, bl_num_saved: m.bl_num,
           }));
           results = [...inSets, ...named].filter((r, i, all) => all.findIndex((x) => x.num === r.num) === i);
         }
@@ -313,6 +347,16 @@ export const ListingFormStore = signalStore(
         if (item?.type === 'set') patchState(store, { item: { ...item, name_bg: name } });
       },
 
+      updateNumParts(count: number): void {
+        const item = store.item();
+        if (item?.type === 'minifig') patchState(store, { item: { ...item, num_parts: Math.max(0, Math.round(count || 0)) } });
+      },
+
+      updateBlNum(num: string): void {
+        const item = store.item();
+        if (item?.type === 'minifig') patchState(store, { item: { ...item, bl_num: num } });
+      },
+
       /** Top-level themes to pick a magazine's series from (Ninjago, City, Friends …). */
       async loadSeries(): Promise<void> {
         if (store.series().length) return;
@@ -376,6 +420,8 @@ export const ListingFormStore = signalStore(
           }
           patchState(store, { listing: data });
           await saveNameBg();
+          await saveBlNum();
+          await saveCustomFigParts();
           return data.id;
         }, 'Запис на обявата…');
       },

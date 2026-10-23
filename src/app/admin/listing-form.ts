@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, effect, inject, input, si
 import { toSignal } from '@angular/core/rxjs-interop';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { CONDITION_LABEL, displayItemNum, ItemCondition, ItemType, slugify } from '../core/models';
+import { CONDITION_LABEL, displayItemNum, isCustomFigNum, ItemCondition, ItemType, slugify } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { ColorSwatch } from '../shared/color-swatch';
 import { Combobox } from '../shared/combobox';
@@ -77,7 +77,7 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                     {{ itemNum(item.num) }}
                     @if (item.theme_name) { · {{ item.theme_name }} }
                     @if (item.year) { · {{ item.year }} }
-                    @if (item.type !== 'part') { · {{ item.num_parts }} части }
+                    @if (item.type !== 'part' && item.num_parts) { · {{ item.num_parts }} части }
                   </p>
                   @if (item.color_name) {
                     <p class="mt-1 flex flex-wrap items-center gap-x-1.5 text-sm font-medium">
@@ -109,6 +109,40 @@ import { CatalogItem, ListingFormStore, PartColorOption } from './listing-form.s
                     Показва се в магазина вместо английското „{{ item.name }}“ — за всички обяви на този сет. Попълва се
                     автоматично, ако го има в български магазини; празно = английското име.
                   </p>
+                </div>
+              }
+
+              @if (item.type === 'minifig' && !isCustomFig(item.num)) {
+                <div class="mt-4">
+                  <label class="label" for="bl-num">Номер от BrickLink</label>
+                  <input
+                    id="bl-num"
+                    class="input sm:max-w-xs"
+                    [value]="item.bl_num ?? ''"
+                    (input)="store.updateBlNum($any($event.target).value)"
+                    placeholder="Напр. sw1094"
+                  />
+                  <p class="mt-1 text-xs text-fg-muted">
+                    Истинският номер на фигурката — показва се в магазина вместо {{ item.num }} и по него я намират в търсенето
+                    (и в Google). За всички обяви на тази фигурка.
+                  </p>
+                </div>
+              }
+
+              @if (item.type === 'minifig' && isCustomFig(item.num)) {
+                <div class="mt-4">
+                  <label class="label" for="fig-parts">Брой части</label>
+                  <input
+                    id="fig-parts"
+                    class="input w-32"
+                    type="number"
+                    min="0"
+                    step="1"
+                    [value]="item.num_parts || ''"
+                    (input)="store.updateNumParts($any($event.target).valueAsNumber)"
+                    placeholder="Напр. 5"
+                  />
+                  <p class="mt-1 text-xs text-fg-muted">Показва се в магазина в „Детайли“. Празно или 0 = не се показва.</p>
                 </div>
               }
 
@@ -420,6 +454,7 @@ export class ListingForm {
 
   protected readonly conditionLabel = CONDITION_LABEL;
   protected readonly itemNum = displayItemNum;
+  protected readonly isCustomFig = isCustomFigNum;
   protected readonly conditions: ItemCondition[] = ['new', 'used'];
   protected readonly types: { value: ItemType; label: string }[] = [
     { value: 'set', label: 'Сет' },

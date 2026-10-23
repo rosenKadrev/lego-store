@@ -73,7 +73,8 @@ export const CartStore = signalStore(
         name: listing.color_name
           ? `${listing.name} — ${listing.color_name}`
           : `${listing.name ?? ''}${listing.box_damaged ? ` (${BOX_DAMAGED_LABEL.toLowerCase()})` : ''}`,
-        itemNum: listing.item_num ?? '',
+        // a minifig's BrickLink number (sw1094) when known, as in the shop
+        itemNum: listing.bl_num || (listing.item_num ?? ''),
         condition: listing.condition ?? 'new',
         price: listing.price ?? 0,
         imageUrl,

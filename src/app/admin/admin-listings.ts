@@ -2,7 +2,7 @@ import { CurrencyPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { CONDITION_LABEL, displayItemNum } from '../core/models';
+import { CONDITION_LABEL, listingNum } from '../core/models';
 import { Supabase } from '../core/supabase';
 import { Icon } from '../shared/icon';
 import { QuantityStepper } from '../shared/quantity-stepper';
@@ -100,7 +100,7 @@ import { AdminListingFilters, AdminListingsStore } from './admin-listings.store'
                 {{ l.name }}@if (l.color_name) { <span class="font-normal text-fg-muted">— {{ l.color_name }}</span> }
               </a>
               <p class="text-xs text-fg-muted">
-                {{ itemNum(l.item_num) }} ·
+                {{ itemNum(l) }} ·
                 <span [class]="l.condition === 'new' ? 'text-emerald-700 dark:text-emerald-400' : 'text-amber-700 dark:text-amber-400'">{{ conditionLabel[l.condition!] }}</span>
                 @if (l.box_damaged) { · <span class="text-amber-700 dark:text-amber-400">ударена кутия</span> }
                 @if (l.theme_name ?? l.part_category; as group) { · {{ group }} }
@@ -149,7 +149,7 @@ export class AdminListings implements OnInit {
   protected readonly store = inject(AdminListingsStore);
   private readonly supabase = inject(Supabase);
   protected readonly conditionLabel = CONDITION_LABEL;
-  protected readonly itemNum = displayItemNum;
+  protected readonly itemNum = listingNum;
   protected readonly statuses: { value: AdminListingFilters['status']; label: string }[] = [
     { value: 'all', label: 'Всички' },
     { value: 'published', label: 'Публикувани' },

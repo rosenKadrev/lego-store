@@ -22,6 +22,8 @@ const MyOrdersStore = signalStore(
     loading: true,
     loadingMore: false,
     imageByListing: {} as Record<number, string | null>,
+    /** minifigs' BrickLink numbers (sw1094), shown instead of the stored fig-… */
+    blNumByListing: {} as Record<number, string>,
   }),
   withMethods((store, supabase = inject(Supabase)) => {
     let userId: string | undefined;
@@ -42,11 +44,15 @@ const MyOrdersStore = signalStore(
       // Pictures: own photo first, else the catalog image (as in the shop)
       const listingIds = [...new Set(orders.flatMap((o) => o.order_items.map((i) => i.listing_id)))];
       const imageByListing = { ...store.imageByListing() };
+      const blNumByListing = { ...store.blNumByListing() };
       if (listingIds.length) {
-        const { data: listings } = await supabase.client.from('catalog_listings').select('id, cover_path, catalog_img_url').in('id', listingIds);
-        for (const l of listings ?? []) imageByListing[l.id!] = supabase.coverUrl(l);
+        const { data: listings } = await supabase.client.from('catalog_listings').select('id, cover_path, catalog_img_url, bl_num').in('id', listingIds);
+        for (const l of listings ?? []) {
+          imageByListing[l.id!] = supabase.coverUrl(l);
+          if (l.bl_num) blNumByListing[l.id!] = l.bl_num;
+        }
       }
-      patchState(store, { orders: [...store.orders(), ...orders], total: count ?? 0, imageByListing });
+      patchState(store, { orders: [...store.orders(), ...orders], total: count ?? 0, imageByListing, blNumByListing });
     }
 
     return {
@@ -128,7 +134,7 @@ const MyOrdersStore = signalStore(
                               }
                             </a>
                             <span class="min-w-0 flex-1"
-                              >{{ item.quantity }} × <span class="text-fg-muted">LEGO{{ isMagazineNum(item.item_num) ? '' : ' ' + itemNum(item.item_num) }}</span>
+                              >{{ item.quantity }} × <span class="text-fg-muted">LEGO{{ isMagazineNum(item.item_num) ? '' : ' ' + (orders.blNumByListing()[item.listing_id] || itemNum(item.item_num)) }}</span>
                               <a [routerLink]="productLink(item)" class="ml-1 hover:text-accent hover:underline">{{ item.name }}</a></span
                             >
                             <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>

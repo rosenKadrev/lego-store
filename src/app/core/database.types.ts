@@ -114,13 +114,13 @@ isOneToOne: false
                   ]
                 },"minifigs": {
                   Row: {
-                    "fig_num": string,"img_url": string | null,"name": string,"num_parts": number
+                    "bl_num": string | null,"fig_num": string,"img_url": string | null,"name": string,"num_parts": number
                   }
                   Insert: {
-                    "fig_num": string,"img_url"?: string | null,"name": string,"num_parts"?: number
+                    "bl_num"?: string | null,"fig_num": string,"img_url"?: string | null,"name": string,"num_parts"?: number
                   }
                   Update: {
-                    "fig_num"?: string,"img_url"?: string | null,"name"?: string,"num_parts"?: number
+                    "bl_num"?: string | null,"fig_num"?: string,"img_url"?: string | null,"name"?: string,"num_parts"?: number
                   }
                   Relationships: [
                     
@@ -377,7 +377,7 @@ isOneToOne: false
           Views: {
             "catalog_listings": {
                   Row: {
-                    "box_damaged": boolean | null,"catalog_img_url": string | null,"color_id": number | null,"color_name": string | null,"color_rgb": string | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"condition_notes": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"element_ids": (string)[] | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number | null,"is_complete": boolean | null,"is_published": boolean | null,"item_num": string | null,"item_type": Database["public"]['Enums']["item_type"] | null,"minifigs_complete": boolean | null,"name": string | null,"name_en": string | null,"num_parts": number | null,"part_cat_id": number | null,"part_category": string | null,"price": number | null,"stock": number | null,"theme_id": number | null,"theme_name": string | null,"year": number | null
+                    "bl_num": string | null,"box_damaged": boolean | null,"catalog_img_url": string | null,"color_id": number | null,"color_name": string | null,"color_rgb": string | null,"compare_at_price": number | null,"condition": Database["public"]['Enums']["item_condition"] | null,"condition_notes": string | null,"cover_path": string | null,"created_at": string | null,"description": string | null,"element_ids": (string)[] | null,"has_box": boolean | null,"has_instructions": boolean | null,"id": number | null,"is_complete": boolean | null,"is_published": boolean | null,"item_num": string | null,"item_type": Database["public"]['Enums']["item_type"] | null,"minifigs_complete": boolean | null,"name": string | null,"name_en": string | null,"num_parts": number | null,"part_cat_id": number | null,"part_category": string | null,"price": number | null,"stock": number | null,"theme_id": number | null,"theme_name": string | null,"year": number | null
                   }
                   Relationships: [
                     {

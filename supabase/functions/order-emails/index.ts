@@ -316,21 +316,24 @@ function customerShipped(order: Order, items: OrderItem[], settings: Settings, s
 
 /** Own photo first (used items), otherwise the Rebrickable catalog image — like Supabase.coverUrl() on the site.
  *  A missing picture never blocks the e-mail. */
+/** Pictures, plus minifigs' BrickLink numbers (sw1094) in place of the stored fig-… — as in the shop */
 async function attachImages(db: SupabaseClient, items: OrderItem[]): Promise<void> {
   if (!items.length) return;
   const { data, error } = await db
     .from('catalog_listings')
-    .select('id, cover_path, catalog_img_url')
+    .select('id, cover_path, catalog_img_url, bl_num')
     .in('id', items.map((i) => i.listing_id));
   if (error) return console.error('order e-mail images:', error.message);
   const storage = `${Deno.env.get('SUPABASE_URL')}/storage/v1/object/public/listing-images/`;
+  const listings = data as { id: number; cover_path: string | null; catalog_img_url: string | null; bl_num: string | null }[];
   const byId = new Map(
-    (data as { id: number; cover_path: string | null; catalog_img_url: string | null }[]).map((l) => [
-      l.id,
-      l.cover_path ? storage + l.cover_path.split('/').map(encodeURIComponent).join('/') : l.catalog_img_url,
-    ]),
+    listings.map((l) => [l.id, l.cover_path ? storage + l.cover_path.split('/').map(encodeURIComponent).join('/') : l.catalog_img_url]),
   );
-  for (const i of items) i.image = byId.get(i.listing_id) ?? null;
+  const blNum = new Map(listings.filter((l) => l.bl_num).map((l) => [l.id, l.bl_num!]));
+  for (const i of items) {
+    i.image = byId.get(i.listing_id) ?? null;
+    i.item_num = blNum.get(i.listing_id) ?? i.item_num;
+  }
 }
 
 async function send(apiKey: string, mail: Mail): Promise<void> {

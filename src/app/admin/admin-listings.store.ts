@@ -52,7 +52,7 @@ export const AdminListingsStore = signalStore(
       if (f.status === 'draft') query = query.eq('is_published', false);
       if (f.status === 'sold_out') query = query.eq('stock', 0);
       const q = f.q.trim().replace(/[,()*%]/g, ' ').trim();
-      if (q) query = query.or(`name.ilike.*${q}*,item_num.ilike.${q}*`);
+      if (q) query = query.or(`name.ilike.*${q}*,item_num.ilike.${q}*,bl_num.ilike.${q}*`);
       return query;
     }
 

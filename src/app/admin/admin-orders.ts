@@ -106,7 +106,7 @@ import { printSaleDocument } from './sale-document';
                           </a>
                           <span class="min-w-0 flex-1">
                             {{ item.quantity }} × <a [href]="productUrl(item)" target="_blank" class="hover:text-accent hover:underline">{{ item.name }}</a>
-                            <span class="ml-1 text-fg-muted">({{ itemNum(item.item_num) }}, {{ item.condition === 'new' ? 'ново' : 'употр.' }})</span>
+                            <span class="ml-1 text-fg-muted">({{ store.blNumByListing()[item.listing_id] || itemNum(item.item_num) }}, {{ item.condition === 'new' ? 'ново' : 'употр.' }})</span>
                           </span>
                           <span class="whitespace-nowrap">{{ item.unit_price * item.quantity | currency }}</span>
                         </li>
@@ -147,7 +147,7 @@ import { printSaleDocument } from './sale-document';
                     <span>{{ order.total | currency }}</span>
                   </li>
                 </ul>
-                <button type="button" class="btn-outline px-3 py-1.5 text-xs" (click)="printSaleDocument(order)">Документ за продажба</button>
+                <button type="button" class="btn-outline px-3 py-1.5 text-xs" (click)="printSaleDocument(order, store.blNumByListing())">Документ за продажба</button>
               </div>
 
               @if (next(order.status).length) {
