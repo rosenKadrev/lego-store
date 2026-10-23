@@ -124,7 +124,12 @@ import { ThemesStore } from '../stores/themes.store';
           >
             @if (activeImage(); as src) {
               <div class="grid size-full place-items-center p-4 sm:p-12" data-lightbox-backdrop>
-                <img [src]="src" [alt]="l.name" class="max-h-full max-w-full cursor-default rounded-2xl bg-white object-contain p-3 shadow-2xl sm:p-6" />
+                <!-- Sized to the window: room for the ✕ above and the arrows beside -->
+                <img
+                  [src]="src"
+                  [alt]="l.name"
+                  class="max-h-[calc(100dvh-8rem)] max-w-[calc(100vw-2rem)] cursor-default rounded-2xl bg-white object-contain p-3 shadow-2xl sm:max-h-[calc(100dvh-6rem)] sm:max-w-[calc(100vw-9rem)] sm:p-6"
+                />
               </div>
             }
             <button type="button" class="absolute top-3 right-3 grid size-11 place-items-center rounded-full bg-white/10 hover:bg-white/20" aria-label="Затвори" (click)="lightbox.close()">
